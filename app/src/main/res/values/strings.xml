@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name" translatable="false">Recall</string>
+    <string name="activity_title">Study activity</string>
+    <string name="activity_period">Past 12 months</string>
+    <string name="activity_less">Less</string>
+    <string name="activity_more">More</string>
+    <string name="activity_empty">Your activity will appear here as you review cards.</string>
+    <string name="activity_scroll_hint">Swipe to explore earlier days. Tap a day for details.</string>
+    <string name="activity_no_reviews">No reviews</string>
+    <string name="activity_close">Done</string>
+    <string-array name="activity_weekdays">
+        <item>Mon</item><item>Tue</item><item>Wed</item><item>Thu</item><item>Fri</item><item>Sat</item><item>Sun</item>
+    </string-array>
+    <plurals name="activity_reviews">
+        <item quantity="one">%1$s review completed</item>
+        <item quantity="other">%1$s reviews completed</item>
+    </plurals>
+    <string name="review_channel">Review reminders</string>
+    <plurals name="review_ready">
+        <item quantity="one">%1$d card is ready for review.</item>
+        <item quantity="other">%1$d cards are ready for review.</item>
+    </plurals>
+    <string name="review_notification_copy">A short review now helps memory last.</string>
+    <string name="review_skip">Skip for now</string>
+    <plurals name="review_answered_count">
+        <item quantity="one">%1$d card reviewed</item>
+        <item quantity="other">%1$d cards reviewed</item>
+    </plurals>
+    <string name="review_skipped_count">%1$d skipped · still available for review</string>
+</resources>

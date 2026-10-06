@@ -1,0 +1,7 @@
+<resources>
+    <string name="pronounce_word">نطق %1$s</string>
+    <string name="pronunciation">النطق</string>
+    <string name="pronunciation_hint">اضغط على كلمة تحتها خط لسماع نطقها. يلزم تثبيت صوت يعمل دون اتصال بالإنترنت في Android.</string>
+    <string name="speech_rate">سرعة النطق</string>
+    <string name="manage_voices">إدارة الأصوات</string>
+</resources>

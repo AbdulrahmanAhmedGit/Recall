@@ -1,0 +1,27 @@
+<resources>
+    <string name="info_title">How Recall works</string>
+    <string name="info_welcome">Welcome to %1$s</string>
+    <string name="info_subtitle">Understand, remember, and return with confidence.</string>
+    <string name="info_latest">What’s new · October 2026</string>
+    <string name="info_latest_body">Skip for now: move past a question before or after revealing its answer. Skipping records no response and leaves its schedule unchanged; skipped cards are counted separately.\n\nStudy Activity: see completed reviews across your local calendar days. Tap a day for its count and scroll back through the past year.\n\nThis guide: available here and in Settings, with a one-time introduction.</string>
+    <string name="info_version">Installed version %1$s</string>
+    <string name="info_workflow">Start with a lesson</string>
+    <string name="info_workflow_body">Study from your books, notes, or teacher first. Organize a Subject → optional Chapter → Lesson, then add a small set of useful questions manually or import Recall JSON from any AI. Preview and check AI answers before importing: AI can make mistakes. Keep PDFs, photos, and notes with their subject. Cards support remembering a lesson; they do not replace understanding or practice.</string>
+    <string name="info_science">Why retrieval and spacing?</string>
+    <string name="info_science_body">Try to recall an answer before revealing it. Research on retrieval practice shows that retrieving studied material can improve later retention compared with simply rereading.\n\nReviewing across separate days uses the spacing effect: distributed practice supports long-term memory. Useful spacing depends on the material and how long you need to remember it. These are research-supported principles, not a guarantee of any individual result.</string>
+    <string name="info_scheduler">How reviews are scheduled</string>
+    <string name="info_scheduler_body">Recall uses FSRS-6 equations to update each card’s difficulty and stability after a rating. Retrievability estimates how likely recall is as time passes. Your rating, elapsed time, and previous memory state affect the next interval.\n\nDesired retention defaults to about 90%: a model target for recall at review time, not an exam score or measured personal accuracy. Higher targets usually mean shorter intervals and more reviews. The current implementation uses default model weights, not a model trained personally on you.\n\nThe buttons preview the interval that will be saved. Again uses a 10-minute learning or relearning step; Hard, Good, and Easy use FSRS review intervals. Changing retention affects future ratings, not already scheduled dates.</string>
+    <string name="info_ratings">Rate honestly</string>
+    <string name="info_ratings_body">Again — you could not recall the answer, or recalled it incorrectly.\nHard — you recalled it correctly, but with substantial difficulty.\nGood — you recalled it correctly with a normal amount of effort.\nEasy — you recalled it correctly with little effort.\n\nChoose based on recall before the answer appeared. Hard is not a substitute for Again after forgetting. Use Skip for now if you do not want to answer; it changes neither memory state nor due date. Completed ratings are saved immediately.</string>
+    <string name="info_daily">A calm daily routine</string>
+    <string name="info_daily_body">Today lists cards ready for review. Work through a manageable amount regularly and use Insights to see actual completed activity. Due counts are reminders to return, not a penalty.\n\nQuiet times override study windows. Pausing reminders only affects notification delivery, never card due dates. Notifications need Android permission, and battery restrictions can delay background work; no app can guarantee exact delivery while restricted or force-stopped.</string>
+    <string name="info_privacy">Your data stays yours</string>
+    <string name="info_privacy_body">Core study features work offline without an account. Recall keeps your lessons, cards, review history, and preferences locally. Sending pages to an external AI is your choice and follows that provider’s privacy policy.\n\nUse Settings → Export all data for a portable ZIP including attached materials. A data-only JSON backup does not include file contents. Keep backups somewhere safe; a local app is not a cloud backup.</string>
+    <string name="info_sources">Science and algorithm sources</string>
+    <string name="info_retrieval_source">Retrieval practice · Roediger &amp; Karpicke (2006)</string>
+    <string name="info_spacing_source">Distributed practice · Cepeda et al. (2006)</string>
+    <string name="info_fsrs_source">FSRS · official algorithm documentation</string>
+    <string name="info_link_error">Could not open a browser. Sources require an internet connection.</string>
+    <string name="info_start">Start studying</string>
+    <string name="info_done">Done</string>
+</resources>

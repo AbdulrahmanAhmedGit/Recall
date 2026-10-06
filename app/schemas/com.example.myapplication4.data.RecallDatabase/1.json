@@ -1,0 +1,708 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "8963cb54b7874278e3407373061e0e3f",
+    "entities": [
+      {
+        "tableName": "SubjectEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `icon` TEXT NOT NULL, `accent` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `position` INTEGER NOT NULL, `archived` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "icon",
+            "columnName": "icon",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accent",
+            "columnName": "accent",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "archived",
+            "columnName": "archived",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_SubjectEntity_name",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_SubjectEntity_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ]
+      },
+      {
+        "tableName": "ChapterEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `subjectId` TEXT NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`subjectId`) REFERENCES `SubjectEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subjectId",
+            "columnName": "subjectId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "position",
+            "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ChapterEntity_subjectId",
+            "unique": false,
+            "columnNames": [
+              "subjectId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ChapterEntity_subjectId` ON `${TABLE_NAME}` (`subjectId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "SubjectEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "subjectId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "LessonEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `subjectId` TEXT NOT NULL, `chapterId` TEXT, `title` TEXT NOT NULL, `summary` TEXT, `notes` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `archived` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`subjectId`) REFERENCES `SubjectEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`chapterId`) REFERENCES `ChapterEntity`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subjectId",
+            "columnName": "subjectId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chapterId",
+            "columnName": "chapterId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "summary",
+            "columnName": "summary",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "archived",
+            "columnName": "archived",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_LessonEntity_subjectId",
+            "unique": false,
+            "columnNames": [
+              "subjectId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_LessonEntity_subjectId` ON `${TABLE_NAME}` (`subjectId`)"
+          },
+          {
+            "name": "index_LessonEntity_chapterId",
+            "unique": false,
+            "columnNames": [
+              "chapterId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_LessonEntity_chapterId` ON `${TABLE_NAME}` (`chapterId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "SubjectEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "subjectId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "ChapterEntity",
+            "onDelete": "SET NULL",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "chapterId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "CardEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `lessonId` TEXT NOT NULL, `type` TEXT NOT NULL, `front` TEXT NOT NULL, `back` TEXT NOT NULL, `hint` TEXT, `sourceReference` TEXT, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `suspended` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`lessonId`) REFERENCES `LessonEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lessonId",
+            "columnName": "lessonId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "front",
+            "columnName": "front",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "back",
+            "columnName": "back",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hint",
+            "columnName": "hint",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sourceReference",
+            "columnName": "sourceReference",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updatedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "suspended",
+            "columnName": "suspended",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_CardEntity_lessonId",
+            "unique": false,
+            "columnNames": [
+              "lessonId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CardEntity_lessonId` ON `${TABLE_NAME}` (`lessonId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "LessonEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "lessonId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "TagEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_TagEntity_name",
+            "unique": true,
+            "columnNames": [
+              "name"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_TagEntity_name` ON `${TABLE_NAME}` (`name`)"
+          }
+        ]
+      },
+      {
+        "tableName": "LessonTagEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`lessonId` TEXT NOT NULL, `tagId` TEXT NOT NULL, PRIMARY KEY(`lessonId`, `tagId`))",
+        "fields": [
+          {
+            "fieldPath": "lessonId",
+            "columnName": "lessonId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tagId",
+            "columnName": "tagId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "lessonId",
+            "tagId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_LessonTagEntity_tagId",
+            "unique": false,
+            "columnNames": [
+              "tagId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_LessonTagEntity_tagId` ON `${TABLE_NAME}` (`tagId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "ReviewStateEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cardId` TEXT NOT NULL, `state` TEXT NOT NULL, `dueAt` INTEGER NOT NULL, `lastReviewedAt` INTEGER, `stability` REAL NOT NULL, `difficulty` REAL NOT NULL, `scheduledDays` INTEGER NOT NULL, `reps` INTEGER NOT NULL, `lapses` INTEGER NOT NULL, PRIMARY KEY(`cardId`), FOREIGN KEY(`cardId`) REFERENCES `CardEntity`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "cardId",
+            "columnName": "cardId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dueAt",
+            "columnName": "dueAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastReviewedAt",
+            "columnName": "lastReviewedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "stability",
+            "columnName": "stability",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "difficulty",
+            "columnName": "difficulty",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduledDays",
+            "columnName": "scheduledDays",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reps",
+            "columnName": "reps",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lapses",
+            "columnName": "lapses",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cardId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ReviewStateEntity_dueAt",
+            "unique": false,
+            "columnNames": [
+              "dueAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ReviewStateEntity_dueAt` ON `${TABLE_NAME}` (`dueAt`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "CardEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "cardId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "ReviewLogEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `cardId` TEXT NOT NULL, `reviewedAt` INTEGER NOT NULL, `rating` INTEGER NOT NULL, `previousInterval` INTEGER NOT NULL, `nextInterval` INTEGER NOT NULL, `previousStability` REAL NOT NULL, `newStability` REAL NOT NULL, `durationMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cardId",
+            "columnName": "cardId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reviewedAt",
+            "columnName": "reviewedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rating",
+            "columnName": "rating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousInterval",
+            "columnName": "previousInterval",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextInterval",
+            "columnName": "nextInterval",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousStability",
+            "columnName": "previousStability",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "newStability",
+            "columnName": "newStability",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "durationMillis",
+            "columnName": "durationMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ReviewLogEntity_cardId",
+            "unique": false,
+            "columnNames": [
+              "cardId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ReviewLogEntity_cardId` ON `${TABLE_NAME}` (`cardId`)"
+          },
+          {
+            "name": "index_ReviewLogEntity_reviewedAt",
+            "unique": false,
+            "columnNames": [
+              "reviewedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ReviewLogEntity_reviewedAt` ON `${TABLE_NAME}` (`reviewedAt`)"
+          }
+        ]
+      },
+      {
+        "tableName": "ScheduleBlockEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `type` TEXT NOT NULL, `startMinute` INTEGER NOT NULL, `endMinute` INTEGER NOT NULL, `days` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `preferredFilter` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startMinute",
+            "columnName": "startMinute",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endMinute",
+            "columnName": "endMinute",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "days",
+            "columnName": "days",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "enabled",
+            "columnName": "enabled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "preferredFilter",
+            "columnName": "preferredFilter",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ScheduleBlockEntity_enabled",
+            "unique": false,
+            "columnNames": [
+              "enabled"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ScheduleBlockEntity_enabled` ON `${TABLE_NAME}` (`enabled`)"
+          }
+        ]
+      },
+      {
+        "tableName": "ImportRecordEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `fingerprint` TEXT NOT NULL, `importedAt` INTEGER NOT NULL, `source` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fingerprint",
+            "columnName": "fingerprint",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "importedAt",
+            "columnName": "importedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_ImportRecordEntity_importedAt",
+            "unique": false,
+            "columnNames": [
+              "importedAt"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_ImportRecordEntity_importedAt` ON `${TABLE_NAME}` (`importedAt`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8963cb54b7874278e3407373061e0e3f')"
+    ]
+  }
+}

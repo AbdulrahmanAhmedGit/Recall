@@ -1,0 +1,41 @@
+<resources>
+    <string name="activity_title">نشاط الدراسة</string>
+    <string name="activity_period">آخر ١٢ شهرًا</string>
+    <string name="activity_less">أقل</string>
+    <string name="activity_more">أكثر</string>
+    <string name="activity_empty">سيظهر نشاطك هنا عندما تراجع البطاقات.</string>
+    <string name="activity_scroll_hint">اسحب لاستكشاف الأيام السابقة. اضغط على يوم لعرض التفاصيل.</string>
+    <string name="activity_no_reviews">لا توجد مراجعات</string>
+    <string name="activity_close">تم</string>
+    <string-array name="activity_weekdays">
+        <item>اثن</item><item>ثلا</item><item>أرب</item><item>خمي</item><item>جمع</item><item>سبت</item><item>أحد</item>
+    </string-array>
+    <plurals name="activity_reviews">
+        <item quantity="zero">لا توجد مراجعات</item>
+        <item quantity="one">مراجعة واحدة مكتملة</item>
+        <item quantity="two">مراجعتان مكتملتان</item>
+        <item quantity="few">%1$s مراجعات مكتملة</item>
+        <item quantity="many">%1$s مراجعة مكتملة</item>
+        <item quantity="other">%1$s مراجعة مكتملة</item>
+    </plurals>
+    <string name="review_channel">تذكيرات المراجعة</string>
+    <plurals name="review_ready">
+        <item quantity="zero">لا توجد بطاقات جاهزة للمراجعة.</item>
+        <item quantity="one">بطاقة واحدة جاهزة للمراجعة.</item>
+        <item quantity="two">بطاقتان جاهزتان للمراجعة.</item>
+        <item quantity="few">%1$d بطاقات جاهزة للمراجعة.</item>
+        <item quantity="many">%1$d بطاقة جاهزة للمراجعة.</item>
+        <item quantity="other">%1$d بطاقة جاهزة للمراجعة.</item>
+    </plurals>
+    <string name="review_notification_copy">مراجعة قصيرة الآن تساعدك على التذكر لفترة أطول.</string>
+    <string name="review_skip">تخطي الآن</string>
+    <plurals name="review_answered_count">
+        <item quantity="zero">لم تتم مراجعة أي بطاقة</item>
+        <item quantity="one">تمت مراجعة بطاقة واحدة</item>
+        <item quantity="two">تمت مراجعة بطاقتين</item>
+        <item quantity="few">تمت مراجعة %1$d بطاقات</item>
+        <item quantity="many">تمت مراجعة %1$d بطاقة</item>
+        <item quantity="other">تمت مراجعة %1$d بطاقة</item>
+    </plurals>
+    <string name="review_skipped_count">تم تخطي %1$d بطاقة · ما زالت متاحة للمراجعة</string>
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="pronounce_word">Pronounce %1$s</string>
+    <string name="pronunciation">Pronunciation</string>
+    <string name="pronunciation_hint">Tap an underlined word to hear it. Android needs an installed offline voice.</string>
+    <string name="speech_rate">Speech rate</string>
+    <string name="manage_voices">Manage voices</string>
+</resources>
