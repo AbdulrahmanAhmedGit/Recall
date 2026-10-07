@@ -44,6 +44,9 @@ import com.example.myapplication4.ui.components.*
 import com.example.myapplication4.ui.design.*
 import java.text.DateFormat
 import java.util.Date
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> Unit) {
@@ -51,6 +54,7 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
     var revealed by rememberSaveable { mutableStateOf(false) }
     var skipped by rememberSaveable { mutableIntStateOf(0) }
     var ratingCounts by rememberSaveable { mutableStateOf(List(Rating.entries.size) { 0 }) }
+    var saving by remember { mutableStateOf(false) }
     val counts = Rating.entries.associateWith { ratingCounts[it.ordinal] }
     val haptic = LocalHapticFeedback.current
     val reviewSettings by vm.settings.collectAsStateWithLifecycle()
@@ -69,7 +73,11 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
     val reviewedAt = remember(card.id) { System.currentTimeMillis() }
     val cardStartedAt = remember(card.id) { reviewedAt }
     val previews = remember(card.id, reviewedAt, reviewSettings.desiredRetention) { vm.preview(card, reviewedAt, reviewSettings.desiredRetention) }
-    val targets by remember(card.id) { vm.pronunciations(card.id) }.collectAsStateWithLifecycle(emptyList())
+    // Only the current question needs these immutable reading annotations. Load
+    // once per card instead of maintaining a Room/lifecycle observer per question.
+    val targets = produceState(emptyList<PronunciationTarget>(), card.id) {
+        value = vm.loadPronunciations(card.id)
+    }.value
     DisposableEffect(card.id) { onDispose { vm.pronunciation.stop() } }
     BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding()) {
         val pagePadding = if (maxWidth < 360.dp) RecallSpacing.md else RecallSpacing.ml
@@ -81,18 +89,30 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
                 skipped++
                 index++
                 revealed = false
-            }, modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = RecallSizes.touch)) {
+            }, enabled = !saving, modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = RecallSizes.touch)) {
                 Text(resources.getString(R.string.review_skip))
             }
             if (!revealed) RecallPrimaryButton("Show answer", Icons.Outlined.Visibility, { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); revealed = true }, Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = RecallSpacing.md))
-            else RatingBar(previews) { result -> haptic.performHapticFeedback(HapticFeedbackType.LongPress); vm.rate(card, result, System.currentTimeMillis() - cardStartedAt); ratingCounts = ratingCounts.mapIndexed { i, count -> if (i == result.rating.ordinal) count + 1 else count }; index++; revealed = false }
+            else RatingBar(previews, enabled = !saving) { result ->
+                if (!saving) {
+                    saving = true
+                    vm.rate(card, result, System.currentTimeMillis() - cardStartedAt) { saved ->
+                        saving = false
+                        if (saved) {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            ratingCounts = ratingCounts.mapIndexed { i, count -> if (i == result.rating.ordinal) count + 1 else count }
+                            index++; revealed = false
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
-@Composable private fun RatingBar(previews: Map<Rating, ScheduleResult>, rate: (ScheduleResult) -> Unit) { Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = RecallSpacing.md)) { BidiAwareText("How well did you remember?", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(bottom = RecallSpacing.xs)); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.xs)) { Rating.entries.forEach { rating -> val result = previews.getValue(rating); RatingChoice(rating, formatReviewInterval(result.intervalMillis), Modifier.weight(1f)) { rate(result) } } } } }
+@Composable private fun RatingBar(previews: Map<Rating, ScheduleResult>, enabled: Boolean, rate: (ScheduleResult) -> Unit) { Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = RecallSpacing.md)) { BidiAwareText("How well did you remember?", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(bottom = RecallSpacing.xs)); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.xs)) { Rating.entries.forEach { rating -> val result = previews.getValue(rating); RatingChoice(rating, formatReviewInterval(result.intervalMillis), Modifier.weight(1f), enabled) { rate(result) } } } } }
 
-@Composable private fun RatingChoice(rating: Rating, interval: String, modifier: Modifier, click: () -> Unit) { val tint = when(rating) { Rating.AGAIN -> MaterialTheme.colorScheme.error; Rating.HARD -> MaterialTheme.colorScheme.warning; Rating.GOOD -> MaterialTheme.colorScheme.primary; Rating.EASY -> MaterialTheme.colorScheme.success }; Surface(onClick = click, modifier = modifier.heightIn(min = 68.dp), color = MaterialTheme.colorScheme.surfaceInteractive, contentColor = MaterialTheme.colorScheme.onSurface, shape = RecallRadii.medium) { Column(Modifier.padding(vertical = RecallSpacing.sm, horizontal = RecallSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(rating.name.lowercase().replaceFirstChar { it.titlecase() }, style = MaterialTheme.typography.labelLarge, color = tint); BidiAwareText(interval, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) } } }
+@Composable private fun RatingChoice(rating: Rating, interval: String, modifier: Modifier, enabled: Boolean, click: () -> Unit) { val tint = when(rating) { Rating.AGAIN -> MaterialTheme.colorScheme.error; Rating.HARD -> MaterialTheme.colorScheme.warning; Rating.GOOD -> MaterialTheme.colorScheme.primary; Rating.EASY -> MaterialTheme.colorScheme.success }; Surface(onClick = click, enabled = enabled, modifier = modifier.heightIn(min = 68.dp), color = MaterialTheme.colorScheme.surfaceInteractive, contentColor = MaterialTheme.colorScheme.onSurface, shape = RecallRadii.medium) { Column(Modifier.padding(vertical = RecallSpacing.sm, horizontal = RecallSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(rating.name.lowercase().replaceFirstChar { it.titlecase() }, style = MaterialTheme.typography.labelLarge, color = tint); BidiAwareText(interval, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) } } }
 
 @Composable
 private fun ReviewComplete(total: Int, skipped: Int, counts: Map<Rating, Int>, resources: android.content.res.Resources, done: () -> Unit) {
@@ -129,19 +149,27 @@ fun ImportScreen(vm: RecallViewModel, targetSubjectId: String? = null, targetLes
     var raw by rememberSaveable { mutableStateOf("") }
     var result by remember { mutableStateOf<ImportResult?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    var busy by remember { mutableStateOf(false) }
     val selectedSubject = subjects.firstOrNull { it.id == selectedSubjectId }
     val selectedLesson = lessons.firstOrNull { it.id == targetLessonId }
     if(destinationPicker) SettingsOptionsSheet("Import destination", listOf<String?>(null).map { it to "Use subject from JSON" } + subjects.map { it.id to it.name }, selectedSubjectId, { selectedSubjectId = it; destinationPicker = false }) { destinationPicker = false }
     val openJson = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) runCatching {
-            context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: error("Unable to read file")
-        }.fold(
+        if (uri != null && !busy) scope.launch {
+            busy = true
+            try { withContext(Dispatchers.IO) { runCatching {
+                context.contentResolver.openInputStream(uri)?.bufferedReader()?.use {
+                    com.example.myapplication4.util.readBoundedText(it, 2_000_000)
+                } ?: error("Unable to read file")
+            } }.fold(
             onSuccess = { text ->
                 if (text.length > 2_000_000) notice = "That file is too large. Recall accepts JSON files up to 2 MB."
                 else { raw = text; result = null; notice = "JSON file loaded · ${text.length} characters" }
             },
-            onFailure = { notice = "Recall could not read that file. Choose a local .json or text file." },
+            onFailure = { notice = it.message ?: "Recall could not read that file. Choose a local .json or text file." },
         )
+            } finally { busy = false }
+        }
     }
     fun pasteFromClipboard() {
         val pasted = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
@@ -155,8 +183,8 @@ fun ImportScreen(vm: RecallViewModel, targetSubjectId: String? = null, targetLes
             if(selectedLesson != null) Text("Append to " + selectedLesson.title, style = MaterialTheme.typography.labelLarge)
             if (result !is ImportResult.Success) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(::pasteFromClipboard) { Icon(Icons.Outlined.ContentPaste, null); Spacer(Modifier.width(RecallSpacing.xxs)); Text("Paste") }
-                    TextButton({ openJson.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }) { Icon(Icons.Outlined.FolderOpen, null); Spacer(Modifier.width(RecallSpacing.xxs)); Text("Open file") }
+                    TextButton(::pasteFromClipboard, enabled = !busy) { Icon(Icons.Outlined.ContentPaste, null); Spacer(Modifier.width(RecallSpacing.xxs)); Text("Paste") }
+                    TextButton({ openJson.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }, enabled = !busy) { Icon(Icons.Outlined.FolderOpen, null); Spacer(Modifier.width(RecallSpacing.xxs)); Text("Open file") }
                     Spacer(Modifier.weight(1f))
                     if (raw.isNotEmpty()) Text("${raw.length} chars", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted)
                 }
@@ -168,12 +196,21 @@ fun ImportScreen(vm: RecallViewModel, targetSubjectId: String? = null, targetLes
                     placeholder = { Text("Paste the complete response, including the first { and final }") },
                     shape = RecallRadii.medium,
                     textStyle = MaterialTheme.typography.bodyMedium,
+                    enabled = !busy,
                 )
                 notice?.let { Text(it, color = MaterialTheme.colorScheme.muted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = RecallSpacing.xs)) }
                 if (result is ImportResult.Failure) Text((result as ImportResult.Failure).message, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = RecallSpacing.xs))
                 Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(vertical = RecallSpacing.md), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) {
                     OutlinedButton({ clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Recall AI prompt", selectedSubject?.let { subjectAiPrompt(it.name, selectedLesson?.title) } ?: AI_PROMPT)) }, Modifier.weight(1f).heightIn(min = RecallSizes.buttonHeight), shape = RecallRadii.medium) { Icon(Icons.Outlined.ContentCopy, null); Spacer(Modifier.width(RecallSpacing.xs)); Text("AI prompt") }
-                    RecallPrimaryButton("Preview", Icons.AutoMirrored.Outlined.ArrowForward, { result = RecallImportParser.parse(raw, selectedLesson?.learningLanguage) }, Modifier.weight(1f), raw.isNotBlank())
+                    RecallPrimaryButton(if (busy) "Processing…" else "Preview", Icons.AutoMirrored.Outlined.ArrowForward, {
+                        if (!busy) scope.launch {
+                            busy = true
+                            val source = raw
+                            val language = selectedLesson?.learningLanguage
+                            try { result = withContext(Dispatchers.Default) { RecallImportParser.parse(source, language) } }
+                            finally { busy = false }
+                        }
+                    }, Modifier.weight(1f), raw.isNotBlank() && !busy)
                 }
             } else ImportPreview((result as ImportResult.Success).draft, { result = null }) { draft -> haptic.performHapticFeedback(HapticFeedbackType.LongPress); vm.importDraft(draft, back, selectedSubjectId, targetLessonId) }
         }
@@ -221,6 +258,7 @@ fun SettingsScreen(vm: RecallViewModel, openInfo: () -> Unit) {
     val schedules by vm.schedules.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var editSchedule by remember { mutableStateOf<ScheduleBlockEntity?>(null) }
     var add by remember { mutableStateOf(false) }
     var panel by remember { mutableStateOf<SettingsPanel?>(null) }
@@ -253,13 +291,16 @@ fun SettingsScreen(vm: RecallViewModel, openInfo: () -> Unit) {
     }
     val export = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) vm.exportBackup { result -> result.fold(
-            onSuccess = { json -> runCatching { context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { it.write(json) } ?: error("Unable to open file") }.fold({ message = "Backup exported." }, { message = "Could not write the backup." }) },
+            onSuccess = { json -> scope.launch { withContext(Dispatchers.IO) { runCatching { context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { it.write(json) } ?: error("Unable to open file") } }.fold({ message = "Backup exported." }, { message = "Could not write the backup." }) } },
             onFailure = { message = "Could not create the backup." },
         ) }
     }
     val openBackup = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) pendingBackup = runCatching { context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }.getOrNull()
-            .also { if (it == null) message = "Could not read that file." }
+        if (uri != null) scope.launch {
+            message = "Reading backup…"
+            pendingBackup = withContext(Dispatchers.IO) { runCatching { context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }.getOrNull() }
+            message = if (pendingBackup == null) "Could not read that file." else null
+        }
     }
     ScreenFrame {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 104.dp)) {

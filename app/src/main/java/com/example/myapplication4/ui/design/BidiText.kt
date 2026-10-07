@@ -38,6 +38,6 @@ fun BidiAwareText(
     overflow: TextOverflow = TextOverflow.Clip,
 ) {
     val resolvedColor = if (color == Color.Unspecified) LocalContentColor.current else color
-    val display = remember(text) { studyDisplayText(text) }
-    Text(display.annotated(), modifier, style = style.copy(textDirection = TextDirection.Content), color = resolvedColor, maxLines = maxLines, overflow = overflow)
+    val annotated = remember(text) { studyDisplayText(text).annotated() }
+    Text(annotated, modifier, style = style.copy(textDirection = TextDirection.Content), color = resolvedColor, maxLines = maxLines, overflow = overflow)
 }

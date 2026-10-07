@@ -24,11 +24,6 @@ internal fun ReviewCardStack(
     revealed: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    // AnimatedContent retains outgoing content; asynchronous pronunciation metadata
-    // must remain live even when the card identity has not changed.
-    val liveTargets by rememberUpdatedState(targets)
-    val activeId by rememberUpdatedState(card.id)
-    val answerVisible by rememberUpdatedState(revealed)
     Box(modifier.padding(top = RecallSpacing.lg, bottom = RecallSpacing.lg + RecallSpacing.md)) {
         if (remaining > 2) Surface(
             Modifier.matchParentSize().offset(y = RecallSpacing.md).graphicsLayer { scaleX = .90f; rotationZ = -2f }.clearAndSetSemantics {},
@@ -40,15 +35,10 @@ internal fun ReviewCardStack(
             shape = RecallRadii.extraLarge, color = MaterialTheme.colorScheme.primaryContainer,
             shadowElevation = 3.dp,
         ) {}
-        AnimatedContent(
-            targetState = card,
-            contentKey = { it.id },
-            transitionSpec = {
-                (fadeIn(tween(RecallMotion.standard)) + slideInHorizontally(tween(RecallMotion.standard)) { it / 12 })
-                    .togetherWith(fadeOut(tween(RecallMotion.quick)) + slideOutHorizontally(tween(RecallMotion.quick)) { -it / 12 })
-            },
-            label = "review-card-stack",
-        ) { displayed ->
+        // One active reading surface: no retained outgoing text/layout or metadata.
+        // Reset scroll for the next card; retain it when pronunciation data arrives.
+        key(card.id) {
+            val displayed = card
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 shape = RecallRadii.extraLarge,
@@ -67,7 +57,7 @@ internal fun ReviewCardStack(
                             Spacer(Modifier.weight(1f))
                             Text(if (displayed.type == "cloze") "Fill in the blank" else "Active recall", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted)
                         }
-                        PronounceableStudyText(displayed.front, "front", if (displayed.id == activeId) liveTargets else emptyList(), displayed.learningLanguage,
+                        PronounceableStudyText(displayed.front, "front", targets, displayed.learningLanguage,
                             style = MaterialTheme.typography.headlineMedium, modifier = Modifier.fillMaxWidth().padding(top = RecallSpacing.md))
                         displayed.hint?.takeIf { it.isNotBlank() }?.let {
                             Text("Hint", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(top = RecallSpacing.lg))
@@ -75,11 +65,11 @@ internal fun ReviewCardStack(
                         }
                     }
                     item {
-                        AnimatedVisibility(answerVisible && displayed.id == activeId, enter = fadeIn(tween(RecallMotion.standard)) + expandVertically(), exit = fadeOut()) {
+                        AnimatedVisibility(revealed, enter = fadeIn(tween(RecallMotion.quick)), exit = fadeOut(tween(RecallMotion.quick))) {
                             Column(Modifier.padding(top = RecallSpacing.lg)) {
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                                 Text("Answer", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.success, modifier = Modifier.padding(top = RecallSpacing.lg))
-                                PronounceableStudyText(displayed.back, "back", liveTargets, displayed.learningLanguage,
+                                PronounceableStudyText(displayed.back, "back", targets, displayed.learningLanguage,
                                     style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(top = RecallSpacing.sm))
                             }
                         }

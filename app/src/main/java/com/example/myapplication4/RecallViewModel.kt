@@ -25,11 +25,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import java.time.LocalDate
+import java.time.YearMonth
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class RecallViewModel @JvmOverloads constructor(app: Application, private val database: RecallDatabase = RecallDatabase.create(app)) : AndroidViewModel(app) {
     val pronunciation = com.example.myapplication4.pronunciation.PronunciationManager(app)
     override fun onCleared() { pronunciation.close(); database.close(); super.onCleared() }
     fun pronunciations(cardId: String) = dao.pronunciationTargets(cardId).map { rows -> rows.map { it.target() } }
+    suspend fun loadPronunciations(cardId: String) = dao.targetsForCard(cardId).map { it.target() }
     private val dao = database.dao()
     private val preferences = UserPreferences(app)
     val introductionSeen: StateFlow<Boolean?> = preferences.introductionSeen
@@ -42,35 +45,51 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         }
     }
     private val scheduler: ReviewScheduler = FsrsScheduler()
+    // Kept across Activity recreation without putting full card text in Android's
+    // size-limited saved-state Bundle. Process recreation returns safely to Today.
+    internal var activeReviewCards: List<CardWithLesson>? = null
     val subjects = dao.subjects().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val schedules = dao.schedules().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    val lessons = dao.lessonOverviews(System.currentTimeMillis()).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    val dueCount = dao.dueCount(System.currentTimeMillis()).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
-    val todayReviews = dao.reviewCountSince(todayStart()).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
     private val activityRefresh = MutableStateFlow(0L)
-    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    val studyActivity = activityRefresh.flatMapLatest {
+    // One shared ticker, stopped when no screen subscribes. Due counts used to freeze at
+    // ViewModel creation, so cards becoming due while the app was open stayed invisible.
+    private val clock = activityRefresh.flatMapLatest {
         flow {
-            // Only runs while Insights is subscribed; re-evaluate midnight and timezone changes.
-            while (true) { emit(ActivityPeriod.current()); delay(60_000) }
+            while (true) { emit(System.currentTimeMillis()); delay(60_000) }
         }
-    }.distinctUntilChanged().flatMapLatest { period ->
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), System.currentTimeMillis())
+    val lessons = clock.flatMapLatest { dao.lessonOverviews(it) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val dueCount = clock.flatMapLatest { dao.dueCount(it) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+    val todayReviews = clock.map { todayStart() }.distinctUntilChanged().flatMapLatest { dao.reviewCountSince(it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
+    private val localDays = clock.map { ActivityPeriod.current() }.distinctUntilChanged()
+    val studyActivity = localDays.flatMapLatest { period ->
         dao.studyActivity(studyActivityQuery(period)).map { rows ->
             StudyActivity(period, rows.associate { LocalDate.ofEpochDay(it.epochDay) to it.reviewCount })
         }
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StudyActivity(ActivityPeriod.current()))
     val settings = preferences.settings.stateIn(viewModelScope, SharingStarted.Eagerly, UserSettings())
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    fun calendarDays(month: YearMonth): Flow<List<ReviewCalendarDay>> = localDays.flatMapLatest { day ->
+        dao.reviewCalendarCounts(reviewCalendarQuery(ReviewCalendarPeriod(month, day.today, day.zone)))
+    }.flowOn(Dispatchers.Default)
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    fun calendarCards(date: LocalDate, limit: Int): Flow<List<CardWithLesson>> = localDays.flatMapLatest { day ->
+        val (start, end) = calendarDayBounds(date, day.today, day.zone)
+        dao.reviewCalendarCards(start, end, limit.coerceAtLeast(100))
+    }
     private fun todayStart(): Long = Calendar.getInstance().apply { set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0) }.timeInMillis
 
-    fun addSubject(name: String, accent: String = "blue") = viewModelScope.launch { if (name.isNotBlank()) dao.insertSubject(SubjectEntity(name = name.trim(), accent = accent)) }
+    fun addSubject(name: String, accent: String = "blue") = change { if (name.isNotBlank()) dao.insertSubject(SubjectEntity(name = name.trim(), accent = accent)) }
     fun chapters(subjectId: String): Flow<List<ChapterEntity>> = dao.chapters(subjectId)
     fun cards(lessonId: String): Flow<List<CardEntity>> = dao.cardsForLesson(lessonId)
     fun tags(lessonId: String): Flow<List<TagEntity>> = dao.tagsForLesson(lessonId)
-    fun addChapter(subjectId: String, name: String) = viewModelScope.launch { if (name.isNotBlank()) dao.insertChapter(ChapterEntity(subjectId = subjectId, name = name.trim())) }
-    fun addLesson(subjectId: String, chapterId: String?, title: String, summary: String?, tags: List<String> = emptyList()) = viewModelScope.launch {
-        if (title.isBlank()) return@launch
+    fun addChapter(subjectId: String, name: String) = change { if (name.isNotBlank()) dao.insertChapter(ChapterEntity(subjectId = subjectId, name = name.trim())) }
+    fun addLesson(subjectId: String, chapterId: String?, title: String, summary: String?, tags: List<String> = emptyList()) = change {
+        if (title.isBlank()) return@change
         val lesson = LessonEntity(subjectId = subjectId, chapterId = chapterId, title = title.trim(), summary = summary?.trim()?.takeIf { it.isNotEmpty() })
-        dao.insertLesson(lesson); attachTags(lesson.id, tags)
+        database.withTransaction { dao.insertLesson(lesson); attachTags(lesson.id, tags) }
     }
     fun addCard(lessonId: String, front: String, back: String, hint: String? = null, type: String = "qa", targets: List<PronunciationTarget> = emptyList()) = change {
         if (front.isBlank() || back.isBlank()) return@change
@@ -88,15 +107,22 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         var newCards = 0
         return cards.filter { it.reps > 0 || newCards++ < limit }
     }
-    fun reviewDue(onLoaded: (List<CardWithLesson>) -> Unit) = viewModelScope.launch { onLoaded(applyNewCardLimit(dao.dueCards(System.currentTimeMillis()))) }
-    fun reviewSubject(subjectId: String, onLoaded: (List<CardWithLesson>) -> Unit) = change {
-        val lessonIds = dao.allLessons().filter { it.subjectId == subjectId }.map { it.id }.toSet()
-        onLoaded(applyNewCardLimit(dao.dueCards(System.currentTimeMillis()).filter { it.lessonId in lessonIds }))
+    val reviewLoading = MutableStateFlow(false)
+    private fun loadReview(load: suspend () -> List<CardWithLesson>, onLoaded: (List<CardWithLesson>) -> Unit) = viewModelScope.launch {
+        if (reviewLoading.value) return@launch
+        reviewLoading.value = true
+        try { onLoaded(withContext(Dispatchers.Default) { applyNewCardLimit(load()) }) }
+        catch (error: CancellationException) { throw error }
+        catch (_: Exception) { notice.value = "Could not load the review. Please try again." }
+        finally { reviewLoading.value = false }
     }
-    fun reviewLesson(lessonId: String, onLoaded: (List<CardWithLesson>) -> Unit) = viewModelScope.launch { onLoaded(applyNewCardLimit(dao.lessonCards(lessonId))) }
+    fun reviewDue(onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({ dao.dueCards(System.currentTimeMillis()) }, onLoaded)
+    fun reviewSubject(subjectId: String, onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({ dao.dueCards(System.currentTimeMillis(), subjectId) }, onLoaded)
+    fun reviewLesson(lessonId: String, onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({ dao.lessonCards(lessonId) }, onLoaded)
     fun preview(card: CardWithLesson, reviewedAt: Long, retention: Double = settings.value.desiredRetention): Map<Rating, ScheduleResult> =
         scheduler.preview(card.reviewState(), reviewedAt, retention)
-    fun rate(card: CardWithLesson, result: ScheduleResult, elapsedMillis: Long) = viewModelScope.launch {
+    fun rate(card: CardWithLesson, result: ScheduleResult, elapsedMillis: Long, onSaved: (Boolean) -> Unit = {}) = viewModelScope.launch {
+        try {
         require(result.state.cardId == card.id)
         val log = ReviewLogEntity(
             cardId = card.id,
@@ -117,8 +143,15 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
             reps = result.state.reps,
             lapses = result.state.lapses,
         )
-        dao.commitReview(result.state, log)
-        refreshReminders()
+        val saved = dao.commitReviewIfCurrent(card.reviewState(), result.state, log)
+        if (!saved) notice.value = "This card changed during the review. Reopen the review to use its latest state."
+        onSaved(saved)
+        if (saved) queueReminderRefresh()
+        } catch (error: CancellationException) { throw error }
+        catch (_: Exception) {
+            notice.value = "Your answer could not be saved. Please try again."
+            onSaved(false)
+        }
     }
     private fun CardWithLesson.reviewState() = ReviewStateEntity(id, state, dueAt, lastReviewedAt, stability, difficulty, scheduledDays, reps, lapses)
     fun setSuspended(id: String, suspended: Boolean) = viewModelScope.launch { dao.setSuspended(id, suspended, System.currentTimeMillis()); refreshReminders() }
@@ -139,10 +172,10 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     fun setLanguage(value: String) = viewModelScope.launch { preferences.setLanguage(value) }
     fun setDynamicColor(value: Boolean) = viewModelScope.launch { preferences.setDynamicColor(value) }
     fun exportBackup(onResult: (Result<String>) -> Unit) = viewModelScope.launch {
-        onResult(runCatching { RecallBackupCodec.encode(dao.backup(), settings.value) })
+        onResult(withContext(Dispatchers.Default) { runCatching { RecallBackupCodec.encode(dao.backup(), settings.value) } })
     }
     fun importBackup(raw: String, onResult: (String) -> Unit) = viewModelScope.launch {
-        when (val parsed = RecallBackupCodec.decode(raw)) {
+        when (val parsed = withContext(Dispatchers.Default) { RecallBackupCodec.decode(raw) }) {
             is BackupResult.Failure -> onResult(parsed.message)
             is BackupResult.Success -> runCatching {
                 dao.mergeBackup(parsed.data)
@@ -153,6 +186,16 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     }
     suspend fun refreshReminders() {
         if (preferences.settings.first().remindersEnabled) ReminderWorker.schedule(getApplication()) else ReminderWorker.cancel(getApplication())
+    }
+    private var reminderRefresh: kotlinx.coroutines.Job? = null
+    private fun queueReminderRefresh() {
+        reminderRefresh?.cancel()
+        reminderRefresh = viewModelScope.launch {
+            delay(2_000) // Coalesce rapid answers instead of waking WorkManager for every tap.
+            try { refreshReminders() }
+            catch (error: CancellationException) { throw error }
+            catch (_: Exception) { /* Persistent periodic work will retry the reminder check. */ }
+        }
     }
     fun onResume() = viewModelScope.launch { activityRefresh.value = System.nanoTime(); refreshReminders() }
     val pendingReviewLink = MutableStateFlow(false)
@@ -254,7 +297,7 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
             attachTags(id, tags)
         }
     }
-    fun loadLesson(id: String, loaded: (LessonEntity) -> Unit) = change { dao.lessonById(id)?.let(loaded) }
+    fun loadLesson(id: String, loaded: (LessonEntity) -> Unit) = viewModelScope.launch { dao.lessonById(id)?.let(loaded) }
     fun importDraft(draft: ImportDraft, onComplete: () -> Unit, subjectId: String? = null, lessonId: String? = null) = change {
         database.withTransaction {
         val subject = if (subjectId != null) requireNotNull(dao.subjectById(subjectId)) else dao.allSubjects().firstOrNull { normalizedName(it.name) == normalizedName(draft.subject) } ?: SubjectEntity(name = draft.subject.trim()).also { dao.insertSubject(it) }

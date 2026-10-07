@@ -26,7 +26,9 @@ import java.util.Date
 @Composable
 fun SubjectScreen(subjectId: String, vm: RecallViewModel, back: () -> Unit, openLesson: (String) -> Unit, review: (List<CardWithLesson>) -> Unit, import: () -> Unit) {
     val subject = vm.subjects.collectAsStateWithLifecycle().value.firstOrNull { it.id == subjectId }
-    val lessons = vm.lessons.collectAsStateWithLifecycle().value.filter { it.subjectId == subjectId }
+    val allLessons by vm.lessons.collectAsStateWithLifecycle()
+    val lessons = remember(allLessons, subjectId) { allLessons.filter { it.subjectId == subjectId } }
+    val lessonsByChapter = remember(lessons) { lessons.groupBy { it.chapterId } }
     val chapters by remember(subjectId) { vm.chapters(subjectId) }.collectAsStateWithLifecycle(emptyList())
     var addKind by remember { mutableStateOf<String?>(null) }
     var editingSubject by remember { mutableStateOf(false) }
@@ -45,9 +47,9 @@ fun SubjectScreen(subjectId: String, vm: RecallViewModel, back: () -> Unit, open
         if(resourcesTab) SubjectResources(subjectId, vm)
         else LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = RecallSpacing.xl)) {
         item { if (lessons.sumOf { it.total } > 0) RecallPrimaryButton(if (lessons.sumOf { it.due } > 0) "Review ${lessons.sumOf { it.due }} cards" else "Review anyway", Icons.Outlined.AutoStories, { vm.reviewSubject(subjectId, review) }, Modifier.fillMaxWidth()) }
-        val direct = lessons.filter { it.chapterName == null }
+        val direct = lessonsByChapter[null].orEmpty()
         if (direct.isNotEmpty()) { item { SectionHeader("Lessons") }; items(direct, key = { it.id }) { LessonRow(it, false) { openLesson(it.id) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) } }
-        chapters.forEach { chapter -> val child = lessons.filter { it.chapterId == chapter.id }; item(key = chapter.id) { ChapterHeader(chapter, child.size, { editingChapter = chapter }, { addKind = "lesson:${chapter.id}" }, { deleteChapter = chapter }) }; if (child.isEmpty()) item(key = "empty-${chapter.id}") { Text("No lessons in this chapter", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(bottom = RecallSpacing.sm)) } else items(child, key = { it.id }) { LessonRow(it, false) { openLesson(it.id) } } }
+        chapters.forEach { chapter -> val child = lessonsByChapter[chapter.id].orEmpty(); item(key = chapter.id) { ChapterHeader(chapter, child.size, { editingChapter = chapter }, { addKind = "lesson:${chapter.id}" }, { deleteChapter = chapter }) }; if (child.isEmpty()) item(key = "empty-${chapter.id}") { Text("No lessons in this chapter", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(bottom = RecallSpacing.sm)) } else items(child, key = { it.id }) { LessonRow(it, false) { openLesson(it.id) } } }
         if (lessons.isEmpty() && chapters.isEmpty()) item { RecallEmptyState(Icons.Outlined.Book, "Start with a lesson", "Create it directly or organize it in an optional chapter.", "Add lesson") { addKind = "lesson" } }
     } }
     when { addKind == "choice" -> AddChoiceSheet({ addKind = "lesson" }, { addKind = "chapter" }) { addKind = null }; addKind == "chapter" -> NameSheet("New chapter", "Chapter name", save = { vm.addChapter(subjectId, it); addKind = null }) { addKind = null }; addKind?.startsWith("lesson") == true -> LessonSheet(chapters = chapters, selectedChapter = addKind?.substringAfter(':', "")?.takeIf { it.isNotEmpty() }, save = { title, summary, tags, chapter -> vm.addLesson(subjectId, chapter, title, summary, tags); addKind = null }) { addKind = null } }

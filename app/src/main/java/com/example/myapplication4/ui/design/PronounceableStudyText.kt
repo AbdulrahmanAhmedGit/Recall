@@ -39,8 +39,10 @@ fun PronounceableStudyText(
         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         speak(target.target.text, target.language)
     }
-    val annotated = buildAnnotatedString {
-        append(display.annotated())
+    val activateLatest by rememberUpdatedState<(ResolvedPronunciation) -> Unit> { activate(it) }
+    val base = remember(display) { display.annotated() }
+    val annotated = remember(base, resolved, foreground, pressed) { buildAnnotatedString {
+        append(base)
         resolved.forEachIndexed { index, target ->
             val range = display.displayRange(target.start, target.end)
             addLink(
@@ -51,12 +53,12 @@ fun PronounceableStudyText(
                         pressedStyle = SpanStyle(background = pressed),
                         focusedStyle = SpanStyle(background = pressed),
                     ),
-                    linkInteractionListener = { activate(target) },
+                    linkInteractionListener = { activateLatest(target) },
                 ),
                 range.first, range.last + 1,
             )
         }
-    }
+    } }
     Text(
         annotated,
         modifier.semantics {

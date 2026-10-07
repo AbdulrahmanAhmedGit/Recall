@@ -1,0 +1,34 @@
+<resources>
+    <string name="calendar_title">Review calendar</string>
+    <string name="calendar_subtitle">See what is coming, one day at a time.</string>
+    <string name="calendar_note">Current next review dates only. Dates change when you rate cards. Overdue cards appear under Today.</string>
+    <string name="calendar_today">Today</string>
+    <string name="calendar_previous">Previous month</string>
+    <string name="calendar_next">Next month</string>
+    <string name="calendar_empty">No cards scheduled for this day.</string>
+    <string name="calendar_loading">Loading scheduled cards…</string>
+    <string name="calendar_error">Could not load the calendar. Reopen it to try again.</string>
+    <string name="calendar_past">Past day · overdue cards appear under Today</string>
+    <string name="calendar_qa">Question / answer</string>
+    <string name="calendar_cloze">Cloze</string>
+    <string name="calendar_new">New</string>
+    <string name="calendar_learning">Learning</string>
+    <string name="calendar_review">Review</string>
+    <string name="calendar_relearning">Relearning</string>
+    <string name="calendar_overdue">Overdue</string>
+    <string name="calendar_more">Show more cards</string>
+    <string name="calendar_preview_hint">Tap a card to read its question and answer.</string>
+    <string name="calendar_question">Question</string>
+    <string name="calendar_answer">Answer</string>
+    <string name="calendar_lesson">Open lesson</string>
+    <string name="calendar_done">Done</string>
+    <string name="calendar_scheduled">Scheduled</string>
+    <string name="calendar_types">%1$s question / answer · %2$s cloze</string>
+    <string name="calendar_new_overdue">%1$s new · %2$s overdue</string>
+    <string name="calendar_day_label">%1$s, %2$s cards scheduled</string>
+    <plurals name="calendar_count">
+        <item quantity="one">%1$s card</item>
+        <item quantity="other">%1$s cards</item>
+    </plurals>
+    <string name="calendar_loaded">Showing %1$s of %2$s cards</string>
+</resources>

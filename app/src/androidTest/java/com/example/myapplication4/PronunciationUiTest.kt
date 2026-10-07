@@ -39,10 +39,13 @@ class PronunciationUiTest {
 
     private fun tapWord(text: String, word: String) {
         // Room metadata loads asynchronously after the question itself is first visible.
-        compose.waitUntil(15000) {
+        try { compose.waitUntil(15000) {
             compose.onAllNodes(hasText(isolateStudyText(text)), useUnmergedTree = true).fetchSemanticsNodes().any {
                 it.config.getOrElse(SemanticsActions.CustomActions) { emptyList() }.isNotEmpty()
             }
+        } } catch (error: androidx.compose.ui.test.ComposeTimeoutException) {
+            println(compose.onRoot(useUnmergedTree = true).printToString())
+            throw error
         }
         val node = compose.onNode(hasText(isolateStudyText(text)), useUnmergedTree = true)
         val results = mutableListOf<TextLayoutResult>()

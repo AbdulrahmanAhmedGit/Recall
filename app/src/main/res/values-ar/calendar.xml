@@ -1,0 +1,38 @@
+<resources>
+    <string name="calendar_title">تقويم المراجعة</string>
+    <string name="calendar_subtitle">تعرّف على المراجعات القادمة، يومًا بيوم.</string>
+    <string name="calendar_note">يعرض موعد المراجعة القادمة الحالي لكل بطاقة فقط. تتغير المواعيد عند تقييم البطاقات. تظهر البطاقات المتأخرة ضمن اليوم.</string>
+    <string name="calendar_today">اليوم</string>
+    <string name="calendar_previous">الشهر السابق</string>
+    <string name="calendar_next">الشهر التالي</string>
+    <string name="calendar_empty">لا توجد بطاقات مجدولة لهذا اليوم.</string>
+    <string name="calendar_loading">جارٍ تحميل البطاقات المجدولة…</string>
+    <string name="calendar_error">تعذّر تحميل التقويم. أعد فتحه للمحاولة مرة أخرى.</string>
+    <string name="calendar_past">يوم سابق · تظهر البطاقات المتأخرة ضمن اليوم</string>
+    <string name="calendar_qa">سؤال / إجابة</string>
+    <string name="calendar_cloze">إكمال الفراغ</string>
+    <string name="calendar_new">جديدة</string>
+    <string name="calendar_learning">تعلّم</string>
+    <string name="calendar_review">مراجعة</string>
+    <string name="calendar_relearning">إعادة تعلّم</string>
+    <string name="calendar_overdue">متأخرة</string>
+    <string name="calendar_more">عرض المزيد من البطاقات</string>
+    <string name="calendar_preview_hint">اضغط على البطاقة لقراءة السؤال والإجابة.</string>
+    <string name="calendar_question">السؤال</string>
+    <string name="calendar_answer">الإجابة</string>
+    <string name="calendar_lesson">فتح الدرس</string>
+    <string name="calendar_done">تم</string>
+    <string name="calendar_scheduled">الموعد</string>
+    <string name="calendar_types">%1$s سؤال / إجابة · %2$s إكمال الفراغ</string>
+    <string name="calendar_new_overdue">%1$s جديدة · %2$s متأخرة</string>
+    <string name="calendar_day_label">%1$s، %2$s بطاقة مجدولة</string>
+    <plurals name="calendar_count">
+        <item quantity="zero">لا توجد بطاقات</item>
+        <item quantity="one">بطاقة واحدة</item>
+        <item quantity="two">بطاقتان</item>
+        <item quantity="few">%1$s بطاقات</item>
+        <item quantity="many">%1$s بطاقة</item>
+        <item quantity="other">%1$s بطاقة</item>
+    </plurals>
+    <string name="calendar_loaded">عرض %1$s من %2$s بطاقة</string>
+</resources>

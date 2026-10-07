@@ -2,6 +2,7 @@ package com.example.myapplication4.ui.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -44,11 +45,12 @@ fun RecallDock(selected: RecallDestination, onSelected: (RecallDestination) -> U
 }
 
 @Composable private fun RowScope.DockItem(destination: RecallDestination, selected: Boolean, onClick: () -> Unit) {
-    val color by animateColorAsState(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.muted, label = "dockColor")
-    val scale by animateFloatAsState(if (selected) 1f else .96f, label = "dockScale")
+    val color by animateColorAsState(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.muted, tween(RecallMotion.quick), label = "dockColor")
+    val scale by animateFloatAsState(if (selected) 1f else .96f, tween(RecallMotion.quick), label = "dockScale")
+    val background by animateColorAsState(if (selected) MaterialTheme.colorScheme.surfaceSelected else Color.Transparent, tween(RecallMotion.quick), label = "dockIndicator")
     val interaction = remember { MutableInteractionSource() }
     Column(Modifier.weight(1f).fillMaxHeight().clip(RecallRadii.medium).clickable(interaction, null, role = Role.Tab, onClick = onClick).scale(scale), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Box(Modifier.height(30.dp).width(42.dp).clip(CircleShape).background(if (selected) MaterialTheme.colorScheme.surfaceSelected else Color.Transparent), contentAlignment = Alignment.Center) { Icon(destination.icon, destination.label, Modifier.size(RecallSizes.icon), tint = color) }
+        Box(Modifier.height(30.dp).width(42.dp).clip(CircleShape).background(background), contentAlignment = Alignment.Center) { Icon(destination.icon, destination.label, Modifier.size(RecallSizes.icon), tint = color) }
         Text(destination.label, style = MaterialTheme.typography.labelSmall, color = color, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium)
     }
 }
