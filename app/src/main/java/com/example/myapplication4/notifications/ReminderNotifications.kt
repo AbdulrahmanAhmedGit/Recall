@@ -16,8 +16,8 @@ object ReminderNotifications {
     const val OPEN_REVIEW = "com.example.myapplication4.REVIEW_DUE"
     fun blockedReason(context: Context): String? {
         ensureChannel(context)
-        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return "Notifications are blocked in Android settings"
-        if (Build.VERSION.SDK_INT >= 26 && context.getSystemService(NotificationManager::class.java).getNotificationChannel(CHANNEL)?.importance == NotificationManager.IMPORTANCE_NONE) return "The review reminder channel is blocked"
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return context.getString(R.string.ui_notification_blocked)
+        if (Build.VERSION.SDK_INT >= 26 && context.getSystemService(NotificationManager::class.java).getNotificationChannel(CHANNEL)?.importance == NotificationManager.IMPORTANCE_NONE) return context.getString(R.string.ui_channel_blocked)
         return null
     }
     fun ensureChannel(context: Context) {
@@ -32,15 +32,15 @@ object ReminderNotifications {
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val pause = PendingIntent.getBroadcast(context, 11, Intent(context, ReminderActionReceiver::class.java).setAction(ReminderActionReceiver.PAUSE), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         return try {
-            val title = if (test) "Recall test notification" else context.resources.getQuantityString(R.plurals.review_ready, due, due)
-            val body = if (test) "Notification delivery works. Tap to open your due reviews." else if (windowStart) "Your study window has started. A short review helps memory last." else context.getString(R.string.review_notification_copy)
+            val title = if (test) context.getString(R.string.ui_test_notification_title) else context.resources.getQuantityString(R.plurals.review_ready, due, due)
+            val body = if (test) context.getString(R.string.ui_test_notification_body) else if (windowStart) context.getString(R.string.ui_window_notification_body) else context.getString(R.string.review_notification_copy)
             context.getSystemService(NotificationManager::class.java).notify(if (test) 1002 else 1001,
                 NotificationCompat.Builder(context, CHANNEL).setSmallIcon(R.drawable.ic_notification)
                     .setContentTitle(title).setContentText(body).setStyle(NotificationCompat.BigTextStyle().bigText(body))
                     .setContentIntent(open).setAutoCancel(true).setCategory(NotificationCompat.CATEGORY_REMINDER)
                     .setVisibility(NotificationCompat.VISIBILITY_PRIVATE).setOnlyAlertOnce(false)
-                    .addAction(0, "Review now", open).addAction(0, "Pause 2 hours", pause).build())
+                    .addAction(0, context.getString(R.string.ui_review_now), open).addAction(0, context.getString(R.string.ui_notification_pause), pause).build())
             null
-        } catch (_: SecurityException) { "Notification permission was denied" }
+        } catch (_: SecurityException) { context.getString(R.string.ui_notification_permission_error) }
     }
 }

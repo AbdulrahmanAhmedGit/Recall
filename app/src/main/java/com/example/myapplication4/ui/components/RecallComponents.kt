@@ -1,5 +1,7 @@
 package com.example.myapplication4.ui.components
 
+import com.example.myapplication4.R
+import com.example.myapplication4.util.recallStrings
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -30,9 +32,9 @@ import com.example.myapplication4.data.LessonOverview
 import com.example.myapplication4.data.SubjectEntity
 import com.example.myapplication4.ui.design.*
 
-enum class RecallDestination(val label: String, val icon: ImageVector) {
-    Today("Today", Icons.Outlined.Today), Library("Library", Icons.Outlined.LocalLibrary),
-    Insights("Insights", Icons.Outlined.QueryStats), Settings("Settings", Icons.Outlined.Tune)
+enum class RecallDestination(val label: Int, val icon: ImageVector) {
+    Today(R.string.ui_today, Icons.Outlined.Today), Library(R.string.ui_library, Icons.Outlined.LocalLibrary),
+    Insights(R.string.ui_insights, Icons.Outlined.QueryStats), Settings(R.string.ui_settings, Icons.Outlined.Tune)
 }
 
 @Composable
@@ -45,20 +47,24 @@ fun RecallDock(selected: RecallDestination, onSelected: (RecallDestination) -> U
 }
 
 @Composable private fun RowScope.DockItem(destination: RecallDestination, selected: Boolean, onClick: () -> Unit) {
+    val s = recallStrings()
+
     val color by animateColorAsState(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.muted, tween(RecallMotion.quick), label = "dockColor")
     val scale by animateFloatAsState(if (selected) 1f else .96f, tween(RecallMotion.quick), label = "dockScale")
     val background by animateColorAsState(if (selected) MaterialTheme.colorScheme.surfaceSelected else Color.Transparent, tween(RecallMotion.quick), label = "dockIndicator")
     val interaction = remember { MutableInteractionSource() }
     Column(Modifier.weight(1f).fillMaxHeight().clip(RecallRadii.medium).clickable(interaction, null, role = Role.Tab, onClick = onClick).scale(scale), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Box(Modifier.height(30.dp).width(42.dp).clip(CircleShape).background(background), contentAlignment = Alignment.Center) { Icon(destination.icon, destination.label, Modifier.size(RecallSizes.icon), tint = color) }
-        Text(destination.label, style = MaterialTheme.typography.labelSmall, color = color, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium)
+        Box(Modifier.height(30.dp).width(42.dp).clip(CircleShape).background(background), contentAlignment = Alignment.Center) { Icon(destination.icon, s(destination.label), Modifier.size(RecallSizes.icon), tint = color) }
+        Text(s(destination.label), style = MaterialTheme.typography.labelSmall, color = color, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium)
     }
 }
 
 @Composable
 fun RecallTopBar(title: String, subtitle: String? = null, onBack: (() -> Unit)? = null, action: (@Composable () -> Unit)? = null) {
+    val s = recallStrings()
+
     Row(Modifier.fillMaxWidth().padding(top = RecallSpacing.sm, bottom = RecallSpacing.md), verticalAlignment = Alignment.CenterVertically) {
-        if (onBack != null) RecallIconButton(Icons.AutoMirrored.Outlined.ArrowBack, "Back", onBack)
+        if (onBack != null) RecallIconButton(Icons.AutoMirrored.Outlined.ArrowBack, s(R.string.ui_back), onBack)
         Column(Modifier.weight(1f).padding(start = if (onBack == null) 0.dp else RecallSpacing.xs)) {
             BidiAwareText(title, style = MaterialTheme.typography.displaySmall, modifier = Modifier.semantics { heading() })
             if (subtitle != null) BidiAwareText(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted, maxLines = 2)
@@ -78,20 +84,24 @@ fun RecallPrimaryButton(text: String, icon: ImageVector? = null, onClick: () -> 
 
 @Composable
 fun SubjectRow(subject: SubjectEntity, lessonCount: Int, cardCount: Int, due: Int, onClick: () -> Unit) {
+    val s = recallStrings()
+
     Row(Modifier.fillMaxWidth().clip(RecallRadii.medium).clickable(onClick = onClick).padding(vertical = RecallSpacing.md, horizontal = RecallSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
         val accent = subjectAccent(subject.accent)
         Box(Modifier.size(46.dp).clip(RecallRadii.medium).background(subjectAccentContainer(subject.accent)), contentAlignment = Alignment.Center) { Icon(Icons.Outlined.LocalLibrary, null, tint = accent, modifier = Modifier.size(22.dp)) }
-        Spacer(Modifier.width(RecallSpacing.sm)); Column(Modifier.weight(1f)) { BidiAwareText(subject.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis); Text("$lessonCount lessons · $cardCount cards", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
-        if (due > 0) CountBadge("$due due") else Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, tint = MaterialTheme.colorScheme.outline)
+        Spacer(Modifier.width(RecallSpacing.sm)); Column(Modifier.weight(1f)) { BidiAwareText(subject.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(s.count(R.plurals.ui_lessons, lessonCount) + " · " + s.count(R.plurals.ui_cards, cardCount), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
+        if (due > 0) CountBadge(s(R.string.ui_due_short, s.number(due))) else Icon(Icons.AutoMirrored.Outlined.ArrowForward, null, tint = MaterialTheme.colorScheme.outline)
     }
 }
 
 @Composable
 fun LessonRow(lesson: LessonOverview, showSubject: Boolean = true, onClick: () -> Unit) {
+    val s = recallStrings()
+
     Row(Modifier.fillMaxWidth().clip(RecallRadii.medium).clickable(onClick = onClick).padding(vertical = RecallSpacing.md, horizontal = RecallSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.width(3.dp).height(42.dp).clip(CircleShape).background(subjectAccent(lesson.accent)))
         Spacer(Modifier.width(RecallSpacing.sm)); Column(Modifier.weight(1f)) { BidiAwareText(lesson.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis); val meta = listOfNotNull(if (showSubject) lesson.subjectName else null, lesson.chapterName).joinToString(" · "); if(meta.isNotEmpty()) BidiAwareText(meta, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted, maxLines = 1) }
-        Column(horizontalAlignment = Alignment.End) { Text(if (lesson.due > 0) "${lesson.due} due" else "Caught up", style = MaterialTheme.typography.labelMedium, color = if (lesson.due > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.muted); Text("${lesson.total} cards", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
+        Column(horizontalAlignment = Alignment.End) { Text(if (lesson.due > 0) s(R.string.ui_due_short, s.number(lesson.due)) else s(R.string.ui_caught_up), style = MaterialTheme.typography.labelMedium, color = if (lesson.due > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.muted); Text(s.count(R.plurals.ui_cards, lesson.total), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
     }
 }
 

@@ -316,17 +316,33 @@ not guaranteed background timing. See [reminder policy and troubleshooting](remi
 ## Settings and the first-launch guide
 
 Settings centralizes retention and per-review new-card preferences, schedules,
-reminders/pauses, background diagnostics, appearance, language/direction, offline
+reminders/pauses, background diagnostics, appearance, interface language, offline
 voice controls, backups and scheduler information.
 
 Choose **System, Light or Dark** appearance; optional dynamic color uses the device
-palette on Android 12+. Choose **System, English or Arabic** language/direction.
-The guide, calendar, activity and pronunciation flows include localized resources;
-some older screen labels still remain English even in an Arabic layout.
+palette on Android 12+. Choose **System, English, العربية, Español, Français or Deutsch**.
+All five interface translations are bundled for offline use, covering navigation,
+lesson/card editors, imports and validation, insights, calendars, settings, schedules,
+backup status, pronunciation messages, onboarding and reminder notifications/actions.
+Dates, times, counts and plural forms use the selected locale. System follows a
+supported device language, otherwise falling back to English. Device region is
+retained for regional date/week conventions. Arabic mirrors appropriate navigation;
+calendar timelines and scientific expressions retain chronological/LTR ordering.
+Language changes take effect immediately and persist across restarts and backups.
+Your subjects, lessons, cards, tags and attached material names are never translated.
+The AI prompt/JSON keys remain English protocol text; generated study content retains
+the source language. Offline pronunciation still uses each lesson/target language,
+not the interface language. Android's external settings and file picker follow the OS.
 
 **How Recall works** explains the lesson-first workflow, memory mechanism,
 retrieval/spacing rationale, scientific references, practical limitations and the
 latest changes. It appears once on first entry and can be reopened from Settings.
+
+<p>
+  <img src="screenshots/language-picker-arabic.png" width="240" alt="Arabic language selector offering System, English, Arabic, Spanish, French and German">
+  <img src="screenshots/review-localized-arabic.png" width="240" alt="Arabic dark-mode review at enlarged font scale with localized ratings and a correctly ordered water reaction">
+  <img src="screenshots/settings-french.png" width="240" alt="French settings with translated study preferences, schedule and main navigation">
+</p>
 
 ## Backups and data ownership
 

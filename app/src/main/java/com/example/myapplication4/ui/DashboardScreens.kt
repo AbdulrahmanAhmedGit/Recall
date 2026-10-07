@@ -1,5 +1,7 @@
 package com.example.myapplication4.ui
 
+import com.example.myapplication4.R
+import com.example.myapplication4.util.recallStrings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -36,72 +38,82 @@ import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
 fun TodayScreen(due: Int, lessons: List<LessonOverview>, vm: RecallViewModel, review: (List<CardWithLesson>) -> Unit, import: () -> Unit, calendar: () -> Unit = {}) {
+    val s = recallStrings()
+
     val reviewLoading by vm.reviewLoading.collectAsStateWithLifecycle()
     val dueLessons = remember(lessons) { lessons.filter { it.due > 0 } }
     val upcoming = remember(lessons) { lessons.filter { it.due == 0 && it.total > 0 }.take(3) }
     ScreenFrame {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 104.dp)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = RecallSpacing.lg)) {
             item {
                 Spacer(Modifier.height(RecallSpacing.lg))
-                Text(DateFormat.getDateInstance(DateFormat.FULL).format(Date()), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.muted)
+                Text(s.date(System.currentTimeMillis()), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.muted)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Today", style = MaterialTheme.typography.displayMedium, modifier = Modifier.weight(1f).padding(top = RecallSpacing.xxs).semantics { heading() })
+                    Text(s(R.string.ui_today), style = MaterialTheme.typography.displayMedium, modifier = Modifier.weight(1f).padding(top = RecallSpacing.xxs).semantics { heading() })
                     ReviewCalendarAction(vm, calendar)
                 }
                 Spacer(Modifier.height(RecallSpacing.xl))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text("$due", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
-                    Text(" cards due", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 5.dp, start = RecallSpacing.xs))
+                    Text(s.number(due), style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
+                    Text(s.resources.getQuantityString(R.plurals.ui_due_suffix, due), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 5.dp, start = RecallSpacing.xs))
                 }
-                Text("${dueLessons.size} lessons · about ${if (due == 0) 0 else maxOf(1, due / 4)} minutes", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted)
-                RecallPrimaryButton(if (reviewLoading) "Loading…" else if (due > 0) "Start review" else "Review anyway", Icons.Outlined.AutoStories, { vm.reviewDue(review) }, Modifier.fillMaxWidth().padding(top = RecallSpacing.lg), enabled = !reviewLoading)
-                SectionHeader("Due lessons", if (dueLessons.isEmpty()) "Import" else null, import)
+                Text(s(R.string.ui_today_counts, s.count(R.plurals.ui_lessons, dueLessons.size), s.count(R.plurals.ui_minutes, if (due == 0) 0 else maxOf(1, due / 4))), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted)
+                RecallPrimaryButton(if (reviewLoading) s(R.string.ui_loading) else if (due > 0) s(R.string.ui_start_review) else s(R.string.ui_review_anyway), Icons.Outlined.AutoStories, { vm.reviewDue(review) }, Modifier.fillMaxWidth().padding(top = RecallSpacing.lg), enabled = !reviewLoading)
+                SectionHeader(s(R.string.ui_due_lessons), if (dueLessons.isEmpty()) s(R.string.ui_import) else null, import)
             }
-            if (dueLessons.isEmpty()) item { RecallEmptyState(Icons.Outlined.AutoStories, "You’re caught up", "New cards will appear here when they are ready.") }
+            if (dueLessons.isEmpty()) item { RecallEmptyState(Icons.Outlined.AutoStories, s(R.string.ui_caught_up_title), s(R.string.ui_due_empty)) }
             else items(dueLessons, key = { it.id }) { lesson -> LessonRow(lesson) { vm.reviewLesson(lesson.id, review) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
-            if (upcoming.isNotEmpty()) { item { SectionHeader("Upcoming") }; items(upcoming, key = { "up-${it.id}" }) { LessonRow(it) { vm.reviewLesson(it.id, review) } } }
+            if (upcoming.isNotEmpty()) { item { SectionHeader(s(R.string.ui_upcoming)) }; items(upcoming, key = { "up-${it.id}" }) { LessonRow(it) { vm.reviewLesson(it.id, review) } } }
         }
     }
 }
 
 @Composable
 fun LibraryScreen(subjects: List<SubjectEntity>, lessons: List<LessonOverview>, vm: RecallViewModel, openSubject: (String) -> Unit, import: () -> Unit) {
+    val s = recallStrings()
+
     var adding by remember { mutableStateOf(false) }
     // Avoid a full lesson scan for each subject row in large libraries.
     val lessonsBySubject = remember(lessons) { lessons.groupBy { it.subjectId } }
     ScreenFrame {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp)) {
-            item { RecallTopBar("Library", "Subjects hold chapters and lessons.", action = { RecallIconButton(Icons.Outlined.FileDownload, "Import cards", import) }); SectionHeader("Subjects", "Add") { adding = true } }
-            if (subjects.isEmpty()) item { RecallEmptyState(Icons.Outlined.LocalLibrary, "Create your first subject", "You can add lessons directly—chapters stay optional.", "Add subject") { adding = true } }
+        Box(Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = RecallSizes.buttonHeight + RecallSpacing.lg)) {
+            item { RecallTopBar(s(R.string.ui_library), s(R.string.ui_library_hint), action = { RecallIconButton(Icons.Outlined.FileDownload, s(R.string.ui_import_cards), import) }); SectionHeader(s(R.string.ui_subjects), s(R.string.ui_add)) { adding = true } }
+            if (subjects.isEmpty()) item { RecallEmptyState(Icons.Outlined.LocalLibrary, s(R.string.ui_first_subject), s(R.string.ui_chapters_optional), s(R.string.ui_add_subject)) { adding = true } }
             else items(subjects, key = { it.id }) { subject -> val subjectLessons = lessonsBySubject[subject.id].orEmpty(); SubjectRow(subject, subjectLessons.size, subjectLessons.sumOf { it.total }, subjectLessons.sumOf { it.due }) { openSubject(subject.id) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
         }
-        RecallPrimaryButton("Quick add", Icons.Outlined.Add, { adding = true }, Modifier.align(Alignment.End).padding(bottom = 92.dp))
+        RecallPrimaryButton(s(R.string.ui_quick_add), Icons.Outlined.Add, { adding = true }, Modifier.align(Alignment.BottomEnd).padding(bottom = RecallSpacing.xs))
+        }
     }
     if (adding) SubjectSheet(save = { vm.addSubject(it.first, it.second); adding = false }) { adding = false }
 }
 
 @Composable
 fun InsightsScreen(vm: RecallViewModel, lessons: List<LessonOverview>, calendar: () -> Unit = {}, openLesson: (String) -> Unit = {}) {
+    val s = recallStrings()
+
     val reviewed by vm.todayReviews.collectAsStateWithLifecycle()
     val activity by vm.studyActivity.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val systemLocale = LocalConfiguration.current.locales[0]
-    val locale = if (settings.language in setOf("ar", "en")) {
+    val locale = if (settings.language in com.example.myapplication4.util.RecallLocale.languages) {
         Locale.Builder().setLanguage(settings.language).apply {
             if (systemLocale.country.isNotEmpty()) setRegion(systemLocale.country)
         }.build()
     } else systemLocale
     val total = lessons.sumOf { it.total }; val learned = lessons.sumOf { it.learned }; val difficult = lessons.sumOf { it.difficult }
-    ScreenFrame { LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 108.dp)) {
-        item { RecallTopBar("Insights", "A useful view of memory—not a scoreboard.", action = { ReviewCalendarAction(vm, calendar) }); SectionHeader("Today"); StatStrip(listOf("Reviewed" to "$reviewed", "Study time" to "~${reviewed / 4}m", "Target" to "90%")) }
-        item(key = "activity") { StudyActivityCard(activity, Modifier.padding(top = RecallSpacing.lg), locale); SectionHeader("Memory") }
-        item { MemoryBar(learned, total); Spacer(Modifier.height(RecallSpacing.ml)); StatStrip(listOf("Learning" to "${(total - learned).coerceAtLeast(0)}", "Mature" to "$learned", "Difficult" to "$difficult")); SectionHeader("Lessons requiring attention") }
+    ScreenFrame { LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = RecallSpacing.lg)) {
+        item { RecallTopBar(s(R.string.ui_insights), s(R.string.ui_insights_hint), action = { ReviewCalendarAction(vm, calendar) }); SectionHeader(s(R.string.ui_today)); StatStrip(listOf(s(R.string.ui_reviewed) to s.number(reviewed), s(R.string.ui_study_time) to s(R.string.ui_estimated_minutes, s.number(reviewed / 4)), s(R.string.ui_target) to java.text.NumberFormat.getPercentInstance(s.locale).format(settings.desiredRetention))) }
+        item(key = "activity") { StudyActivityCard(activity, Modifier.padding(top = RecallSpacing.lg), locale); SectionHeader(s(R.string.ui_memory)) }
+        item { MemoryBar(learned, total); Spacer(Modifier.height(RecallSpacing.ml)); StatStrip(listOf(s(R.string.ui_learning) to s.number((total - learned).coerceAtLeast(0)), s(R.string.ui_mature) to s.number(learned), s(R.string.ui_difficult) to s.number(difficult))); SectionHeader(s(R.string.ui_attention_lessons)) }
         val attention = lessons.sortedByDescending { it.difficult + it.due }.take(4)
-        if (attention.isEmpty()) item { RecallEmptyState(Icons.Outlined.BarChart, "No history yet", "Review a few cards to begin seeing memory trends.") }
+        if (attention.isEmpty()) item { RecallEmptyState(Icons.Outlined.BarChart, s(R.string.ui_no_history), s(R.string.ui_history_hint)) }
         else items(attention, key = { it.id }) { LessonRow(it) { openLesson(it.id) } }
     } }
 }
 
 @Composable private fun StatStrip(values: List<Pair<String, String>>) { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) { values.forEach { (label, value) -> Column(Modifier.weight(1f)) { Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold); Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) } } } }
 
-@Composable private fun MemoryBar(learned: Int, total: Int) { Column { Row { Text("Long-term progress", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f)); Text("$learned / $total", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.muted) }; Spacer(Modifier.height(RecallSpacing.sm)); LinearProgressIndicator(progress = { if (total == 0) 0f else learned.toFloat() / total }, modifier = Modifier.fillMaxWidth().height(8.dp), trackColor = MaterialTheme.colorScheme.surfaceVariant) } }
+@Composable private fun MemoryBar(learned: Int, total: Int) {
+    val s = recallStrings()
+ Column { Row { Text(s(R.string.ui_long_term_progress), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f)); Text(s.number(learned) + " / " + s.number(total), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.muted) }; Spacer(Modifier.height(RecallSpacing.sm)); LinearProgressIndicator(progress = { if (total == 0) 0f else learned.toFloat() / total }, modifier = Modifier.fillMaxWidth().height(8.dp), trackColor = MaterialTheme.colorScheme.surfaceVariant) } }

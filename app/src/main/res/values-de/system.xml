@@ -1,0 +1,37 @@
+<resources>
+    <string name="ui_second_interval">%1$s s</string>
+    <string name="ui_week_interval">%1$s Wo</string>
+    <string name="ui_import_version">Diese Datei verwendet eine nicht unterstützte Recall-Formatversion.</string>
+    <string name="ui_import_subject">Ein Fach mit höchstens 120 Zeichen ist erforderlich.</string>
+    <string name="ui_import_lesson">Ein Lektionstitel mit höchstens 200 Zeichen ist erforderlich.</string>
+    <string name="ui_import_no_cards">Keine Karten gefunden.</string>
+    <string name="ui_import_empty">Die Kartenliste ist leer.</string>
+    <string name="ui_import_limit">Ein Import kann höchstens %1$s Karten enthalten.</string>
+    <string name="ui_import_marker">Karte %1$s enthält eine unvollständige oder leere Wissenschaftsmarkierung.</string>
+    <string name="ui_import_pairs">Keine gültigen Frage-Antwort-Paare gefunden.</string>
+    <string name="ui_import_paste">Füge zuerst eine vollständige Recall-JSON-Datei ein oder öffne sie.</string>
+    <string name="ui_import_object">Dies ist kein vollständiges Recall-JSON-Objekt. Kopiere vom ersten { bis zum letzten }.</string>
+    <string name="ui_import_truncated">Der eingefügte JSON-Text ist unvollständig oder abgeschnitten. Öffne die .json-Datei direkt oder kopiere die gesamte Antwort erneut.</string>
+    <string name="ui_import_invalid">Die JSON-Struktur ist ungültig. Öffne die ursprüngliche .json-Datei oder kopiere die vollständige Antwort ohne zusätzliche Zeichen.</string>
+    <string name="ui_backup_invalid">Die ausgewählte Datei ist beschädigt oder kein gültiges Recall-Backup.</string>
+    <string name="ui_export_failed">Export fehlgeschlagen; kein vollständiges Backup gespeichert. Prüfe Dateizugriff und freien Speicher und versuche es erneut.</string>
+    <string name="ui_restore_failed">Wiederherstellung fehlgeschlagen; vorhandene Daten bleiben unverändert. Prüfe das Backup und versuche es erneut.</string>
+    <string name="ui_restore_partial">Lerndaten wiederhergestellt, Einstellungen jedoch nicht. Prüfe sie, bevor du fortfährst.</string>
+    <string name="ui_reminders_disabled">Erinnerungen sind deaktiviert</string>
+    <string name="ui_no_due_checks">Keine fälligen Karten; Hintergrundprüfungen bleiben aktiv</string>
+    <string name="ui_already_reminded">Bereits erinnert; nächster Tag oder nächstes Lernfenster wird abgewartet</string>
+    <string name="ui_disabled_paused">Erinnerungen deaktiviert oder pausiert</string>
+    <string name="ui_posted_due">Erinnerung für %1$s fällige Karten gesendet</string>
+    <string name="ui_check_failed">Hintergrundprüfung fehlgeschlagen; erneuter Versuch geplant</string>
+    <string name="ui_policy_allowed">Erlaubt</string>
+    <string name="ui_policy_waiting">Warten auf eine erlaubte Lernzeit</string>
+    <string name="ui_policy_fallback">Kein baldiges Lernfenster; nächste erlaubte Tageszeit</string>
+    <string name="ui_policy_quiet">Ruhezeiten decken alle verfügbaren Zeiten ab</string>
+    <string name="ui_policy_daytime">Nächste erlaubte Tageszeit</string>
+    <string name="ui_work_enqueued">In Warteschlange</string>
+    <string name="ui_work_running">Läuft</string>
+    <string name="ui_work_succeeded">Abgeschlossen</string>
+    <string name="ui_work_failed">Fehlgeschlagen</string>
+    <string name="ui_work_blocked">Wartet</string>
+    <string name="ui_work_cancelled">Abgebrochen</string>
+</resources>

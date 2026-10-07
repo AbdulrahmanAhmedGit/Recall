@@ -19,6 +19,7 @@ import com.example.myapplication4.ui.design.*
 internal fun PronunciationHost(vm: RecallViewModel, content: @Composable () -> Unit) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val message by vm.pronunciation.message.collectAsStateWithLifecycle()
+    val speechStatus by vm.pronunciation.status.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val host = remember { SnackbarHostState() }
@@ -28,10 +29,10 @@ internal fun PronunciationHost(vm: RecallViewModel, content: @Composable () -> U
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer); vm.pronunciation.stop() }
     }
-    LaunchedEffect(message) {
+    LaunchedEffect(message, manage) {
         host.currentSnackbarData?.dismiss()
         message?.let {
-            val result = host.showSnackbar(it, if (it.contains("Preparing")) null else manage, withDismissAction = true)
+            val result = host.showSnackbar(it, if (speechStatus == com.example.myapplication4.pronunciation.SpeechStatus.Preparing) null else manage, withDismissAction = true)
             if (vm.pronunciation.message.value == it) vm.pronunciation.dismissMessage()
             if (result == SnackbarResult.ActionPerformed) vm.pronunciation.manageVoices(context)
         }

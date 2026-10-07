@@ -1,0 +1,39 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <plurals name="ui_minutes">
+        <item quantity="one">%1$s minute</item>
+        <item quantity="many">%1$s minutes</item>
+        <item quantity="other">%1$s minutes</item>
+    </plurals>
+    <plurals name="ui_cards">
+        <item quantity="one">%1$s carte</item>
+        <item quantity="many">%1$s cartes</item>
+        <item quantity="other">%1$s cartes</item>
+    </plurals>
+    <plurals name="ui_lessons">
+        <item quantity="one">%1$s leçon</item>
+        <item quantity="many">%1$s leçons</item>
+        <item quantity="other">%1$s leçons</item>
+    </plurals>
+    <plurals name="ui_due">
+        <item quantity="one">%1$s carte à réviser</item>
+        <item quantity="many">%1$s cartes à réviser</item>
+        <item quantity="other">%1$s cartes à réviser</item>
+    </plurals>
+    <plurals name="ui_review_cards">
+        <item quantity="one">Réviser %1$s carte</item>
+        <item quantity="many">Réviser %1$s cartes</item>
+        <item quantity="other">Réviser %1$s cartes</item>
+    </plurals>
+    <plurals name="ui_cards_ready">
+        <item quantity="one">%1$s carte prête</item>
+        <item quantity="many">%1$s cartes prêtes</item>
+        <item quantity="other">%1$s cartes prêtes</item>
+    </plurals>
+    <string name="ui_due_short">%1$s à réviser</string>
+    <!-- The numeric quantity is displayed immediately beside this label in Today. -->
+    <plurals name="ui_due_suffix" tools:ignore="ImpliedQuantity">
+        <item quantity="one">carte à réviser</item>
+        <item quantity="many">cartes à réviser</item>
+        <item quantity="other">cartes à réviser</item>
+    </plurals>
+</resources>

@@ -37,5 +37,12 @@
         <item quantity="many">تمت مراجعة %1$d بطاقة</item>
         <item quantity="other">تمت مراجعة %1$d بطاقة</item>
     </plurals>
-    <string name="review_skipped_count">تم تخطي %1$d بطاقة · ما زالت متاحة للمراجعة</string>
+    <plurals name="review_skipped_count">
+        <item quantity="zero">لم تُتخطّ أي بطاقة · ما زالت متاحة للمراجعة</item>
+        <item quantity="one">تم تخطي بطاقة واحدة · ما زالت متاحة للمراجعة</item>
+        <item quantity="two">تم تخطي بطاقتين · ما زالتا متاحتين للمراجعة</item>
+        <item quantity="few">تم تخطي %1$d بطاقات · ما زالت متاحة للمراجعة</item>
+        <item quantity="many">تم تخطي %1$d بطاقة · ما زالت متاحة للمراجعة</item>
+        <item quantity="other">تم تخطي %1$d بطاقة · ما زالت متاحة للمراجعة</item>
+    </plurals>
 </resources>

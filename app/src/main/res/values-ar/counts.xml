@@ -1,0 +1,59 @@
+<resources>
+    <plurals name="ui_minutes">
+        <item quantity="zero">%1$s دقيقة</item>
+        <item quantity="one">دقيقة واحدة (%1$s)</item>
+        <item quantity="two">دقيقتان (%1$s)</item>
+        <item quantity="few">%1$s دقائق</item>
+        <item quantity="many">%1$s دقيقة</item>
+        <item quantity="other">%1$s دقيقة</item>
+    </plurals>
+    <plurals name="ui_cards">
+        <item quantity="zero">%1$s بطاقة</item>
+        <item quantity="one">بطاقة واحدة (%1$s)</item>
+        <item quantity="two">بطاقتان (%1$s)</item>
+        <item quantity="few">%1$s بطاقات</item>
+        <item quantity="many">%1$s بطاقة</item>
+        <item quantity="other">%1$s بطاقة</item>
+    </plurals>
+    <plurals name="ui_lessons">
+        <item quantity="zero">%1$s درس</item>
+        <item quantity="one">درس واحد (%1$s)</item>
+        <item quantity="two">درسان (%1$s)</item>
+        <item quantity="few">%1$s دروس</item>
+        <item quantity="many">%1$s درسًا</item>
+        <item quantity="other">%1$s درس</item>
+    </plurals>
+    <plurals name="ui_due">
+        <item quantity="zero">%1$s بطاقة مستحقة</item>
+        <item quantity="one">بطاقة واحدة مستحقة (%1$s)</item>
+        <item quantity="two">بطاقتان مستحقتان (%1$s)</item>
+        <item quantity="few">%1$s بطاقات مستحقة</item>
+        <item quantity="many">%1$s بطاقة مستحقة</item>
+        <item quantity="other">%1$s بطاقة مستحقة</item>
+    </plurals>
+    <plurals name="ui_review_cards">
+        <item quantity="zero">راجع %1$s بطاقة</item>
+        <item quantity="one">راجع بطاقة واحدة (%1$s)</item>
+        <item quantity="two">راجع بطاقتين (%1$s)</item>
+        <item quantity="few">راجع %1$s بطاقات</item>
+        <item quantity="many">راجع %1$s بطاقة</item>
+        <item quantity="other">راجع %1$s بطاقة</item>
+    </plurals>
+    <plurals name="ui_cards_ready">
+        <item quantity="zero">%1$s بطاقة جاهزة</item>
+        <item quantity="one">بطاقة واحدة جاهزة (%1$s)</item>
+        <item quantity="two">بطاقتان جاهزتان (%1$s)</item>
+        <item quantity="few">%1$s بطاقات جاهزة</item>
+        <item quantity="many">%1$s بطاقة جاهزة</item>
+        <item quantity="other">%1$s بطاقة جاهزة</item>
+    </plurals>
+    <string name="ui_due_short">%1$s مستحقة</string>
+    <plurals name="ui_due_suffix">
+        <item quantity="zero">بطاقة حان موعدها</item>
+        <item quantity="one">بطاقة حان موعدها</item>
+        <item quantity="two">بطاقتان حان موعدهما</item>
+        <item quantity="few">بطاقات حان موعدها</item>
+        <item quantity="many">بطاقة حان موعدها</item>
+        <item quantity="other">بطاقة حان موعدها</item>
+    </plurals>
+</resources>

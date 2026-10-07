@@ -1,0 +1,38 @@
+<resources>
+    <plurals name="ui_minutes">
+        <item quantity="one">%1$s minuto</item>
+        <item quantity="many">%1$s minutos</item>
+        <item quantity="other">%1$s minutos</item>
+    </plurals>
+    <plurals name="ui_cards">
+        <item quantity="one">%1$s tarjeta</item>
+        <item quantity="many">%1$s tarjetas</item>
+        <item quantity="other">%1$s tarjetas</item>
+    </plurals>
+    <plurals name="ui_lessons">
+        <item quantity="one">%1$s lección</item>
+        <item quantity="many">%1$s lecciones</item>
+        <item quantity="other">%1$s lecciones</item>
+    </plurals>
+    <plurals name="ui_due">
+        <item quantity="one">%1$s tarjeta pendiente</item>
+        <item quantity="many">%1$s tarjetas pendientes</item>
+        <item quantity="other">%1$s tarjetas pendientes</item>
+    </plurals>
+    <plurals name="ui_review_cards">
+        <item quantity="one">Repasar %1$s tarjeta</item>
+        <item quantity="many">Repasar %1$s tarjetas</item>
+        <item quantity="other">Repasar %1$s tarjetas</item>
+    </plurals>
+    <plurals name="ui_cards_ready">
+        <item quantity="one">%1$s tarjeta lista</item>
+        <item quantity="many">%1$s tarjetas listas</item>
+        <item quantity="other">%1$s tarjetas listas</item>
+    </plurals>
+    <string name="ui_due_short">%1$s pendientes</string>
+    <plurals name="ui_due_suffix">
+        <item quantity="one">tarjeta pendiente</item>
+        <item quantity="many">tarjetas pendientes</item>
+        <item quantity="other">tarjetas pendientes</item>
+    </plurals>
+</resources>

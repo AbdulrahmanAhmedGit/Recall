@@ -1,5 +1,7 @@
 package com.example.myapplication4.ui
 
+import com.example.myapplication4.R
+import com.example.myapplication4.util.recallStrings
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -22,6 +24,7 @@ import com.example.myapplication4.ui.components.RecallDestination
 import com.example.myapplication4.ui.components.RecallDock
 import com.example.myapplication4.ui.design.RecallSpacing
 import com.example.myapplication4.ui.design.RecallMotion
+import com.example.myapplication4.ui.design.RecallSizes
 
 private sealed interface RecallRoute {
     data object Main : RecallRoute
@@ -38,6 +41,8 @@ fun RecallRoot(vm: RecallViewModel) { PronunciationHost(vm) { RecallContent(vm) 
 
 @Composable
 private fun RecallContent(vm: RecallViewModel) {
+    val s = recallStrings()
+
     var destination by rememberSaveable { mutableStateOf(RecallDestination.Today) }
     val routeSaver = remember(vm) { listSaver<RecallRoute, String>(
         save = { current -> when (current) {
@@ -72,7 +77,7 @@ private fun RecallContent(vm: RecallViewModel) {
     }
     BackHandler(route !is RecallRoute.Main) { route = RecallRoute.Main }
     val notice by vm.notice.collectAsStateWithLifecycle()
-    notice?.let { androidx.compose.material3.AlertDialog(onDismissRequest = { vm.notice.value = null }, title = { androidx.compose.material3.Text("Could not complete action") }, text = { androidx.compose.material3.Text(it) }, confirmButton = { androidx.compose.material3.TextButton({ vm.notice.value = null }) { androidx.compose.material3.Text("OK") } }) }
+    notice?.let { androidx.compose.material3.AlertDialog(onDismissRequest = { vm.notice.value = null }, title = { androidx.compose.material3.Text(s(R.string.ui_action_error)) }, text = { androidx.compose.material3.Text(it) }, confirmButton = { androidx.compose.material3.TextButton({ vm.notice.value = null }) { androidx.compose.material3.Text(s(R.string.ui_ok)) } }) }
     // Wait for DataStore rather than briefly showing onboarding to returning users.
     if (introductionSeen == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -88,8 +93,12 @@ private fun RecallContent(vm: RecallViewModel) {
         AnimatedContent(route, contentKey = { it.key() }, transitionSpec = { fadeIn(tween(RecallMotion.quick)) togetherWith fadeOut(tween(RecallMotion.quick)) }, label = "route") { current ->
             when (current) {
                 RecallRoute.Main -> mainState.SaveableStateProvider(destination) {
-                    RecallMain(destination, vm) { route = it }
+                    // The dock floats visually, but must not intercept content taps
+                    // or cover focus/bring-into-view targets in scrollable screens.
+                    Box(Modifier.fillMaxSize().navigationBarsPadding().padding(bottom = RecallSizes.dockHeight + RecallSpacing.md)) {
+                        RecallMain(destination, vm) { route = it }
                     }
+                }
                 RecallRoute.Info -> RecallInfoScreen(vm.settings.collectAsStateWithLifecycle().value.language, onClose = { route = RecallRoute.Main })
                 RecallRoute.Calendar -> ReviewCalendarScreen(vm, { route = RecallRoute.Main }, { route = RecallRoute.Lesson(it) })
                 is RecallRoute.Subject -> SubjectScreen(current.id, vm, { route = RecallRoute.Main }, { route = RecallRoute.Lesson(it) }, { route = RecallRoute.Review(it) }, { route = RecallRoute.Import(current.id) })

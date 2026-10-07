@@ -94,7 +94,7 @@ object RecallBackupCodec {
             studyWindowReminder = preferences.optBoolean("study_window_reminder", true),
             pausedUntil = nullableLong(preferences, "paused_until"),
             themeMode = preferences.optString("theme_mode", "system").takeIf { it in setOf("system", "light", "dark") } ?: "system",
-            language = preferences.optString("language", "system").takeIf { it in setOf("system", "en", "ar") } ?: "system",
+            language = preferences.optString("language", "system").takeIf { it in setOf("system", "en", "ar", "es", "fr", "de") } ?: "system",
             dynamicColor = preferences.optBoolean("dynamic_color", false),
             debugMode = preferences.optBoolean("debug_mode", false),
             speechRate = preferences.optDouble("speech_rate", 1.0).toFloat().takeIf { it in .75f..1.25f } ?: 1f,

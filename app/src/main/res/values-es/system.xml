@@ -1,0 +1,37 @@
+<resources>
+    <string name="ui_second_interval">%1$s s</string>
+    <string name="ui_week_interval">%1$s sem</string>
+    <string name="ui_import_version">Este archivo usa una versión no compatible del formato Recall.</string>
+    <string name="ui_import_subject">Se requiere una materia de hasta 120 caracteres.</string>
+    <string name="ui_import_lesson">Se requiere un título de lección de hasta 200 caracteres.</string>
+    <string name="ui_import_no_cards">No se encontraron tarjetas.</string>
+    <string name="ui_import_empty">La lista de tarjetas está vacía.</string>
+    <string name="ui_import_limit">Una importación admite como máximo %1$s tarjetas.</string>
+    <string name="ui_import_marker">La tarjeta %1$s tiene un marcador científico incompleto o vacío.</string>
+    <string name="ui_import_pairs">No se encontraron pares válidos de pregunta y respuesta.</string>
+    <string name="ui_import_paste">Primero pega o abre un archivo JSON completo de Recall.</string>
+    <string name="ui_import_object">No es un objeto JSON completo de Recall. Copia desde el primer { hasta el último }.</string>
+    <string name="ui_import_truncated">El JSON pegado está incompleto o cortado. Abre el archivo .json directamente o copia toda la respuesta de nuevo.</string>
+    <string name="ui_import_invalid">La estructura JSON no es válida. Abre el archivo .json original o copia la respuesta completa sin caracteres adicionales.</string>
+    <string name="ui_backup_invalid">El archivo seleccionado está dañado o no es una copia válida de Recall.</string>
+    <string name="ui_export_failed">Falló la exportación; no se guardó una copia completa. Comprueba el acceso a archivos y el espacio disponible y reintenta.</string>
+    <string name="ui_restore_failed">Falló la restauración; los datos existentes no cambiaron. Comprueba la copia y reintenta.</string>
+    <string name="ui_restore_partial">Los datos de estudio se restauraron, pero no los ajustes. Revísalos antes de continuar.</string>
+    <string name="ui_reminders_disabled">Los recordatorios están desactivados</string>
+    <string name="ui_no_due_checks">No hay tarjetas pendientes; las comprobaciones siguen activas</string>
+    <string name="ui_already_reminded">Ya se envió un recordatorio; esperando al próximo día u horario de estudio</string>
+    <string name="ui_disabled_paused">Recordatorios desactivados o pausados</string>
+    <string name="ui_posted_due">Recordatorio enviado para %1$s tarjetas pendientes</string>
+    <string name="ui_check_failed">Falló la comprobación; reintento programado</string>
+    <string name="ui_policy_allowed">Permitido</string>
+    <string name="ui_policy_waiting">Esperando un horario de estudio permitido</string>
+    <string name="ui_policy_fallback">Sin horario de estudio próximo; siguiente periodo diurno permitido</string>
+    <string name="ui_policy_quiet">Los periodos de silencio cubren todo el tiempo disponible</string>
+    <string name="ui_policy_daytime">Siguiente periodo diurno permitido</string>
+    <string name="ui_work_enqueued">En cola</string>
+    <string name="ui_work_running">En ejecución</string>
+    <string name="ui_work_succeeded">Completado</string>
+    <string name="ui_work_failed">Fallido</string>
+    <string name="ui_work_blocked">Esperando</string>
+    <string name="ui_work_cancelled">Cancelado</string>
+</resources>

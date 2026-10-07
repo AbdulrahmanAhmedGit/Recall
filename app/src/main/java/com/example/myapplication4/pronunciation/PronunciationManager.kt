@@ -1,5 +1,7 @@
 package com.example.myapplication4.pronunciation
 
+import com.example.myapplication4.R
+
 import android.content.Context
 import android.content.Intent
 import android.os.Handler
@@ -16,8 +18,9 @@ import java.util.UUID
 enum class SpeechStatus { Idle, Preparing, Speaking, Unavailable }
 
 /** One application-context engine per app ViewModel; no review state is accessed here. */
-class PronunciationManager(context: Context) {
+class PronunciationManager(context: Context, private val uiLanguage: () -> String = { "system" }) {
     private val app = context.applicationContext
+    private fun ui(id: Int, vararg args: Any): String = com.example.myapplication4.util.RecallLocale.context(app, uiLanguage()).getString(id, *args)
     private val main = Handler(Looper.getMainLooper())
     private var engine: TextToSpeech? = null
     private var ready = false
@@ -37,7 +40,7 @@ class PronunciationManager(context: Context) {
         if (!ready) {
             pending = request
             mutableStatus.value = SpeechStatus.Preparing
-            mutableMessage.value = "Preparing pronunciation…"
+            mutableMessage.value = ui(R.string.ui_tts_preparing)
             if (engine == null) initialize()
             return
         }
@@ -48,7 +51,7 @@ class PronunciationManager(context: Context) {
         val attempt = ++generation
         main.postDelayed({
             if (!closed && !ready && generation == attempt) {
-                initializationFailed("Text-to-speech took too long to start. Check Android voice settings and try again.")
+                initializationFailed(ui(R.string.ui_tts_timeout))
             }
         }, 10_000L)
         try {
@@ -57,7 +60,7 @@ class PronunciationManager(context: Context) {
                 main.post {
                     if (closed || generation != attempt) return@post
                     if (status != TextToSpeech.SUCCESS) {
-                        initializationFailed("Text-to-speech is unavailable. Check Android voice settings.")
+                        initializationFailed(ui(R.string.ui_tts_unavailable))
                     } else {
                         ready = true
                         if (pending == null) mutableStatus.value = SpeechStatus.Idle
@@ -65,7 +68,7 @@ class PronunciationManager(context: Context) {
                             override fun onStart(id: String?) = Unit
                             override fun onDone(id: String?) { main.post { if (!closed && id == utterance) mutableStatus.value = SpeechStatus.Idle } }
                             @Deprecated("Required by Android") override fun onError(id: String?) {
-                                main.post { if (!closed && id == utterance) unavailable("This voice could not play. Check Android voice settings.") }
+                                main.post { if (!closed && id == utterance) unavailable(ui(R.string.ui_tts_play_error)) }
                             }
                         })
                         pending?.let { pending = null; play(it) }
@@ -73,7 +76,7 @@ class PronunciationManager(context: Context) {
                 }
             }
         } catch (_: Exception) {
-            initializationFailed("Text-to-speech is unavailable on this device.")
+            initializationFailed(ui(R.string.ui_tts_device_unavailable))
         }
     }
 
@@ -99,8 +102,8 @@ class PronunciationManager(context: Context) {
             }, tts.defaultVoice?.name)
             val voice = voices.firstOrNull { it.name == selected?.name }
             if (voice == null || tts.setVoice(voice) == TextToSpeech.ERROR) {
-                val language = Locale.forLanguageTag(request.language).getDisplayName(Locale.getDefault())
-                unavailable(language + " offline voice isn't installed on this device.")
+                val language = Locale.forLanguageTag(request.language).getDisplayName(com.example.myapplication4.util.RecallLocale.resolve(uiLanguage()))
+                unavailable(ui(R.string.ui_offline_voice_missing, language))
                 return
             }
             tts.setSpeechRate(request.rate.coerceIn(.75f, 1.25f))
@@ -108,10 +111,10 @@ class PronunciationManager(context: Context) {
             mutableMessage.value = null
             mutableStatus.value = SpeechStatus.Speaking
             if (tts.speak(request.text, TextToSpeech.QUEUE_FLUSH, null, utterance) == TextToSpeech.ERROR) {
-                unavailable("This voice could not play. Check Android voice settings.")
+                unavailable(ui(R.string.ui_tts_play_error))
             }
         } catch (_: Exception) {
-            unavailable("Pronunciation is unavailable. Check Android voice settings.")
+            unavailable(ui(R.string.ui_pronunciation_unavailable))
         }
     }
 
@@ -125,6 +128,6 @@ class PronunciationManager(context: Context) {
         for (intent in intents) {
             if (runCatching { context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }.isSuccess) return
         }
-        mutableMessage.value = "Open Android Settings → Accessibility → Text-to-speech to manage voices."
+        mutableMessage.value = ui(R.string.ui_manage_voices_hint)
     }
 }

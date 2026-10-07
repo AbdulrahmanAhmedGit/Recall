@@ -1,0 +1,37 @@
+<resources>
+    <string name="ui_second_interval">%1$s s</string>
+    <string name="ui_week_interval">%1$s wk</string>
+    <string name="ui_import_version">This file uses an unsupported Recall format version.</string>
+    <string name="ui_import_subject">A subject is required and must be under 120 characters.</string>
+    <string name="ui_import_lesson">A lesson title is required and must be under 200 characters.</string>
+    <string name="ui_import_no_cards">No cards were found.</string>
+    <string name="ui_import_empty">The cards list is empty.</string>
+    <string name="ui_import_limit">An import can contain at most %1$s cards.</string>
+    <string name="ui_import_marker">Card %1$s has an incomplete or empty science notation marker.</string>
+    <string name="ui_import_pairs">No valid question and answer pairs were found.</string>
+    <string name="ui_import_paste">Paste or open a complete Recall JSON file first.</string>
+    <string name="ui_import_object">This is not a complete Recall JSON object. Copy from the opening { through the final }.</string>
+    <string name="ui_import_truncated">The pasted JSON is incomplete or was cut off. Open the .json file directly or copy the entire response again.</string>
+    <string name="ui_import_invalid">The JSON structure is invalid. Open the original .json file directly, or copy the complete response without extra characters.</string>
+    <string name="ui_backup_invalid">The selected file is damaged or is not a valid Recall backup.</string>
+    <string name="ui_export_failed">Export failed; no complete backup was saved. Check file access and available storage, then try again.</string>
+    <string name="ui_restore_failed">Restore failed; existing data was not changed. Check the backup file and try again.</string>
+    <string name="ui_restore_partial">Study data restored, but settings could not be restored. Check your settings before continuing.</string>
+    <string name="ui_reminders_disabled">Reminders are disabled</string>
+    <string name="ui_no_due_checks">No due cards; background checks remain active</string>
+    <string name="ui_already_reminded">Already reminded; waiting for the next day or study window</string>
+    <string name="ui_disabled_paused">Reminders disabled or paused</string>
+    <string name="ui_posted_due">Posted reminder for %1$s due cards</string>
+    <string name="ui_check_failed">Background check failed; retry scheduled</string>
+    <string name="ui_policy_allowed">Allowed</string>
+    <string name="ui_policy_waiting">Waiting for an allowed study time</string>
+    <string name="ui_policy_fallback">No study window soon; next allowed daytime</string>
+    <string name="ui_policy_quiet">Quiet times cover all available times</string>
+    <string name="ui_policy_daytime">Next allowed daytime</string>
+    <string name="ui_work_enqueued">Queued</string>
+    <string name="ui_work_running">Running</string>
+    <string name="ui_work_succeeded">Completed</string>
+    <string name="ui_work_failed">Failed</string>
+    <string name="ui_work_blocked">Waiting</string>
+    <string name="ui_work_cancelled">Cancelled</string>
+</resources>

@@ -63,6 +63,9 @@ class ReminderDeliveryTest {
             // A manual debug test ignores the pause but never changes the normal cooldown.
             val lastSent = context.recallPreferences.data.first()[ReminderDiagnostics.lastSent]
             assertNull(ReminderNotifications.post(context, 0, test = true))
+            kotlinx.coroutines.withTimeout(3_000) {
+                while (notifications.activeNotifications.none { it.id == 1002 }) kotlinx.coroutines.delay(25)
+            }
             assertTrue(notifications.activeNotifications.any { it.id == 1002 })
             assertEquals(lastSent, context.recallPreferences.data.first()[ReminderDiagnostics.lastSent])
             database().let { db -> try { assertTrue(db.dao().allLogs().isEmpty()) } finally { db.close() } }

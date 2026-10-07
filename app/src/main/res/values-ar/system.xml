@@ -1,0 +1,37 @@
+<resources>
+    <string name="ui_second_interval">%1$s ث</string>
+    <string name="ui_week_interval">%1$s أ</string>
+    <string name="ui_import_version">يستخدم هذا الملف إصدارًا غير مدعوم من تنسيق Recall.</string>
+    <string name="ui_import_subject">اسم المادة مطلوب، ويجب ألا يتجاوز ١٢٠ حرفًا.</string>
+    <string name="ui_import_lesson">عنوان الدرس مطلوب، ويجب ألا يتجاوز ٢٠٠ حرف.</string>
+    <string name="ui_import_no_cards">لم يُعثر على بطاقات.</string>
+    <string name="ui_import_empty">قائمة البطاقات فارغة.</string>
+    <string name="ui_import_limit">يمكن استيراد %1$s بطاقة كحد أقصى دفعة واحدة.</string>
+    <string name="ui_import_marker">تحتوي البطاقة %1$s على علامة ترميز علمي غير مكتملة أو فارغة.</string>
+    <string name="ui_import_pairs">لم يُعثر على أزواج صالحة من الأسئلة والإجابات.</string>
+    <string name="ui_import_paste">الصق ملف Recall JSON كاملًا أو افتحه أولًا.</string>
+    <string name="ui_import_object">هذا ليس كائن Recall JSON كاملًا. انسخه من القوس الافتتاحي { حتى القوس النهائي }.</string>
+    <string name="ui_import_truncated">بيانات JSON الملصقة غير مكتملة أو مقطوعة. افتح ملف .json مباشرة أو انسخ الرد كاملًا مرة أخرى.</string>
+    <string name="ui_import_invalid">بنية JSON غير صالحة. افتح ملف .json الأصلي مباشرة، أو انسخ الرد كاملًا دون أحرف إضافية.</string>
+    <string name="ui_backup_invalid">الملف المحدد تالف أو ليس نسخة احتياطية صالحة من Recall.</string>
+    <string name="ui_export_failed">فشل التصدير؛ لم تُحفظ نسخة احتياطية كاملة. تحقق من صلاحية الوصول للملفات والمساحة المتاحة، ثم حاول مجددًا.</string>
+    <string name="ui_restore_failed">فشلت الاستعادة؛ لم تتغير البيانات الحالية. تحقق من ملف النسخة الاحتياطية وحاول مجددًا.</string>
+    <string name="ui_restore_partial">استُعيدت بيانات الدراسة، لكن تعذرت استعادة الإعدادات. راجع إعداداتك قبل المتابعة.</string>
+    <string name="ui_reminders_disabled">التذكيرات معطلة</string>
+    <string name="ui_no_due_checks">لا بطاقات مستحقة؛ فحوص الخلفية ما زالت فعالة</string>
+    <string name="ui_already_reminded">أُرسل تذكير بالفعل؛ في انتظار اليوم أو فترة الدراسة التالية</string>
+    <string name="ui_disabled_paused">التذكيرات معطلة أو موقوفة مؤقتًا</string>
+    <string name="ui_posted_due">أُرسل تذكير بـ %1$s بطاقة مستحقة</string>
+    <string name="ui_check_failed">فشل فحص الخلفية؛ جُدولت إعادة المحاولة</string>
+    <string name="ui_policy_allowed">مسموح الآن</string>
+    <string name="ui_policy_waiting">في انتظار وقت دراسة مسموح</string>
+    <string name="ui_policy_fallback">لا فترة دراسة قريبة؛ أقرب وقت نهاري مسموح</string>
+    <string name="ui_policy_quiet">أوقات الهدوء تغطي كل الأوقات المتاحة</string>
+    <string name="ui_policy_daytime">أقرب وقت نهاري مسموح</string>
+    <string name="ui_work_enqueued">في قائمة الانتظار</string>
+    <string name="ui_work_running">قيد التشغيل</string>
+    <string name="ui_work_succeeded">مكتمل</string>
+    <string name="ui_work_failed">فشل</string>
+    <string name="ui_work_blocked">قيد الانتظار</string>
+    <string name="ui_work_cancelled">ملغى</string>
+</resources>

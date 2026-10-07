@@ -33,6 +33,7 @@ import com.example.myapplication4.ui.design.*
 import java.text.NumberFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DecimalStyle
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
@@ -55,13 +56,13 @@ fun StudyActivityCard(
 ) {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
-    // Recall's language setting currently changes layout direction, not Android resources.
+    // Use the same localized resources as the rest of the UI; keep the time axis chronological.
     // Scope translated resources to this component without changing the rest of the app.
     val resources = remember(context, locale, configuration) {
         context.createConfigurationContext(Configuration(configuration).apply { setLocale(locale) }).resources
     }
     val numberFormat = remember(locale) { NumberFormat.getIntegerInstance(locale) }
-    val fullDate = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale) }
+    val fullDate = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale).withDecimalStyle(DecimalStyle.of(locale)) }
     val monthFormat = remember(locale) { DateTimeFormatter.ofPattern("MMM", locale) }
     val weeks = remember(activity.period, activity.counts, locale) { activity.weeks(locale) }
     val weekdays = remember(locale) { activityWeekdays(locale) }

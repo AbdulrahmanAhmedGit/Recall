@@ -31,6 +31,7 @@ class ReminderWorker @JvmOverloads constructor(
         try {
             val prefs = applicationContext.recallPreferences.data.first()
             val now = clock()
+            val notificationContext = com.example.myapplication4.util.RecallLocale.context(applicationContext, prefs[PreferenceKeys.language] ?: "system")
             suspend fun record(reason: String, next: Long? = null) {
                 applicationContext.recallPreferences.edit {
                     it[ReminderDiagnostics.lastRun] = now
@@ -48,7 +49,7 @@ class ReminderWorker @JvmOverloads constructor(
                 applicationContext.getSystemService(android.app.NotificationManager::class.java).cancel(1001)
                 return@withLock Result.success()
             }
-            ReminderNotifications.blockedReason(applicationContext)?.let {
+            ReminderNotifications.blockedReason(notificationContext)?.let {
                 record(it); return@withLock Result.success()
             }
             val blocks = dao.schedules().first()
@@ -70,7 +71,7 @@ class ReminderWorker @JvmOverloads constructor(
             if (latest[PreferenceKeys.remindersEnabled] != true || (latest[PreferenceKeys.pausedUntil] ?: 0) > now) {
                 record("Reminders disabled or paused"); return@withLock Result.success()
             }
-            val error = ReminderNotifications.post(applicationContext, due, windowStart = window != null && prefs[PreferenceKeys.studyWindowReminder] != false)
+            val error = ReminderNotifications.post(com.example.myapplication4.util.RecallLocale.context(applicationContext, latest[PreferenceKeys.language] ?: "system"), due, windowStart = window != null && prefs[PreferenceKeys.studyWindowReminder] != false)
             if (error != null) record(error) else applicationContext.recallPreferences.edit {
                 it[ReminderDiagnostics.lastRun] = now
                 it[ReminderDiagnostics.lastSent] = now

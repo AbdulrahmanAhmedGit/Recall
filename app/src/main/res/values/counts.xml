@@ -1,0 +1,31 @@
+<resources>
+    <plurals name="ui_minutes">
+        <item quantity="one">%1$s minute</item>
+        <item quantity="other">%1$s minutes</item>
+    </plurals>
+    <plurals name="ui_cards">
+        <item quantity="one">%1$s card</item>
+        <item quantity="other">%1$s cards</item>
+    </plurals>
+    <plurals name="ui_lessons">
+        <item quantity="one">%1$s lesson</item>
+        <item quantity="other">%1$s lessons</item>
+    </plurals>
+    <plurals name="ui_due">
+        <item quantity="one">%1$s card due</item>
+        <item quantity="other">%1$s cards due</item>
+    </plurals>
+    <plurals name="ui_review_cards">
+        <item quantity="one">Review %1$s card</item>
+        <item quantity="other">Review %1$s cards</item>
+    </plurals>
+    <plurals name="ui_cards_ready">
+        <item quantity="one">%1$s card ready</item>
+        <item quantity="other">%1$s cards ready</item>
+    </plurals>
+    <string name="ui_due_short">%1$s due</string>
+    <plurals name="ui_due_suffix">
+        <item quantity="one">card due</item>
+        <item quantity="other">cards due</item>
+    </plurals>
+</resources>

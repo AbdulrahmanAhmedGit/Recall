@@ -4,7 +4,7 @@ Offline-first native Android study companion built around subjects, optional
 chapters, and lessons. Flashcards help retain lessons over time rather than
 acting as the primary organization system.
 
-Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.2)
+Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.3)
 for Android 7.0 or newer. Preview APKs are debug-signed; export a full backup before
 updating and read the release's installation notes.
 
@@ -24,7 +24,7 @@ copy Recall's prompt to your preferred AI, then validate and import its JSON.
 
 See the [complete feature guide](docs/features.md) for each feature, how to use it,
 screenshots, and current limitations. See [latest changes](docs/CHANGELOG.md) for
-the calendar and reliability improvements included in this source version.
+the localization, calendar and reliability improvements included in this source version.
 
 <p>
   <img src="docs/screenshots/library-light.png" width="220" alt="Recall Library with demonstration Chemistry, German and Physics subjects">
@@ -47,7 +47,8 @@ the running app uses your actual data. Capture details are in the
 - Review activity heatmap and Skip for now without changing card schedules.
 - Review calendar in Today and Insights: current next due dates, daily counts and types, read-only card previews, and lesson links. Overdue cards remain under Today; suspended/archived content is excluded. Local midnight boundaries handle timezone/DST changes. No scheduling or database-schema change is required.
 - Subtle short navigation/dock/calendar transitions, saved tab scroll positions, bounded calendar detail loading, and fresh due counts while the app is open.
-- English/Arabic guide explaining the study workflow and scientific foundations,
+- Offline English, Arabic, Spanish, French and German interfaces—not just layout direction—with localized settings, review controls, reminders, errors, plurals and dates. Study content and pronunciation languages stay independent of the interface.
+- A localized guide explaining the study workflow and scientific foundations,
   shown once at startup and available again from Settings.
 - Light/dark appearance and bidirectional educational text rendering.
 

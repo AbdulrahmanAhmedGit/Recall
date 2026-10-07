@@ -1,5 +1,24 @@
 # Latest source changes
 
+## v1.0.0-preview.3 — October 8, 2026
+
+- Complete offline interfaces in English, Arabic, Spanish, French and German:
+  navigation, review ratings/intervals, editors, resources, imports/validation,
+  settings, schedules, calendar/activity, guide, backup status and notifications.
+- Locale-aware dates, numbers and plural categories; appropriate Arabic RTL.
+- Immediate persistent language switching, with the study/pronunciation language
+  remaining independent of the interface. Backups retain all five language choices.
+- Preserve Activity owners when scoping resources, keeping permission requests
+  and document pickers functional; keep Android settings/file-viewer launches
+  on the real Activity. Settings choices open fully and scroll for
+  longer translations and larger text.
+- Reserve content space for the floating dock to keep settings rows tappable;
+  keep the Library quick-add action visible on small screens.
+- Android version code 3, optimized non-debuggable preview, same signing certificate.
+  No database migration, FSRS change, content translation or data reset.
+
+See [localization](localization.md) and [release notes](releases/v1.0.0-preview.3.md).
+
 ## v1.0.0-preview.2 — October 8, 2026
 
 Second public preview, including the calendar, reliability improvements and feature

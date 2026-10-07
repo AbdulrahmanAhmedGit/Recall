@@ -16,6 +16,9 @@ import com.example.myapplication4.ui.components.*
 import com.example.myapplication4.ui.design.*
 
 @Preview(name = "Components · Light", widthDp = 360, showBackground = true)
+@Preview(name = "Components · Español", widthDp = 320, locale = "es", showBackground = true)
+@Preview(name = "Components · Français", widthDp = 360, locale = "fr", fontScale = 1.3f, showBackground = true)
+@Preview(name = "Components · Deutsch", widthDp = 360, locale = "de", showBackground = true)
 @Preview(name = "Components · Dark RTL", widthDp = 360, uiMode = Configuration.UI_MODE_NIGHT_YES, locale = "ar")
 @Composable private fun ComponentPreview() { RecallTheme { Column(Modifier.fillMaxSize().padding(RecallSpacing.ml), verticalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) { SubjectRow(SubjectEntity(name = "Chemistry - العناصر الانتقالية", accent = "purple"), 8, 64, 12) {}; LessonRow(LessonOverview("1", "Electric Current · التيار الكهربائي", null, "Physics", "s", "Chapter 2", "blue", 18, 6, 8, 2, null, null)) {}; Spacer(Modifier.weight(1f)); RecallDock(RecallDestination.Today, {}) } } }
 

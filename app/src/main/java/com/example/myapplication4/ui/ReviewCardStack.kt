@@ -1,5 +1,7 @@
 package com.example.myapplication4.ui
 
+import com.example.myapplication4.R
+import com.example.myapplication4.util.recallStrings
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
@@ -24,6 +26,8 @@ internal fun ReviewCardStack(
     revealed: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val s = recallStrings()
+
     Box(modifier.padding(top = RecallSpacing.lg, bottom = RecallSpacing.lg + RecallSpacing.md)) {
         if (remaining > 2) Surface(
             Modifier.matchParentSize().offset(y = RecallSpacing.md).graphicsLayer { scaleX = .90f; rotationZ = -2f }.clearAndSetSemantics {},
@@ -53,14 +57,14 @@ internal fun ReviewCardStack(
                 ) {
                     item {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Text("Question", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                            Text(s(R.string.ui_question), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                             Spacer(Modifier.weight(1f))
-                            Text(if (displayed.type == "cloze") "Fill in the blank" else "Active recall", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted)
+                            Text(if (displayed.type == "cloze") s(R.string.ui_fill_blank) else s(R.string.ui_active_recall), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted)
                         }
                         PronounceableStudyText(displayed.front, "front", targets, displayed.learningLanguage,
                             style = MaterialTheme.typography.headlineMedium, modifier = Modifier.fillMaxWidth().padding(top = RecallSpacing.md))
                         displayed.hint?.takeIf { it.isNotBlank() }?.let {
-                            Text("Hint", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(top = RecallSpacing.lg))
+                            Text(s(R.string.ui_hint), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(top = RecallSpacing.lg))
                             BidiAwareText(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(top = RecallSpacing.xxs))
                         }
                     }
@@ -68,7 +72,7 @@ internal fun ReviewCardStack(
                         AnimatedVisibility(revealed, enter = fadeIn(tween(RecallMotion.quick)), exit = fadeOut(tween(RecallMotion.quick))) {
                             Column(Modifier.padding(top = RecallSpacing.lg)) {
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                                Text("Answer", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.success, modifier = Modifier.padding(top = RecallSpacing.lg))
+                                Text(s(R.string.ui_answer), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.success, modifier = Modifier.padding(top = RecallSpacing.lg))
                                 PronounceableStudyText(displayed.back, "back", targets, displayed.learningLanguage,
                                     style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(top = RecallSpacing.sm))
                             }

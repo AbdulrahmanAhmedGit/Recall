@@ -26,7 +26,7 @@ internal fun recallInfoResources(language: String): Resources {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     return remember(context, configuration, language) {
-        if (language in setOf("en", "ar")) {
+        if (language in com.example.myapplication4.util.RecallLocale.languages) {
             context.createConfigurationContext(Configuration(configuration).apply {
                 setLocale(Locale.forLanguageTag(language))
             }).resources

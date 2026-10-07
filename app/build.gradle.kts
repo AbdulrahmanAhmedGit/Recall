@@ -12,8 +12,8 @@ android {
         applicationId = "com.example.myapplication4"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.0-preview.2"
+        versionCode = 3
+        versionName = "1.0.0-preview.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -35,7 +35,7 @@ android {
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17; isCoreLibraryDesugaringEnabled = true }
     kotlin { jvmToolchain(17) }
     buildFeatures { compose = true; buildConfig = true }
-    // Keep Recall's two offline UI languages available when switching language in Settings.
+    // Keep all five UI languages bundled for offline switching in Settings.
     bundle { language { enableSplit = false } }
     sourceSets.getByName("androidTest").assets.directories.addAll(
         listOf("schemas", rootProject.file("recall-imports").absolutePath),

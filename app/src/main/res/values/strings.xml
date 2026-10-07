@@ -26,5 +26,8 @@
         <item quantity="one">%1$d card reviewed</item>
         <item quantity="other">%1$d cards reviewed</item>
     </plurals>
-    <string name="review_skipped_count">%1$d skipped · still available for review</string>
+    <plurals name="review_skipped_count">
+        <item quantity="one">%1$d skipped · still available for review</item>
+        <item quantity="other">%1$d skipped · still available for review</item>
+    </plurals>
 </resources>

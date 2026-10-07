@@ -70,7 +70,7 @@ private data class CalendarLoad<T>(val value: T? = null, val failed: Boolean = f
 @Composable internal fun ReviewCalendarAction(vm: RecallViewModel, onClick: () -> Unit) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     val system = LocalConfiguration.current.locales[0]
-    val locale = if (settings.language in setOf("ar", "en")) Locale.forLanguageTag(settings.language) else system
+    val locale = if (settings.language in com.example.myapplication4.util.RecallLocale.languages) Locale.forLanguageTag(settings.language) else system
     RecallIconButton(Icons.Outlined.CalendarMonth, calendarResources(locale).getString(R.string.calendar_title), onClick)
 }
 
@@ -79,7 +79,7 @@ fun ReviewCalendarScreen(vm: RecallViewModel, back: () -> Unit, openLesson: (Str
     val settings by vm.settings.collectAsStateWithLifecycle()
     val systemLocale = LocalConfiguration.current.locales[0]
     val locale = remember(settings.language, systemLocale) {
-        if (settings.language in setOf("en", "ar")) Locale.Builder().setLanguage(settings.language).apply {
+        if (settings.language in com.example.myapplication4.util.RecallLocale.languages) Locale.Builder().setLanguage(settings.language).apply {
             if (systemLocale.country.isNotEmpty()) setRegion(systemLocale.country)
         }.build() else systemLocale
     }

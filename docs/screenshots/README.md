@@ -19,6 +19,9 @@ backup, photograph or private material is published here.
 | `activity-dark-arabic.png` | Dark Arabic activity and enlarged text | Activity UI test with synthetic response history |
 | `calendar-month-light.png` | Upcoming calendar month | Calendar UI test with fixture due dates |
 | `calendar-day-light.png` | Selected date, types and lesson/card list | Calendar UI test with fixture due dates |
+| `review-localized-arabic.png` | Arabic RTL review controls and intact chemical expression | October 8 localization UI test, dark mode, 1.3× font scale, synthetic card |
+| `language-picker-arabic.png` | Arabic language sheet with five language choices | October 8 localization UI test, dark mode, 1.3× font scale |
+| `settings-french.png` | Translated French settings, schedule and dock | October 8 localization UI test, light mode, small-phone emulator |
 
 Component captures omit Android's status/navigation bars. Some show only a
 component or a scrolled viewport, not a complete screen. Calendar tests use a fixed

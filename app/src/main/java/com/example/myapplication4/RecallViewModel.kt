@@ -29,7 +29,8 @@ import java.time.YearMonth
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class RecallViewModel @JvmOverloads constructor(app: Application, private val database: RecallDatabase = RecallDatabase.create(app)) : AndroidViewModel(app) {
-    val pronunciation = com.example.myapplication4.pronunciation.PronunciationManager(app)
+    private fun ui(id: Int, vararg args: Any): String = com.example.myapplication4.util.RecallLocale.context(getApplication(), settings.value.language).getString(id, *args)
+    val pronunciation = com.example.myapplication4.pronunciation.PronunciationManager(app) { settings.value.language }
     override fun onCleared() { pronunciation.close(); database.close(); super.onCleared() }
     fun pronunciations(cardId: String) = dao.pronunciationTargets(cardId).map { rows -> rows.map { it.target() } }
     suspend fun loadPronunciations(cardId: String) = dao.targetsForCard(cardId).map { it.target() }
@@ -41,7 +42,7 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         try { preferences.markIntroductionSeen() }
         catch (error: Exception) {
             if (error is CancellationException) throw error
-            notice.value = "Could not save your preference. Please try again."
+            notice.value = ui(R.string.ui_preference_save_error)
         }
     }
     private val scheduler: ReviewScheduler = FsrsScheduler()
@@ -113,7 +114,7 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         reviewLoading.value = true
         try { onLoaded(withContext(Dispatchers.Default) { applyNewCardLimit(load()) }) }
         catch (error: CancellationException) { throw error }
-        catch (_: Exception) { notice.value = "Could not load the review. Please try again." }
+        catch (_: Exception) { notice.value = ui(R.string.ui_review_load_error) }
         finally { reviewLoading.value = false }
     }
     fun reviewDue(onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({ dao.dueCards(System.currentTimeMillis()) }, onLoaded)
@@ -144,12 +145,12 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
             lapses = result.state.lapses,
         )
         val saved = dao.commitReviewIfCurrent(card.reviewState(), result.state, log)
-        if (!saved) notice.value = "This card changed during the review. Reopen the review to use its latest state."
+        if (!saved) notice.value = ui(R.string.ui_card_changed_error)
         onSaved(saved)
         if (saved) queueReminderRefresh()
         } catch (error: CancellationException) { throw error }
         catch (_: Exception) {
-            notice.value = "Your answer could not be saved. Please try again."
+            notice.value = ui(R.string.ui_answer_save_error)
             onSaved(false)
         }
     }
@@ -176,12 +177,12 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     }
     fun importBackup(raw: String, onResult: (String) -> Unit) = viewModelScope.launch {
         when (val parsed = withContext(Dispatchers.Default) { RecallBackupCodec.decode(raw) }) {
-            is BackupResult.Failure -> onResult(parsed.message)
+            is BackupResult.Failure -> onResult(ui(R.string.ui_backup_invalid))
             is BackupResult.Success -> runCatching {
                 dao.mergeBackup(parsed.data)
                 preferences.restore(parsed.settings)
                 refreshReminders()
-            }.fold({ onResult("Backup restored. Existing data was kept.") }, { onResult("The backup could not be restored safely.") })
+            }.fold({ onResult(ui(R.string.ui_backup_restored)) }, { onResult(ui(R.string.ui_backup_restore_error)) })
         }
     }
     suspend fun refreshReminders() {
@@ -203,13 +204,13 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     fun setDebugMode(value: Boolean) = viewModelScope.launch { preferences.setDebugMode(value) }
     fun testNotification(result: (String) -> Unit) = viewModelScope.launch {
         if (!preferences.settings.first().debugMode) return@launch
-        result(ReminderNotifications.post(getApplication(), dao.reminderDueCount(System.currentTimeMillis()), test = true) ?: "Test notification posted. Check your notification shade.")
+        result(ReminderNotifications.post(com.example.myapplication4.util.RecallLocale.context(getApplication(), settings.value.language), dao.reminderDueCount(System.currentTimeMillis()), test = true) ?: ui(R.string.ui_test_posted))
     }
     val archiveBusy = MutableStateFlow(false)
     val archiveStatus = MutableStateFlow<String?>(null)
     fun exportAllData(uri: android.net.Uri) = viewModelScope.launch {
         if (archiveBusy.value) return@launch
-        archiveBusy.value = true; archiveStatus.value = "Preparing all data and attachments…"
+        archiveBusy.value = true; archiveStatus.value = ui(R.string.ui_preparing_archive)
         val context = getApplication<Application>()
         var staged: java.io.File? = null
         try {
@@ -219,17 +220,17 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
                 FullBackupArchive.write(file.outputStream(), dao.backup(), preferences.settings.first()) { source ->
                     context.contentResolver.openInputStream(android.net.Uri.parse(source)) ?: error("File unavailable")
                 }
-                archiveStatus.value = "Writing complete archive…"
+                archiveStatus.value = ui(R.string.ui_writing_archive)
                 context.contentResolver.openOutputStream(uri, "wt")?.use { output -> file.inputStream().use { it.copyTo(output) } } ?: error("Cannot write destination")
             }
-            archiveStatus.value = "All data exported, including attached files and materials."
+            archiveStatus.value = ui(R.string.ui_all_exported)
         } catch (e: CancellationException) { throw e }
-        catch (e: Exception) { archiveStatus.value = "Export failed; no complete backup was saved. " + e.message }
+        catch (e: Exception) { archiveStatus.value = ui(R.string.ui_export_failed) }
         finally { withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) { staged?.delete() }; archiveBusy.value = false }
     }
     fun restoreAllData(uri: android.net.Uri) = viewModelScope.launch {
         if (archiveBusy.value) return@launch
-        archiveBusy.value = true; archiveStatus.value = "Validating archive and files…"
+        archiveBusy.value = true; archiveStatus.value = ui(R.string.ui_validating_archive)
         val context = getApplication<Application>()
         var directory: java.io.File? = null
         var committed = false
@@ -253,9 +254,9 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
                 preferences.restore(restored.settings)
             }
             refreshReminders()
-            archiveStatus.value = "Full backup restored. Existing records were kept; settings restored."
+            archiveStatus.value = ui(R.string.ui_full_restored)
         } catch (e: CancellationException) { throw e }
-        catch (e: Exception) { archiveStatus.value = if (committed) "Study data restored, but settings could not be restored. " + e.message else "Restore failed; existing data was not changed. " + e.message }
+        catch (e: Exception) { archiveStatus.value = if (committed) ui(R.string.ui_restore_partial) else ui(R.string.ui_restore_failed) }
         finally {
             if (!committed) withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) { directory?.let { folder -> folder.listFiles().orEmpty().forEach { it.delete() }; folder.delete() } }
             archiveBusy.value = false
@@ -263,7 +264,7 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     }
     val notice = MutableStateFlow<String?>(null)
     private fun change(action: suspend () -> Unit) = viewModelScope.launch {
-        try { action(); refreshReminders() } catch (e: CancellationException) { throw e } catch (_: Exception) { notice.value = "Could not save. Check for duplicate names and try again." }
+        try { action(); refreshReminders() } catch (e: CancellationException) { throw e } catch (_: Exception) { notice.value = ui(R.string.ui_save_duplicate_error) }
     }
     fun resources(subjectId: String) = dao.resources(subjectId)
     fun saveResource(resource: SubjectResourceEntity, existing: Boolean) = change {
