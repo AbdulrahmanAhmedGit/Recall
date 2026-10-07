@@ -97,3 +97,16 @@ and personal backups are excluded from this repository. The chemistry JSON in
 `recall-imports/` is an educational regression fixture used by instrumented tests.
 Third-party licenses and attribution are documented in
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Community
+
+Contributions and reports in English or Arabic are welcome. Read the
+[contribution guide](CONTRIBUTING.md), [code of conduct](CODE_OF_CONDUCT.md) and
+[support guide](SUPPORT.md). Use the [issue forms](https://github.com/AbdulrahmanAhmedGit/Recall/issues/new/choose)
+for bugs/features or [Discussions](https://github.com/AbdulrahmanAhmedGit/Recall/discussions)
+for questions. Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
+
+## License
+
+Recall is licensed under the [MIT License](LICENSE). Third-party components retain
+their own licenses and attribution; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

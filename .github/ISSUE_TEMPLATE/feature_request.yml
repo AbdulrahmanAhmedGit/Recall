@@ -1,0 +1,41 @@
+name: Feature request
+description: Propose a focused improvement to Recall's lesson-first study workflow.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues first. Open-ended questions belong in Discussions.
+        Recall prioritizes offline, lesson-first studying and safe existing data.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What study problem would this solve?
+      description: Explain the user need rather than only naming a new button.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the workflow and how it fits the existing app.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and tradeoffs
+      description: Consider offline access, data safety, accessibility and review workload.
+  - type: textarea
+    id: references
+    attributes:
+      label: Optional examples
+      description: Use your own or properly licensed, redacted material; no private backups.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I checked existing requests and the feature guide.
+          required: true

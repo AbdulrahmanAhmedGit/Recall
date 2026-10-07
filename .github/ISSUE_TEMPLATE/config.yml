@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and study workflow help
+    url: https://github.com/AbdulrahmanAhmedGit/Recall/discussions
+    about: Ask usage questions or explore ideas with the community.
+  - name: Report a security vulnerability privately
+    url: https://github.com/AbdulrahmanAhmedGit/Recall/security/advisories/new
+    about: Do not disclose vulnerabilities or personal data in public issues.
+  - name: Feature guide and troubleshooting
+    url: https://github.com/AbdulrahmanAhmedGit/Recall/blob/main/docs/features.md
+    about: Read the supported features, limits and links to technical guides.
