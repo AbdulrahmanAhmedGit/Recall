@@ -1,9 +1,20 @@
 # Latest source changes
 
+## v1.0.0-preview.2 — October 8, 2026
+
+Second public preview, including the calendar, reliability improvements and feature
+documentation described below. Android version code increases to 2. The downloadable
+APK uses the optimized, non-debuggable `preview` variant and the same local debug
+signing certificate as the first preview. It is not a store-signed production release.
+
+Export a full backup before updating. If Android reports a signature mismatch,
+do not uninstall without first preserving your data. No Room migration or study-data
+reset is required for this release. See the
+[release notes](releases/v1.0.0-preview.2.md) for installation and verification details.
+
 ## October 8, 2026 — calendar, reliability and project documentation
 
-These changes describe the latest source on `main`, not a newly tagged GitHub or
-store release. The Android application version remains 1.0.
+These changes are included in `v1.0.0-preview.2` and the latest source on `main`.
 
 ### Review calendar
 
