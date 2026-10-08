@@ -1,5 +1,9 @@
 # Recall
 
+![Recall — Honest insights. Reliable reviews. Preview 4](docs/images/recall-preview4-cover.png)
+
+*AI-generated promotional cover, not an app screenshot.*
+
 Offline-first native Android study companion built around subjects, optional
 chapters, and lessons. Flashcards help retain lessons over time rather than
 acting as the primary organization system.
@@ -26,16 +30,28 @@ See the [complete feature guide](docs/features.md) for each feature, how to use 
 screenshots, and current limitations. See [latest changes](docs/CHANGELOG.md) for
 the localization, calendar and reliability improvements included in this source version.
 
-<p>
-  <img src="docs/screenshots/library-light.png" width="220" alt="Recall Library with demonstration Chemistry, German and Physics subjects">
-  <img src="docs/screenshots/review-answer-dark.png" width="220" alt="Dark review screen with mixed Arabic and Latin content, Skip, and four rating choices">
-  <img src="docs/screenshots/activity-light.png" width="220" alt="Study activity heatmap with demonstration review history">
-</p>
+### Inside Recall
+
+<table>
+  <tr><th>Lesson-based library</th><th>Focused review</th><th>Arabic &amp; science</th></tr>
+  <tr>
+    <td><img src="docs/screenshots/library-light.png" width="220" alt="Native Library capture with demonstration Chemistry, German and Physics subjects"></td>
+    <td><img src="docs/screenshots/review-answer-dark.png" width="220" alt="Native dark review capture with mixed Arabic and Latin content, Skip, and four rating choices"></td>
+    <td><img src="docs/screenshots/review-localized-arabic.png" width="220" alt="Native Arabic RTL review capture with an intact left-to-right chemical equation"></td>
+  </tr>
+  <tr><th>Study activity</th><th>Review calendar</th><th>Subject resources</th></tr>
+  <tr>
+    <td><img src="docs/screenshots/activity-light.png" width="220" alt="Native completed-review activity heatmap capture with synthetic history"></td>
+    <td><img src="docs/screenshots/calendar-month-light.png" width="220" alt="Native upcoming review calendar capture with demonstration due counts"></td>
+    <td><img src="docs/screenshots/resources-light.png" width="220" alt="Native subject resources capture with search, filters and a demonstration note"></td>
+  </tr>
+</table>
 
 These are native Android UI captures with demonstration content, not AI-generated
 mockups or a user's private study history. Screenshot dates and counts are examples;
 the running app uses your actual data. Capture details are in the
 [screenshot inventory](docs/screenshots/README.md).
+Some captures predate Preview 4 and may differ from its latest layout and Cairo font.
 
 ## Features
 
