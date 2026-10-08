@@ -15,6 +15,10 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.example.myapplication4.domain.DailyReviewCount
+import com.example.myapplication4.domain.MemoryCounts
+import com.example.myapplication4.domain.RecallReviewEvent
+import com.example.myapplication4.domain.AttentionCardDetails
+import com.example.myapplication4.domain.PredictionCardState
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
@@ -115,8 +119,16 @@ interface RecallDao {
     @Transaction suspend fun commitReview(state: ReviewStateEntity, log: ReviewLogEntity) { saveState(state); addLog(log) }
     @Query("SELECT * FROM ReviewStateEntity WHERE cardId = :cardId") suspend fun reviewState(cardId: String): ReviewStateEntity?
     // Reject duplicate/stale taps atomically, including a card deleted during a session.
-    @Transaction suspend fun commitReviewIfCurrent(previous: ReviewStateEntity, state: ReviewStateEntity, log: ReviewLogEntity): Boolean {
+    @Query("SELECT * FROM CardEntity WHERE id=:id") suspend fun cardById(id: String): CardEntity?
+    @Query("SELECT COUNT(*) FROM CardEntity c JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId WHERE c.id=:id AND c.suspended=0 AND l.archived=0 AND s.archived=0") suspend fun isActiveCard(id: String): Int
+    @Transaction suspend fun commitReviewIfCurrent(previous: ReviewStateEntity, state: ReviewStateEntity, log: ReviewLogEntity, presented: CardWithLesson? = null): Boolean {
         if (reviewState(previous.cardId) != previous) return false
+        if (isActiveCard(previous.cardId) != 1) return false
+        if (presented != null) {
+            val current = cardById(previous.cardId) ?: return false
+            if (current.lessonId != presented.lessonId || current.front != presented.front || current.back != presented.back ||
+                current.type != presented.type || current.hint != presented.hint || current.sourceReference != presented.sourceReference) return false
+        }
         commitReview(state, log)
         return true
     }
@@ -139,12 +151,57 @@ interface RecallDao {
     @Query("SELECT l.id, l.learningLanguage, l.chapterId, l.title, l.summary, s.name subjectName, s.id subjectId, ch.name chapterName, s.accent, COUNT(c.id) total, SUM(CASE WHEN rs.dueAt <= :now AND c.suspended = 0 THEN 1 ELSE 0 END) due, SUM(CASE WHEN rs.reps > 0 THEN 1 ELSE 0 END) learned, SUM(CASE WHEN rs.difficulty >= 7 THEN 1 ELSE 0 END) difficult, MIN(CASE WHEN c.suspended = 0 THEN rs.dueAt END) nextDue, MAX(rs.lastReviewedAt) lastReviewed FROM LessonEntity l JOIN SubjectEntity s ON s.id = l.subjectId LEFT JOIN ChapterEntity ch ON ch.id = l.chapterId LEFT JOIN CardEntity c ON c.lessonId = l.id LEFT JOIN ReviewStateEntity rs ON rs.cardId = c.id WHERE l.subjectId = :subjectId AND l.archived = 0 AND s.archived = 0 GROUP BY l.id ORDER BY ch.position, l.title") fun lessonOverviewsForSubject(subjectId: String, now: Long): Flow<List<LessonOverview>>
     @Query("SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended, l.title lessonTitle, l.learningLanguage, s.name subjectName, rs.state, rs.dueAt, rs.lastReviewedAt, rs.stability, rs.difficulty, rs.scheduledDays, rs.reps, rs.lapses FROM CardEntity c JOIN LessonEntity l ON l.id = c.lessonId JOIN SubjectEntity s ON s.id = l.subjectId JOIN ReviewStateEntity rs ON rs.cardId = c.id WHERE c.suspended = 0 AND l.archived = 0 AND s.archived = 0 AND rs.dueAt <= :now AND (:subjectId IS NULL OR l.subjectId = :subjectId) ORDER BY rs.dueAt, RANDOM()") suspend fun dueCards(now: Long, subjectId: String? = null): List<CardWithLesson>
     @Query("SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended, l.title lessonTitle, l.learningLanguage, s.name subjectName, rs.state, rs.dueAt, rs.lastReviewedAt, rs.stability, rs.difficulty, rs.scheduledDays, rs.reps, rs.lapses FROM CardEntity c JOIN LessonEntity l ON l.id = c.lessonId JOIN SubjectEntity s ON s.id = l.subjectId JOIN ReviewStateEntity rs ON rs.cardId = c.id WHERE c.lessonId = :lessonId AND c.suspended = 0 ORDER BY RANDOM()") suspend fun lessonCards(lessonId: String): List<CardWithLesson>
+    // Two bounded candidate sets preserve the independent new-card cap without loading the backlog.
+    @Query("""WITH eligible AS (
+        SELECT c.id, rs.dueAt, rs.reps FROM ReviewStateEntity rs
+        JOIN CardEntity c ON c.id=rs.cardId JOIN LessonEntity l ON l.id=c.lessonId
+        JOIN SubjectEntity s ON s.id=l.subjectId
+        WHERE rs.dueAt<=:now AND c.suspended=0 AND l.archived=0 AND s.archived=0 AND c.id NOT IN (:deferredIds)
+    ), started AS (SELECT id FROM eligible WHERE reps>0 ORDER BY dueAt, id LIMIT :limit),
+    fresh AS (SELECT id FROM eligible WHERE reps<=0 ORDER BY dueAt, id LIMIT :newLimit)
+    SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended,
+        l.title lessonTitle, l.learningLanguage, s.name subjectName, rs.state, rs.dueAt,
+        rs.lastReviewedAt, rs.stability, rs.difficulty, rs.scheduledDays, rs.reps, rs.lapses
+    FROM ReviewStateEntity rs JOIN CardEntity c ON c.id=rs.cardId
+    JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId
+    WHERE c.id IN (SELECT id FROM started UNION ALL SELECT id FROM fresh)
+    ORDER BY rs.dueAt, c.id LIMIT :limit""")
+    suspend fun dueBatch(now: Long, newLimit: Int, limit: Int, deferredIds: List<String> = emptyList()): List<CardWithLesson>
     @Query("SELECT * FROM CardEntity WHERE lessonId = :lessonId ORDER BY createdAt DESC") fun cardsForLesson(lessonId: String): Flow<List<CardEntity>>
     @Query("SELECT t.* FROM TagEntity t JOIN LessonTagEntity lt ON lt.tagId = t.id WHERE lt.lessonId = :lessonId ORDER BY t.name") fun tagsForLesson(lessonId: String): Flow<List<TagEntity>>
     @Query("SELECT COUNT(*) FROM CardEntity c JOIN ReviewStateEntity rs ON rs.cardId=c.id JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId WHERE c.suspended=0 AND l.archived=0 AND s.archived=0 AND rs.dueAt <= :now") fun dueCount(now: Long): Flow<Int>
-    @Query("SELECT COUNT(*) FROM ReviewLogEntity WHERE reviewedAt >= :since") fun reviewCountSince(since: Long): Flow<Int>
+    @Query("SELECT COUNT(*) FROM ReviewLogEntity WHERE reviewedAt >= :since AND reviewedAt <= :now") fun reviewCountSince(since: Long, now: Long = System.currentTimeMillis()): Flow<Int>
+    @Query("""SELECT COUNT(*) total,
+        COALESCE(SUM(CASE WHEN COALESCE(rs.reps, 0) <= 0 THEN 1 ELSE 0 END), 0) new,
+        COALESCE(SUM(CASE WHEN rs.reps > 0 AND rs.state = 'review' AND rs.stability >= :matureDays
+            AND rs.stability <= :largestFinite THEN 1 ELSE 0 END), 0) mature
+        FROM CardEntity c JOIN LessonEntity l ON l.id = c.lessonId JOIN SubjectEntity s ON s.id = l.subjectId
+        LEFT JOIN ReviewStateEntity rs ON rs.cardId = c.id
+        WHERE c.suspended = 0 AND l.archived = 0 AND s.archived = 0""")
+    fun insightsMemoryCounts(matureDays: Double, largestFinite: Double): Flow<MemoryCounts>
+    @Query("""SELECT c.id cardId, rs.state, rs.reps, rs.lastReviewedAt, rs.stability
+        FROM CardEntity c JOIN LessonEntity l ON l.id = c.lessonId
+        JOIN SubjectEntity s ON s.id = l.subjectId LEFT JOIN ReviewStateEntity rs ON rs.cardId = c.id
+        WHERE c.suspended = 0 AND l.archived = 0 AND s.archived = 0""")
+    fun insightsPredictionCards(): Flow<List<PredictionCardState>>
+    @Query("""SELECT r.id, r.cardId, c.lessonId, r.reviewedAt, r.rating, r.previousDueAt,
+        r.elapsedDays, r.previousInterval, r.previousState, r.reps
+        FROM ReviewLogEntity r JOIN CardEntity c ON c.id = r.cardId
+        JOIN LessonEntity l ON l.id = c.lessonId JOIN SubjectEntity s ON s.id = l.subjectId
+        WHERE r.reviewedAt >= :start AND r.reviewedAt < :end
+        AND c.suspended = 0 AND l.archived = 0 AND s.archived = 0
+        ORDER BY r.reviewedAt, r.id""")
+    fun insightsReviews(start: Long, end: Long): Flow<List<RecallReviewEvent>>
+    @Query("""SELECT c.id cardId, c.lessonId, c.front, l.title lessonTitle, s.name subjectName,
+        rs.difficulty, rs.lapses, rs.stability, rs.scheduledDays, rs.dueAt
+        FROM CardEntity c JOIN LessonEntity l ON l.id = c.lessonId JOIN SubjectEntity s ON s.id = l.subjectId
+        JOIN ReviewStateEntity rs ON rs.cardId = c.id
+        WHERE c.id IN (:ids) AND c.suspended = 0 AND l.archived = 0 AND s.archived = 0""")
+    fun insightsAttentionCards(ids: List<String>): Flow<List<AttentionCardDetails>>
     @RawQuery(observedEntities = [ReviewLogEntity::class])
     fun studyActivity(query: SupportSQLiteQuery): Flow<List<DailyReviewCount>>
+    @RawQuery suspend fun studyActivitySnapshot(query: SupportSQLiteQuery): List<DailyReviewCount>
+    @Query("SELECT COUNT(*) FROM ReviewLogEntity WHERE reviewedAt >= :since AND reviewedAt <= :now") suspend fun reviewCountSnapshot(since: Long, now: Long): Int
     @RawQuery(observedEntities = [ReviewStateEntity::class, CardEntity::class, LessonEntity::class, SubjectEntity::class])
     fun reviewCalendarCounts(query: SupportSQLiteQuery): Flow<List<com.example.myapplication4.domain.ReviewCalendarDay>>
     @Query("SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended, l.title lessonTitle, l.learningLanguage, s.name subjectName, rs.state, rs.dueAt, rs.lastReviewedAt, rs.stability, rs.difficulty, rs.scheduledDays, rs.reps, rs.lapses FROM ReviewStateEntity rs JOIN CardEntity c ON c.id=rs.cardId JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId WHERE c.suspended=0 AND l.archived=0 AND s.archived=0 AND rs.dueAt>=:start AND rs.dueAt<:end ORDER BY rs.dueAt, c.id LIMIT :limit")
@@ -168,6 +225,7 @@ interface RecallDao {
     @Query("SELECT * FROM LessonTagEntity") suspend fun allLessonTags(): List<LessonTagEntity>
     @Query("SELECT * FROM ReviewStateEntity") suspend fun allStates(): List<ReviewStateEntity>
     @Query("SELECT * FROM ReviewLogEntity") suspend fun allLogs(): List<ReviewLogEntity>
+    @Query("SELECT id FROM ReviewLogEntity") suspend fun allLogIds(): List<String>
     @Query("SELECT * FROM ScheduleBlockEntity") suspend fun allSchedules(): List<ScheduleBlockEntity>
     @Query("SELECT * FROM ImportRecordEntity") suspend fun allImports(): List<ImportRecordEntity>
     @Insert(onConflict = OnConflictStrategy.IGNORE) suspend fun mergeSubjects(items: List<SubjectEntity>)
@@ -186,7 +244,31 @@ interface RecallDao {
     @Transaction suspend fun deleteSubject(id: String) { deleteSubjectLogs(id); deleteSubjectTagLinks(id); deleteSubjectRow(id); deleteUnusedTags() }
     @Transaction suspend fun removeLessonTag(lessonId: String, tagId: String) { removeLessonTagLink(lessonId, tagId); deleteUnusedTags() }
     @Transaction suspend fun backup() = BackupData(allSubjects(), allChapters(), allLessons(), allCards(), allTags(), allLessonTags(), allStates(), allLogs(), allSchedules(), allImports(), allResources(), allPronunciationTargets())
-    @Transaction suspend fun mergeBackup(data: BackupData) { val existingCards = allCards().map { it.id }.toSet(); mergeSubjects(data.subjects); mergeChapters(data.chapters); mergeLessons(data.lessons); mergeCards(data.cards); mergeTags(data.tags); mergeLessonTags(data.lessonTags); mergeStates(data.states); mergeLogs(data.logs); mergeSchedules(data.schedules); mergeImports(data.imports); mergeResources(data.resources); insertPronunciationTargets(data.pronunciationTargets.filter { it.cardId !in existingCards }) }
+    @Transaction suspend fun mergeBackup(data: BackupData) {
+        com.example.myapplication4.domain.validateBackupData(data)
+        val existingCards = allCards().map { it.id }.toSet()
+        // Name conflicts under different IDs must not silently drop a parent/tag.
+        val subjects = allSubjects().associateBy { it.name }
+        val tags = allTags().associateBy { it.name }
+        require(data.subjects.all { subjects[it.name]?.id.let { id -> id == null || id == it.id } })
+        require(data.tags.all { tags[it.name]?.id.let { id -> id == null || id == it.id } })
+        val chapters = allChapters().associateBy { it.id }
+        val lessons = allLessons().associateBy { it.id }
+        require(data.chapters.all { chapters[it.id]?.subjectId.let { parent -> parent == null || parent == it.subjectId } })
+        require(data.lessons.all { lessons[it.id]?.subjectId.let { parent -> parent == null || parent == it.subjectId } })
+        val incomingLogs = data.logs.filter { it.cardId !in existingCards }
+        if (incomingLogs.isNotEmpty()) {
+            val existingLogIds = allLogIds().toHashSet()
+            require(incomingLogs.none { it.id in existingLogIds }) { "Conflicting review-log ID" }
+        }
+        mergeSubjects(data.subjects); mergeChapters(data.chapters); mergeLessons(data.lessons); mergeCards(data.cards)
+        mergeTags(data.tags); mergeLessonTags(data.lessonTags)
+        // Preserve existing cards' states AND history together, not one without the other.
+        mergeStates(data.states.filter { it.cardId !in existingCards })
+        mergeLogs(incomingLogs)
+        mergeSchedules(data.schedules); mergeImports(data.imports); mergeResources(data.resources)
+        insertPronunciationTargets(data.pronunciationTargets.filter { it.cardId !in existingCards })
+    }
 }
 
 @Database(entities = [SubjectEntity::class, ChapterEntity::class, LessonEntity::class, CardEntity::class, TagEntity::class, LessonTagEntity::class, ReviewStateEntity::class, ReviewLogEntity::class, ScheduleBlockEntity::class, ImportRecordEntity::class, SubjectResourceEntity::class, PronunciationTargetEntity::class], version = 4, exportSchema = true)

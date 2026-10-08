@@ -1,5 +1,18 @@
 # Third-party notices
 
+## Cairo font
+
+Copyright 2009 The Cairo Project Authors (https://github.com/Gue3bara/Cairo).
+Licensed under SIL Open Font License 1.1. The full license is bundled in the APK
+at `assets/licenses/cairo-OFL.txt` and preserved in this repository at
+`app/src/main/assets/licenses/cairo-OFL.txt`.
+
+The four upright static instances (400, 500, 600, 700) in `res/font` were generated
+with FontTools `varLib.instancer` from Google Fonts' `ofl/cairo/Cairo[slnt,wght].ttf`
+(slnt=0), preserving Arabic/Latin glyphs and shaping tables. Static files support
+Android 7/API 24 without requiring variable-font support. Source:
+https://github.com/google/fonts/tree/main/ofl/cairo.
+
 ## go-fsrs / FSRS-6 algorithm
 
 Recall's scheduler includes a Kotlin port of mathematical routines from

@@ -46,7 +46,12 @@ class StudyActivityUiTest {
         val vm = RecallViewModel(app, db)
         val store = ViewModelStore().apply { put("activity", vm) }
         try {
-            compose.setContent { RecallTheme(darkTheme = false) { InsightsScreen(vm, emptyList()) } }
+            compose.setContent { RecallTheme(darkTheme = false) { InsightsScreen(vm) } }
+            // The calendar is immediately visible, before today's statistics.
+            compose.onNodeWithTag("study-activity").assertIsDisplayed()
+            val activityBounds = compose.onNodeWithTag("study-activity").fetchSemanticsNode().boundsInRoot
+            val todayBounds = compose.onNodeWithText("Today").fetchSemanticsNode().boundsInRoot
+            assertTrue(activityBounds.bottom <= todayBounds.top)
             compose.onNodeWithText("Your activity will appear here as you review cards.").assertExists()
             val reviewCard = db.dao().lessonCards(lesson.id).single()
             val reviewedAt = System.currentTimeMillis()
@@ -87,7 +92,7 @@ class StudyActivityUiTest {
 
     @Test fun emptySmallPhoneHasZeroDetailsAndDarkArabicSupportsLargeFonts() {
         var arabic by mutableStateOf(false)
-        compose.setContent { RecallTheme(darkTheme = arabic) {
+        compose.setContent { RecallTheme(darkTheme = arabic, language = if (arabic) "ar" else "en") {
             val density = LocalDensity.current
             CompositionLocalProvider(LocalLayoutDirection provides if (arabic) LayoutDirection.Rtl else LayoutDirection.Ltr,
                 LocalDensity provides Density(density.density, if (arabic) 1.5f else 1f)) {

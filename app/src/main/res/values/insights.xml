@@ -1,0 +1,41 @@
+<resources>
+    <string name="insights_predicted_title">Current predicted recall · FSRS</string>
+    <string name="insights_predicted_coverage">Prediction coverage: %1$s / %2$s active cards</string>
+    <string name="insights_predicted_empty">No eligible memory estimates yet. Only cards in the review state with valid memory data are included; coverage is below.</string>
+    <string name="insights_predicted_small">This estimate covers a small group of cards, not your entire library.</string>
+    <string name="insights_predicted_scope">An equal-weighted FSRS estimate for active review-state cards with a known previous review and valid stability. Time uses UTC-day boundaries and refreshes approximately each minute. Not observed success, comprehension or calibration; the two recall metrics cover different populations and times.</string>
+    <string name="insights_recall_title">Observed recall</string>
+    <string name="insights_recall_period">Last 30 days · event-based, self-reported success</string>
+    <string name="insights_recall_scope">Self-reported review success, not the percentage of your library remembered.</string>
+    <string name="insights_sample">%1$s successful / %2$s eligible reviews · %3$s cards</string>
+    <string name="insights_insufficient">Not enough delayed reviews for a useful percentage yet. Your available counts are below.</string>
+    <string name="insights_no_sample">First learning and short retries are separate. Delayed scheduled reviews will appear here as you continue studying.</string>
+    <string name="insights_legacy_sample">Some older reviews lack the information needed for this metric. Their history is kept; available counts are below.</string>
+    <string name="insights_details">How these insights work</string>
+    <string name="insights_recall_rules">Again counts as unsuccessful recall; Hard, Good and Easy as self-reported success. Only due reviews in the review state, at least 24 hours after the previous response, count. First learning, relearning, early practice and records without reliable historical fields are excluded. Only the first eligible response per card per local day counts. A percentage needs 30 eligible reviews across 10 cards.</string>
+    <string name="insights_excluded">%1$s responses excluded · %2$s lack reliable historical fields</string>
+    <string name="insights_change">%1$s percentage points versus the preceding 30 days</string>
+    <string name="insights_change_note">A descriptive comparison of review events; it does not establish a change in comprehension.</string>
+    <string name="insights_memory_title">Estimated memory maturity</string>
+    <string name="insights_memory_scope">Active cards · FSRS estimates, not comprehension or mastery</string>
+    <string name="insights_new">New</string>
+    <string name="insights_mature">Mature · estimated</string>
+    <string name="insights_longer_memory">Longer-lasting memory</string>
+    <string name="insights_memory_rules">New cards have no completed responses. Mature cards are in the review state with estimated stability of at least 21 days. Learning includes all other reviewed cards, including relearning. Stability is the estimated time until recall probability reaches 90 percent; the 21-day cutoff is a reporting convention, not proof of mastery.</string>
+    <string name="insights_active_scope">Recall and memory insights include currently active cards only. Suspended cards and archived lessons or subjects are excluded. Deleting history removes its contribution. The activity calendar still shows all retained completed responses.</string>
+    <string name="insights_review_target">Review target</string>
+    <string name="insights_attention_title">Optional attention</string>
+    <string name="insights_attention_intro">A few patterns to explore if useful. These suggestions do not change your review schedule.</string>
+    <string name="insights_attention_empty">No repeated recall difficulty stands out in the available history. Keep your usual schedule.</string>
+    <string name="insights_failure_pattern">Again on %1$s of the last %2$s eligible reviews</string>
+    <string name="insights_attention_rules">Suggestions use the last five eligible reviews within 90 days. A card needs at least three eligible reviews and two Again responses. Two recent successful eligible reviews clear the suggestion. Cards are ordered by the proportion of failed responses, then failure count and most recent failure. Due counts do not determine this order.</string>
+    <string name="insights_card_context">Difficulty %1$s · lapses %2$s · stability %3$s days · scheduled interval %4$s days</string>
+    <string name="insights_next_review">Next scheduled review: %1$s</string>
+    <string name="insights_due_now">Due or overdue</string>
+    <string name="insights_activity_scope">All recorded study activity</string>
+    <string name="insights_reviewed_once">Reviewed at least once</string>
+    <plurals name="insights_affected_cards">
+        <item quantity="one">%1$s card has shown repeated recall difficulty</item>
+        <item quantity="other">%1$s cards have shown repeated recall difficulty</item>
+    </plurals>
+</resources>

@@ -1,0 +1,42 @@
+<resources>
+    <string name="insights_predicted_title">Rappel prédit actuel · FSRS</string>
+    <string name="insights_predicted_coverage">Couverture de la prédiction : %1$s / %2$s cartes actives</string>
+    <string name="insights_predicted_empty">Aucune estimation de mémoire admissible pour le moment. Seules les cartes en état de révision avec des données de mémoire valides sont incluses ; la couverture figure ci-dessous.</string>
+    <string name="insights_predicted_small">Cette estimation couvre un petit groupe de cartes, pas toute votre bibliothèque.</string>
+    <string name="insights_predicted_scope">Estimation FSRS à poids égal des cartes actives en état de révision, avec une révision précédente connue et une stabilité valide. Le temps suit les limites des jours UTC et se rafraîchit environ chaque minute. Ce n’est ni la réussite observée, ni la compréhension, ni la calibration ; les deux indicateurs décrivent des populations et des moments différents.</string>
+    <string name="insights_recall_title">Rappel observé</string>
+    <string name="insights_recall_period">30 derniers jours · réussite déclarée par réponse</string>
+    <string name="insights_recall_scope">Réussite déclarée en révision, pas le pourcentage de votre bibliothèque retenu.</string>
+    <string name="insights_sample">%1$s réussites / %2$s révisions admissibles · %3$s cartes</string>
+    <string name="insights_insufficient">Pas encore assez de révisions espacées pour un pourcentage utile. Les nombres disponibles figurent ci-dessous.</string>
+    <string name="insights_no_sample">L’apprentissage initial et les essais rapprochés sont séparés. Les révisions programmées et espacées apparaîtront ici au fil de votre étude.</string>
+    <string name="insights_legacy_sample">Certaines anciennes révisions manquent des informations nécessaires. Leur historique est conservé ; les nombres disponibles figurent ci-dessous.</string>
+    <string name="insights_details">Comment fonctionnent ces données</string>
+    <string name="insights_recall_rules">À nouveau indique un échec ; Difficile, Bien et Facile indiquent une réussite selon votre évaluation. Seules les révisions arrivées à échéance, dans l’état de révision et au moins 24 heures après la réponse précédente, comptent. L’apprentissage initial, le réapprentissage, les essais anticipés et les données historiques non fiables sont exclus. Seule la première réponse admissible par carte et jour local compte. Le pourcentage nécessite 30 révisions admissibles sur 10 cartes.</string>
+    <string name="insights_excluded">%1$s réponses exclues · %2$s sans données historiques fiables</string>
+    <string name="insights_change">%1$s points de pourcentage par rapport aux 30 jours précédents</string>
+    <string name="insights_change_note">Comparaison descriptive des réponses ; elle ne prouve pas un changement de compréhension.</string>
+    <string name="insights_memory_title">Maturité estimée de la mémoire</string>
+    <string name="insights_memory_scope">Cartes actives · estimations FSRS, pas compréhension ni maîtrise</string>
+    <string name="insights_new">Nouvelles</string>
+    <string name="insights_mature">Matures · estimation</string>
+    <string name="insights_longer_memory">Mémoire plus durable</string>
+    <string name="insights_memory_rules">Les nouvelles cartes n’ont aucune réponse terminée. Les cartes matures sont en état de révision avec une stabilité estimée d’au moins 21 jours. En apprentissage comprend toutes les autres cartes déjà répondues, y compris le réapprentissage. La stabilité estime le temps avant que le rappel atteigne 90 pour cent ; le seuil de 21 jours est une convention de présentation, pas une preuve de maîtrise.</string>
+    <string name="insights_active_scope">Les données de rappel et de mémoire concernent uniquement les cartes actuellement actives. Les cartes suspendues et les leçons ou matières archivées sont exclues. Supprimer un historique retire sa contribution. Le calendrier conserve toutes les réponses terminées enregistrées.</string>
+    <string name="insights_review_target">Objectif de révision</string>
+    <string name="insights_attention_title">Attention facultative</string>
+    <string name="insights_attention_intro">Quelques tendances à explorer si elles vous aident. Ces suggestions ne changent pas votre calendrier.</string>
+    <string name="insights_attention_empty">Aucune difficulté répétée ne ressort de l’historique disponible. Gardez votre rythme habituel.</string>
+    <string name="insights_failure_pattern">À nouveau dans %1$s des %2$s dernières révisions admissibles</string>
+    <string name="insights_attention_rules">Les suggestions utilisent les cinq dernières révisions admissibles sur 90 jours. Il faut au moins trois révisions admissibles et deux réponses À nouveau. Deux réussites récentes consécutives effacent la suggestion. Les cartes sont classées par proportion d’échecs, puis par nombre et date du dernier échec. Le nombre de cartes à réviser ne détermine pas cet ordre.</string>
+    <string name="insights_card_context">Difficulté %1$s · échecs %2$s · stabilité %3$s jours · intervalle prévu %4$s jours</string>
+    <string name="insights_next_review">Prochaine révision prévue : %1$s</string>
+    <string name="insights_due_now">À réviser ou en retard</string>
+    <string name="insights_activity_scope">Toute l’activité d’étude enregistrée</string>
+    <string name="insights_reviewed_once">Répondues au moins une fois</string>
+    <plurals name="insights_affected_cards">
+        <item quantity="one">%1$s carte a montré une difficulté de rappel répétée</item>
+        <item quantity="many">%1$s cartes ont montré une difficulté de rappel répétée</item>
+        <item quantity="other">%1$s cartes ont montré une difficulté de rappel répétée</item>
+    </plurals>
+</resources>

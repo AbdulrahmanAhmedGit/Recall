@@ -1,0 +1,42 @@
+<resources>
+    <string name="insights_predicted_title">Recuerdo previsto actual · FSRS</string>
+    <string name="insights_predicted_coverage">Cobertura de la predicción: %1$s / %2$s tarjetas activas</string>
+    <string name="insights_predicted_empty">Aún no hay estimaciones de memoria válidas. Solo se incluyen tarjetas en estado de repaso con datos de memoria válidos; la cobertura aparece abajo.</string>
+    <string name="insights_predicted_small">Esta estimación cubre un grupo pequeño de tarjetas, no toda tu biblioteca.</string>
+    <string name="insights_predicted_scope">Estimación FSRS con igual peso para tarjetas activas en estado de repaso, con un repaso previo conocido y estabilidad válida. El tiempo usa los límites de día UTC y se actualiza aproximadamente cada minuto. No mide éxito observado, comprensión ni calibración; ambos indicadores describen poblaciones y momentos distintos.</string>
+    <string name="insights_recall_title">Recuerdo observado</string>
+    <string name="insights_recall_period">Últimos 30 días · éxito declarado por respuesta</string>
+    <string name="insights_recall_scope">Éxito de repaso según tu valoración, no el porcentaje recordado de tu biblioteca.</string>
+    <string name="insights_sample">%1$s respuestas correctas / %2$s repasos válidos · %3$s tarjetas</string>
+    <string name="insights_insufficient">Aún no hay suficientes repasos espaciados para un porcentaje útil. Los recuentos aparecen abajo.</string>
+    <string name="insights_no_sample">El aprendizaje inicial y los intentos breves se cuentan por separado. Aquí aparecerán los repasos programados y espaciados mientras estudias.</string>
+    <string name="insights_legacy_sample">Algunos repasos antiguos no tienen la información necesaria para esta métrica. Su historial se conserva; los recuentos están abajo.</string>
+    <string name="insights_details">Cómo funcionan estos datos</string>
+    <string name="insights_recall_rules">Otra vez indica un fallo; Difícil, Bien y Fácil indican éxito según tu valoración. Solo cuentan los repasos vencidos en estado de repaso, al menos 24 horas después de la respuesta anterior. Se excluyen el aprendizaje inicial, el reaprendizaje, la práctica anticipada y los registros sin datos históricos fiables. Solo cuenta la primera respuesta válida por tarjeta y día local. El porcentaje requiere 30 repasos válidos de 10 tarjetas.</string>
+    <string name="insights_excluded">%1$s respuestas excluidas · %2$s sin datos históricos fiables</string>
+    <string name="insights_change">%1$s puntos porcentuales frente a los 30 días anteriores</string>
+    <string name="insights_change_note">Comparación descriptiva de respuestas; no demuestra un cambio en la comprensión.</string>
+    <string name="insights_memory_title">Madurez estimada de la memoria</string>
+    <string name="insights_memory_scope">Tarjetas activas · estimaciones FSRS, no comprensión ni dominio</string>
+    <string name="insights_new">Nuevas</string>
+    <string name="insights_mature">Maduras · estimadas</string>
+    <string name="insights_longer_memory">Memoria más duradera</string>
+    <string name="insights_memory_rules">Las tarjetas nuevas no tienen respuestas completadas. Las maduras están en estado de repaso con una estabilidad estimada de al menos 21 días. En aprendizaje incluye las demás tarjetas respondidas, también el reaprendizaje. La estabilidad estima el tiempo hasta alcanzar un 90 por ciento de probabilidad de recuerdo; el umbral de 21 días es una convención informativa, no una prueba de dominio.</string>
+    <string name="insights_active_scope">Los datos de recuerdo y memoria incluyen solo tarjetas actualmente activas. Se excluyen las suspendidas y las lecciones o materias archivadas. Eliminar el historial elimina su contribución. El calendario de actividad conserva todas las respuestas completadas guardadas.</string>
+    <string name="insights_review_target">Objetivo de repaso</string>
+    <string name="insights_attention_title">Atención opcional</string>
+    <string name="insights_attention_intro">Algunos patrones que puedes explorar si te ayudan. Estas sugerencias no cambian tu calendario.</string>
+    <string name="insights_attention_empty">No destaca ninguna dificultad repetida en el historial disponible. Mantén tu horario habitual.</string>
+    <string name="insights_failure_pattern">Otra vez en %1$s de los últimos %2$s repasos válidos</string>
+    <string name="insights_attention_rules">Las sugerencias usan los últimos cinco repasos válidos en 90 días. Una tarjeta necesita al menos tres repasos válidos y dos respuestas Otra vez. Dos éxitos recientes consecutivos eliminan la sugerencia. El orden depende de la proporción de fallos, después de su cantidad y del fallo más reciente. Las tarjetas vencidas no determinan el orden.</string>
+    <string name="insights_card_context">Dificultad %1$s · fallos %2$s · estabilidad %3$s días · intervalo programado %4$s días</string>
+    <string name="insights_next_review">Próximo repaso programado: %1$s</string>
+    <string name="insights_due_now">Pendiente o atrasado</string>
+    <string name="insights_activity_scope">Toda la actividad de estudio registrada</string>
+    <string name="insights_reviewed_once">Respondidas al menos una vez</string>
+    <plurals name="insights_affected_cards">
+        <item quantity="one">%1$s tarjeta ha mostrado dificultad repetida de recuerdo</item>
+        <item quantity="many">%1$s tarjetas han mostrado dificultad repetida de recuerdo</item>
+        <item quantity="other">%1$s tarjetas han mostrado dificultad repetida de recuerdo</item>
+    </plurals>
+</resources>

@@ -83,7 +83,6 @@
     <string name="ui_no_summary">لا يوجد ملخص بعد.</string>
     <string name="ui_last_review">آخر مراجعة</string>
     <string name="ui_not_reviewed">لم تتم المراجعة بعد</string>
-    <string name="ui_learned_cards">البطاقات التي تمت دراستها</string>
     <string name="ui_rename_tag">تغيير اسم الوسم في كل الدروس</string>
     <string name="ui_tag_name">اسم الوسم</string>
     <string name="ui_remove_tag">إزالة الوسم</string>
@@ -127,15 +126,7 @@
     <string name="ui_insights_hint">نظرة مفيدة على الذاكرة، لا لوحة منافسة.</string>
     <string name="ui_reviewed">تمت مراجعتها</string>
     <string name="ui_study_time">وقت الدراسة</string>
-    <string name="ui_target">المستهدف</string>
-    <string name="ui_memory">الذاكرة</string>
     <string name="ui_learning">قيد التعلم</string>
-    <string name="ui_mature">تمت دراستها</string>
-    <string name="ui_difficult">صعبة</string>
-    <string name="ui_attention_lessons">دروس تحتاج إلى اهتمام</string>
-    <string name="ui_no_history">لا يوجد سجل بعد</string>
-    <string name="ui_history_hint">راجع بعض البطاقات لتبدأ رؤية تقدمك.</string>
-    <string name="ui_long_term_progress">التقدم طويل المدى</string>
     <string name="ui_nothing_due">لا توجد مراجعات مستحقة</string>
     <string name="ui_reviews_complete">أكملت مراجعاتك المجدولة.</string>
     <string name="ui_end_review">إنهاء المراجعة</string>
@@ -170,9 +161,6 @@
     <string name="ui_permission_denied">لم يتم منح إذن الإشعارات.</string>
     <string name="ui_backup_exported">تم تصدير النسخة الاحتياطية.</string>
     <string name="ui_backup_write_error">تعذر كتابة النسخة الاحتياطية.</string>
-    <string name="ui_backup_create_error">تعذر إنشاء النسخة الاحتياطية.</string>
-    <string name="ui_reading_backup">جارٍ قراءة النسخة الاحتياطية…</string>
-    <string name="ui_backup_read_error">تعذر قراءة الملف.</string>
     <string name="ui_settings_hint">ادرس بالطريقة التي تناسبك.</string>
     <string name="ui_study">الدراسة</string>
     <string name="ui_retention">نسبة التذكر المستهدفة</string>

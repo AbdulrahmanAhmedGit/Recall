@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -19,11 +20,14 @@ import java.util.Calendar
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import java.time.LocalDate
 import java.time.YearMonth
 
@@ -49,6 +53,22 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     // Kept across Activity recreation without putting full card text in Android's
     // size-limited saved-state Bundle. Process recreation returns safely to Today.
     internal var activeReviewCards: List<CardWithLesson>? = null
+        set(value) {
+            if (value != null && field !== value) reviewProgress.value = ReviewSessionProgress()
+            field = value
+        }
+    val reviewProgress = MutableStateFlow(ReviewSessionProgress())
+    val reviewTimer = ReviewTimer()
+    private var deferredBatchCards = emptyList<String>()
+    fun revealReviewAnswer() { reviewProgress.value = reviewProgress.value.copy(revealed = true) }
+    fun skipReviewCard(presentedId: String) {
+        val old = reviewProgress.value
+        if (activeReviewCards?.getOrNull(old.index)?.id != presentedId) return
+        if (!old.saving) {
+            activeReviewCards?.getOrNull(old.index)?.let { card -> deferredBatchCards = (deferredBatchCards + card.id).distinct().takeLast(BacklogPolicy.batchSize) }
+            reviewProgress.value = old.copy(index = old.index + 1, revealed = false, skipped = old.skipped + 1)
+        }
+    }
     val subjects = dao.subjects().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val schedules = dao.schedules().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     private val activityRefresh = MutableStateFlow(0L)
@@ -61,14 +81,56 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), System.currentTimeMillis())
     val lessons = clock.flatMapLatest { dao.lessonOverviews(it) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val dueCount = clock.flatMapLatest { dao.dueCount(it) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
-    val todayReviews = clock.map { todayStart() }.distinctUntilChanged().flatMapLatest { dao.reviewCountSince(it) }
+    fun remainingDueReviews(): Flow<Int> = clock.flatMapLatest { dao.dueCount(it) }
+    private val reviewInvalidations = database.invalidationTracker.createFlow("ReviewLogEntity")
+    val todayReviews = combine(clock, reviewInvalidations) { _, _ ->
+        dao.reviewCountSnapshot(todayStart(), System.currentTimeMillis())
+    }.flowOn(Dispatchers.IO)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
     private val localDays = clock.map { ActivityPeriod.current() }.distinctUntilChanged()
-    val studyActivity = localDays.flatMapLatest { period ->
-        dao.studyActivity(studyActivityQuery(period)).map { rows ->
-            StudyActivity(period, rows.associate { LocalDate.ofEpochDay(it.epochDay) to it.reviewCount })
-        }
+    val studyActivity = combine(clock, reviewInvalidations) { _, _ ->
+        val now = System.currentTimeMillis()
+        val period = ActivityPeriod.current()
+        val rows = dao.studyActivitySnapshot(studyActivityQuery(period, now))
+        StudyActivity(period, rows.associate { LocalDate.ofEpochDay(it.epochDay) to it.reviewCount })
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StudyActivity(ActivityPeriod.current()))
+    private val recallHistory = localDays.flatMapLatest { day ->
+        val period = InsightsPeriod(day.today, day.zone)
+        var previousEvents: List<RecallReviewEvent>? = null
+        var previousAnalysis: RecallHistoryAnalysis? = null
+        var nextFutureAt = Long.MAX_VALUE
+        var analyzedAt = Long.MIN_VALUE
+        combine(dao.insightsReviews(period.historyStart, period.end), clock) { events, _ ->
+            // A newly committed response can be newer than the last minute tick.
+            val now = System.currentTimeMillis()
+            // Minute ticks refresh urgency, but unchanged history need not be sorted again.
+            if (previousEvents === events && previousAnalysis != null && now >= analyzedAt && now < nextFutureAt) previousAnalysis!!
+            else analyzeRecallHistory(events, period, now).also {
+                previousEvents = events
+                previousAnalysis = it
+                analyzedAt = now
+                nextFutureAt = events.asSequence().map { event -> event.reviewedAt }.filter { at -> at > now }.minOrNull() ?: Long.MAX_VALUE
+            }
+        }.distinctUntilChanged()
+    }.flowOn(Dispatchers.Default)
+    private val predictedRecall = run {
+        val predictor = CurrentRecallPredictor()
+        combine(dao.insightsPredictionCards(), clock) { cards, _ ->
+            // Room can publish a completed response after the last minute tick.
+            predictor.calculate(cards, System.currentTimeMillis())
+        }.distinctUntilChanged().flowOn(Dispatchers.Default)
+            .shareIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), replay = 1)
+    }
+    val learningInsights: StateFlow<LearningInsights?> = recallHistory.flatMapLatest { history ->
+        val ids = history.attention.map { it.example.cardId }
+        val details = if (ids.isEmpty()) flowOf(emptyList()) else dao.insightsAttentionCards(ids)
+        combine(dao.insightsMemoryCounts(InsightsPolicy.matureStabilityDays, Double.MAX_VALUE), details, clock, predictedRecall) { memory, cards, now, prediction ->
+            val byId = cards.associateBy { it.cardId }
+            LearningInsights(memory, history, history.attention.mapNotNull { group ->
+                byId[group.example.cardId]?.let { AttentionLesson(group, it) }
+            }, now, prediction)
+        }
+    }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val settings = preferences.settings.stateIn(viewModelScope, SharingStarted.Eagerly, UserSettings())
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     fun calendarDays(month: YearMonth): Flow<List<ReviewCalendarDay>> = localDays.flatMapLatest { day ->
@@ -118,6 +180,12 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         finally { reviewLoading.value = false }
     }
     fun reviewDue(onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({ dao.dueCards(System.currentTimeMillis()) }, onLoaded)
+    fun reviewBatch(onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({
+        val now = System.currentTimeMillis()
+        dao.dueBatch(now, settings.value.newCardLimit, BacklogPolicy.batchSize, deferredBatchCards).ifEmpty {
+            dao.dueBatch(now, settings.value.newCardLimit, BacklogPolicy.batchSize)
+        }
+    }, onLoaded)
     fun reviewSubject(subjectId: String, onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({ dao.dueCards(System.currentTimeMillis(), subjectId) }, onLoaded)
     fun reviewLesson(lessonId: String, onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({ dao.lessonCards(lessonId) }, onLoaded)
     fun preview(card: CardWithLesson, reviewedAt: Long, retention: Double = settings.value.desiredRetention): Map<Rating, ScheduleResult> =
@@ -144,7 +212,7 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
             reps = result.state.reps,
             lapses = result.state.lapses,
         )
-        val saved = dao.commitReviewIfCurrent(card.reviewState(), result.state, log)
+        val saved = dao.commitReviewIfCurrent(card.reviewState(), result.state, log, card)
         if (!saved) notice.value = ui(R.string.ui_card_changed_error)
         onSaved(saved)
         if (saved) queueReminderRefresh()
@@ -152,6 +220,28 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         catch (_: Exception) {
             notice.value = ui(R.string.ui_answer_save_error)
             onSaved(false)
+        }
+    }
+    fun submitReview(card: CardWithLesson, shown: Map<Rating, ScheduleResult>, rating: Rating, refresh: (Map<Rating, ScheduleResult>) -> Unit) {
+        if (reviewProgress.value.saving) return
+        if (activeReviewCards?.getOrNull(reviewProgress.value.index)?.id != card.id) return
+        val now = System.currentTimeMillis()
+        val fresh = preview(card, now)
+        if (card.lastReviewedAt?.let { now < it } == true || !sameReviewIntervals(shown, fresh)) {
+            refresh(fresh)
+            notice.value = ui(R.string.phase3_review_refreshed)
+            return
+        }
+        val sessionCards = activeReviewCards
+        val old = reviewProgress.value
+        reviewProgress.value = old.copy(saving = true)
+        rate(card, fresh.getValue(rating), reviewTimer.duration(android.os.SystemClock.elapsedRealtime())) { saved ->
+            // A completion callback must never advance a different/new session.
+            if (activeReviewCards === sessionCards) {
+                reviewProgress.value = if (saved) old.copy(index = old.index + 1, revealed = false,
+                    counts = old.counts.mapIndexed { i, count -> count + if (i == rating.ordinal) 1 else 0 })
+                else old.copy(saving = false)
+            }
         }
     }
     private fun CardWithLesson.reviewState() = ReviewStateEntity(id, state, dueAt, lastReviewedAt, stability, difficulty, scheduledDays, reps, lapses)
@@ -172,18 +262,36 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     fun setThemeMode(value: String) = viewModelScope.launch { preferences.setThemeMode(value) }
     fun setLanguage(value: String) = viewModelScope.launch { preferences.setLanguage(value) }
     fun setDynamicColor(value: Boolean) = viewModelScope.launch { preferences.setDynamicColor(value) }
-    fun exportBackup(onResult: (Result<String>) -> Unit) = viewModelScope.launch {
-        onResult(withContext(Dispatchers.Default) { runCatching { RecallBackupCodec.encode(dao.backup(), settings.value) } })
+    fun exportBackupFile(uri: android.net.Uri, onResult: (String) -> Unit) = viewModelScope.launch {
+        val context = getApplication<Application>()
+        var staged: java.io.File? = null
+        try {
+            withContext(Dispatchers.IO) {
+                val file = java.io.File.createTempFile("recall-json-", ".json", context.cacheDir).also { staged = it }
+                file.bufferedWriter().use { RecallBackupCodec.write(it, dao.backup(), settings.value) }
+                require(file.length() <= 50L * 1024 * 1024)
+                context.contentResolver.openOutputStream(uri, "wt")?.use { output -> file.inputStream().use { it.copyTo(output) } } ?: error("Cannot write backup")
+            }
+            onResult(ui(R.string.ui_backup_exported))
+        } catch (e: CancellationException) { throw e }
+        catch (_: Exception) { onResult(ui(R.string.ui_backup_write_error)) }
+        finally { withContext(kotlinx.coroutines.NonCancellable + Dispatchers.IO) { staged?.delete() } }
     }
-    fun importBackup(raw: String, onResult: (String) -> Unit) = viewModelScope.launch {
-        when (val parsed = withContext(Dispatchers.Default) { RecallBackupCodec.decode(raw) }) {
-            is BackupResult.Failure -> onResult(ui(R.string.ui_backup_invalid))
-            is BackupResult.Success -> runCatching {
-                dao.mergeBackup(parsed.data)
-                preferences.restore(parsed.settings)
-                refreshReminders()
-            }.fold({ onResult(ui(R.string.ui_backup_restored)) }, { onResult(ui(R.string.ui_backup_restore_error)) })
-        }
+    fun importBackupFile(uri: android.net.Uri, onResult: (String) -> Unit) = viewModelScope.launch {
+        var committed = false
+        try {
+            val context = getApplication<Application>()
+            val parsed = withContext(Dispatchers.IO) {
+                context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { RecallBackupCodec.read(it) } ?: error("Cannot read backup")
+            }
+            if (parsed !is BackupResult.Success) { onResult(ui(R.string.ui_backup_invalid)); return@launch }
+            dao.mergeBackup(parsed.data)
+            committed = true
+            preferences.restore(parsed.settings)
+            refreshReminders()
+            onResult(ui(R.string.ui_backup_restored))
+        } catch (e: CancellationException) { throw e }
+        catch (_: Exception) { onResult(ui(if (committed) R.string.ui_restore_partial else R.string.ui_backup_restore_error)) }
     }
     suspend fun refreshReminders() {
         if (preferences.settings.first().remindersEnabled) ReminderWorker.schedule(getApplication()) else ReminderWorker.cancel(getApplication())
@@ -243,8 +351,13 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
                 val mapped = restored.data.copy(resources = restored.data.resources.map { resource ->
                     restored.files[resource.id]?.let { file -> resource.copy(uri = androidx.core.content.FileProvider.getUriForFile(context, context.packageName + ".materials", file).toString()) } ?: resource
                 })
-                dao.mergeBackup(mapped)
-                committed = true
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                // Cancellation must not land between Room's commit and recording
+                // ownership: cleanup would otherwise delete now-referenced files.
+                withContext(kotlinx.coroutines.NonCancellable) {
+                    dao.mergeBackup(mapped)
+                    committed = true
+                }
                 // Merging keeps existing records. Do not retain extra attachment copies for ignored IDs.
                 val retainedUris = dao.allResources().mapNotNull { it.uri }.toSet()
                 mapped.resources.forEach { resource ->

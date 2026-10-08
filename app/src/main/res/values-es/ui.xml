@@ -83,7 +83,6 @@
     <string name="ui_no_summary">Todavía no hay resumen.</string>
     <string name="ui_last_review">Última revisión</string>
     <string name="ui_not_reviewed">Aún no revisada</string>
-    <string name="ui_learned_cards">Tarjetas estudiadas</string>
     <string name="ui_rename_tag">Renombrar etiqueta en todas partes</string>
     <string name="ui_tag_name">Nombre de etiqueta</string>
     <string name="ui_remove_tag">Quitar etiqueta</string>
@@ -127,15 +126,7 @@
     <string name="ui_insights_hint">Una vista útil de tu memoria, no una competición.</string>
     <string name="ui_reviewed">Revisadas</string>
     <string name="ui_study_time">Tiempo de estudio</string>
-    <string name="ui_target">Objetivo</string>
-    <string name="ui_memory">Memoria</string>
     <string name="ui_learning">En aprendizaje</string>
-    <string name="ui_mature">Estudiadas</string>
-    <string name="ui_difficult">Difíciles</string>
-    <string name="ui_attention_lessons">Lecciones que requieren atención</string>
-    <string name="ui_no_history">Todavía no hay historial</string>
-    <string name="ui_history_hint">Revisa algunas tarjetas para ver tu progreso.</string>
-    <string name="ui_long_term_progress">Progreso a largo plazo</string>
     <string name="ui_nothing_due">Nada pendiente</string>
     <string name="ui_reviews_complete">Has terminado las revisiones programadas.</string>
     <string name="ui_end_review">Terminar revisión</string>
@@ -170,9 +161,6 @@
     <string name="ui_permission_denied">No se concedió permiso de notificaciones.</string>
     <string name="ui_backup_exported">Copia de seguridad exportada.</string>
     <string name="ui_backup_write_error">No se pudo escribir la copia.</string>
-    <string name="ui_backup_create_error">No se pudo crear la copia.</string>
-    <string name="ui_reading_backup">Leyendo copia…</string>
-    <string name="ui_backup_read_error">No se pudo leer el archivo.</string>
     <string name="ui_settings_hint">Estudia a tu manera.</string>
     <string name="ui_study">Estudio</string>
     <string name="ui_retention">Retención deseada</string>

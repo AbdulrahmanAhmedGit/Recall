@@ -45,7 +45,18 @@ object FullBackupArchive {
                 require(total <= MAX_TOTAL) { "Archive exceeds 2 GB" }
                 zip.putNextEntry(ZipEntry(name)); zip.write(bytes); zip.closeEntry()
             }
-            jsonEntry("data.json", RecallBackupCodec.encode(portable, settings))
+            zip.putNextEntry(ZipEntry("data.json"))
+            var jsonBytes = 0L
+            val counted = object : OutputStream() {
+                override fun write(value: Int) { write(byteArrayOf(value.toByte()), 0, 1) }
+                override fun write(bytes: ByteArray, offset: Int, count: Int) {
+                    jsonBytes += count; total += count
+                    require(jsonBytes <= MAX_JSON && total <= MAX_TOTAL) { "Backup exceeds archive limits" }
+                    zip.write(bytes, offset, count)
+                }
+            }
+            RecallBackupCodec.write(counted.writer(Charsets.UTF_8).buffered(), portable, settings)
+            zip.closeEntry()
             jsonEntry("manifest.json", JSONObject().put("format", "recall-full-backup").put("version", 1).put("files", manifest).toString())
         }
     }
@@ -56,7 +67,7 @@ object FullBackupArchive {
         val files = mutableMapOf<String, File>()
         val hashes = mutableMapOf<String, String>()
         var total = 0L
-        var dataText: String? = null
+        var dataFile: File? = null
         var manifestText: String? = null
         try {
             ZipInputStream(BufferedInputStream(input)).use { zip ->
@@ -64,11 +75,17 @@ object FullBackupArchive {
                     val entry = zip.nextEntry ?: break
                     val name = entry.name
                     require(!entry.isDirectory && seen.add(name) && seen.size <= 100_002) { "Duplicate or invalid archive entry" }
-                    if (name == "data.json" || name == "manifest.json") {
+                    if (name == "data.json") {
+                        val file = File(directory, "data.json")
+                        dataFile = file
+                        file.outputStream().use { output ->
+                            transfer(zip, output, MAX_JSON) { _, count -> total += count; require(total <= MAX_TOTAL) }
+                        }
+                    } else if (name == "manifest.json") {
                         val bytes = ByteArrayOutputStream()
                         transfer(zip, bytes, MAX_JSON) { _, count -> total += count; require(total <= MAX_TOTAL) }
                         val text = bytes.toString("UTF-8")
-                        if (name == "data.json") dataText = text else manifestText = text
+                        manifestText = text
                     } else {
                         require(Regex("materials/[0-9]{1,6}").matches(name)) { "Unsafe archive path" }
                         val file = File(directory, name.substringAfter('/'))
@@ -84,7 +101,8 @@ object FullBackupArchive {
             }
             val manifest = JSONObject(requireNotNull(manifestText) { "Missing manifest" })
             require(manifest.getString("format") == "recall-full-backup" && manifest.getInt("version") == 1)
-            val decoded = RecallBackupCodec.decode(requireNotNull(dataText)) as? BackupResult.Success ?: error("Invalid study data")
+            val decoded = requireNotNull(dataFile).reader(Charsets.UTF_8).buffered().use { RecallBackupCodec.read(it) } as? BackupResult.Success ?: error("Invalid study data")
+            dataFile?.delete()
             val metadata = manifest.getJSONArray("files")
             val resources = decoded.data.resources.associateBy { it.id }
             require(resources.size == decoded.data.resources.size)

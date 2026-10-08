@@ -4,7 +4,7 @@ Offline-first native Android study companion built around subjects, optional
 chapters, and lessons. Flashcards help retain lessons over time rather than
 acting as the primary organization system.
 
-Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.3)
+Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.4)
 for Android 7.0 or newer. Preview APKs are debug-signed; export a full backup before
 updating and read the release's installation notes.
 
@@ -75,6 +75,17 @@ It is not a store release: public/store releases require a managed release signi
 key. Keep the debug build for instrumentation and debugging.
 
 ## Learning model
+
+See [Phase 3 reliability, optional small sessions, measured performance and device
+checklist](docs/phase3-reliability.md). New review dates are anchored coherently to
+rating submission; existing history is preserved, not reconstructed.
+
+Learning Insights reports [event-based observed recall, estimated memory maturity,
+and optional attention suggestions](docs/learning-insights.md). It shows sample
+sizes, excludes unreliable legacy audit records, and distinguishes memory estimates
+from comprehension. Optional expandable current predicted recall reuses the FSRS-6
+curve with explicit active-card coverage. [Historical prediction and calibration](docs/learning-insights-phase2-proposal.md)
+remain deferred; no analytics migration or scheduling change is included.
 
 Recall supports retrieval practice and spaced practice, with FSRS-6 memory-state
 equations. Predictions are estimates, not guarantees of learning outcomes. This

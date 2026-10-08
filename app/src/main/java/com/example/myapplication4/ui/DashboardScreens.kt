@@ -10,7 +10,6 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.LocalLibrary
-import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +27,7 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 
 @Composable internal fun ScreenFrame(content: @Composable ColumnScope.() -> Unit) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
@@ -41,6 +41,7 @@ fun TodayScreen(due: Int, lessons: List<LessonOverview>, vm: RecallViewModel, re
     val s = recallStrings()
 
     val reviewLoading by vm.reviewLoading.collectAsStateWithLifecycle()
+    val backlog = com.example.myapplication4.domain.BacklogPolicy.isBacklog(due)
     val dueLessons = remember(lessons) { lessons.filter { it.due > 0 } }
     val upcoming = remember(lessons) { lessons.filter { it.due == 0 && it.total > 0 }.take(3) }
     ScreenFrame {
@@ -58,7 +59,9 @@ fun TodayScreen(due: Int, lessons: List<LessonOverview>, vm: RecallViewModel, re
                     Text(s.resources.getQuantityString(R.plurals.ui_due_suffix, due), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 5.dp, start = RecallSpacing.xs))
                 }
                 Text(s(R.string.ui_today_counts, s.count(R.plurals.ui_lessons, dueLessons.size), s.count(R.plurals.ui_minutes, if (due == 0) 0 else maxOf(1, due / 4))), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted)
-                RecallPrimaryButton(if (reviewLoading) s(R.string.ui_loading) else if (due > 0) s(R.string.ui_start_review) else s(R.string.ui_review_anyway), Icons.Outlined.AutoStories, { vm.reviewDue(review) }, Modifier.fillMaxWidth().padding(top = RecallSpacing.lg), enabled = !reviewLoading)
+                if (backlog) Text(s(R.string.phase3_backlog_intro), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(top = RecallSpacing.sm))
+                RecallPrimaryButton(if (reviewLoading) s(R.string.ui_loading) else if (backlog) s(R.string.phase3_small_session) else if (due > 0) s(R.string.ui_start_review) else s(R.string.ui_review_anyway), Icons.Outlined.AutoStories, { if (backlog) vm.reviewBatch(review) else vm.reviewDue(review) }, Modifier.fillMaxWidth().padding(top = RecallSpacing.lg), enabled = !reviewLoading)
+                if (backlog) TextButton({ vm.reviewDue(review) }, enabled = !reviewLoading) { Text(s(R.string.phase3_all_due)) }
                 SectionHeader(s(R.string.ui_due_lessons), if (dueLessons.isEmpty()) s(R.string.ui_import) else null, import)
             }
             if (dueLessons.isEmpty()) item { RecallEmptyState(Icons.Outlined.AutoStories, s(R.string.ui_caught_up_title), s(R.string.ui_due_empty)) }
@@ -89,11 +92,12 @@ fun LibraryScreen(subjects: List<SubjectEntity>, lessons: List<LessonOverview>, 
 }
 
 @Composable
-fun InsightsScreen(vm: RecallViewModel, lessons: List<LessonOverview>, calendar: () -> Unit = {}, openLesson: (String) -> Unit = {}) {
+fun InsightsScreen(vm: RecallViewModel, calendar: () -> Unit = {}, openLesson: (String) -> Unit = {}) {
     val s = recallStrings()
 
     val reviewed by vm.todayReviews.collectAsStateWithLifecycle()
     val activity by vm.studyActivity.collectAsStateWithLifecycle()
+    val insights by vm.learningInsights.collectAsStateWithLifecycle()
     val settings by vm.settings.collectAsStateWithLifecycle()
     val systemLocale = LocalConfiguration.current.locales[0]
     val locale = if (settings.language in com.example.myapplication4.util.RecallLocale.languages) {
@@ -101,19 +105,22 @@ fun InsightsScreen(vm: RecallViewModel, lessons: List<LessonOverview>, calendar:
             if (systemLocale.country.isNotEmpty()) setRegion(systemLocale.country)
         }.build()
     } else systemLocale
-    val total = lessons.sumOf { it.total }; val learned = lessons.sumOf { it.learned }; val difficult = lessons.sumOf { it.difficult }
-    ScreenFrame { LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = RecallSpacing.lg)) {
-        item { RecallTopBar(s(R.string.ui_insights), s(R.string.ui_insights_hint), action = { ReviewCalendarAction(vm, calendar) }); SectionHeader(s(R.string.ui_today)); StatStrip(listOf(s(R.string.ui_reviewed) to s.number(reviewed), s(R.string.ui_study_time) to s(R.string.ui_estimated_minutes, s.number(reviewed / 4)), s(R.string.ui_target) to java.text.NumberFormat.getPercentInstance(s.locale).format(settings.desiredRetention))) }
-        item(key = "activity") { StudyActivityCard(activity, Modifier.padding(top = RecallSpacing.lg), locale); SectionHeader(s(R.string.ui_memory)) }
-        item { MemoryBar(learned, total); Spacer(Modifier.height(RecallSpacing.ml)); StatStrip(listOf(s(R.string.ui_learning) to s.number((total - learned).coerceAtLeast(0)), s(R.string.ui_mature) to s.number(learned), s(R.string.ui_difficult) to s.number(difficult))); SectionHeader(s(R.string.ui_attention_lessons)) }
-        val attention = lessons.sortedByDescending { it.difficult + it.due }.take(4)
-        if (attention.isEmpty()) item { RecallEmptyState(Icons.Outlined.BarChart, s(R.string.ui_no_history), s(R.string.ui_history_hint)) }
-        else items(attention, key = { it.id }) { LessonRow(it) { openLesson(it.id) } }
+    ScreenFrame { LazyColumn(Modifier.fillMaxSize().testTag("insights-list"), contentPadding = PaddingValues(bottom = RecallSpacing.lg)) {
+        item { RecallTopBar(s(R.string.ui_insights), s(R.string.ui_insights_hint), action = { ReviewCalendarAction(vm, calendar) }) }
+        item(key = "activity") { BidiAwareText(s(R.string.insights_activity_scope), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted); StudyActivityCard(activity, Modifier.padding(top = RecallSpacing.xs), locale) }
+        item { SectionHeader(s(R.string.ui_today)); StatStrip(listOf(s(R.string.ui_reviewed) to s.number(reviewed), s(R.string.ui_study_time) to s(R.string.ui_estimated_minutes, s.number(reviewed / 4)), s(R.string.insights_review_target) to java.text.NumberFormat.getPercentInstance(s.locale).format(settings.desiredRetention))) }
+        val summary = insights
+        if (summary == null) item { Text(s(R.string.ui_loading), Modifier.padding(vertical = RecallSpacing.lg), color = MaterialTheme.colorScheme.muted) }
+        else {
+            item(key = "recall") { Spacer(Modifier.height(RecallSpacing.lg)); ObservedRecallSection(summary.history) }
+            item(key = "memory") { SectionHeader(s(R.string.insights_memory_title)); MemoryMaturitySection(summary.memory); InsightsExplanation(summary.history); PredictedRecallSection(summary.predicted) }
+            item(key = "attention-title") { SectionHeader(s(R.string.insights_attention_title)); BidiAwareText(s(if (summary.attention.isEmpty()) R.string.insights_attention_empty else R.string.insights_attention_intro), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
+            items(summary.attention, key = { "attention-${it.group.lessonId}" }) { suggestion ->
+                AttentionLessonRow(suggestion, summary.now) { openLesson(suggestion.group.lessonId) }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+        }
     } }
 }
 
 @Composable private fun StatStrip(values: List<Pair<String, String>>) { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) { values.forEach { (label, value) -> Column(Modifier.weight(1f)) { Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold); Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) } } } }
-
-@Composable private fun MemoryBar(learned: Int, total: Int) {
-    val s = recallStrings()
- Column { Row { Text(s(R.string.ui_long_term_progress), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f)); Text(s.number(learned) + " / " + s.number(total), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.muted) }; Spacer(Modifier.height(RecallSpacing.sm)); LinearProgressIndicator(progress = { if (total == 0) 0f else learned.toFloat() / total }, modifier = Modifier.fillMaxWidth().height(8.dp), trackColor = MaterialTheme.colorScheme.surfaceVariant) } }

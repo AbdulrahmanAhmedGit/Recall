@@ -141,7 +141,7 @@ private fun RecallMain(destination: RecallDestination, vm: RecallViewModel, navi
         }
         RecallDestination.Insights -> {
             val lessons by vm.lessons.collectAsStateWithLifecycle()
-            InsightsScreen(vm, lessons, { navigate(RecallRoute.Calendar) }, { navigate(RecallRoute.Lesson(it)) })
+            InsightsScreen(vm, { navigate(RecallRoute.Calendar) }, { navigate(RecallRoute.Lesson(it)) })
         }
         RecallDestination.Settings -> SettingsScreen(vm) { navigate(RecallRoute.Info) }
     }

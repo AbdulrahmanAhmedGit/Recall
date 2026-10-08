@@ -83,7 +83,6 @@
     <string name="ui_no_summary">No summary yet.</string>
     <string name="ui_last_review">Last review</string>
     <string name="ui_not_reviewed">Not reviewed yet</string>
-    <string name="ui_learned_cards">Learned cards</string>
     <string name="ui_rename_tag">Rename tag everywhere</string>
     <string name="ui_tag_name">Tag name</string>
     <string name="ui_remove_tag">Remove tag</string>
@@ -127,15 +126,7 @@
     <string name="ui_insights_hint">A useful view of memory—not a scoreboard.</string>
     <string name="ui_reviewed">Reviewed</string>
     <string name="ui_study_time">Study time</string>
-    <string name="ui_target">Target</string>
-    <string name="ui_memory">Memory</string>
     <string name="ui_learning">Learning</string>
-    <string name="ui_mature">Mature</string>
-    <string name="ui_difficult">Difficult</string>
-    <string name="ui_attention_lessons">Lessons requiring attention</string>
-    <string name="ui_no_history">No history yet</string>
-    <string name="ui_history_hint">Review a few cards to begin seeing memory trends.</string>
-    <string name="ui_long_term_progress">Long-term progress</string>
     <string name="ui_nothing_due">Nothing due</string>
     <string name="ui_reviews_complete">Your scheduled reviews are complete.</string>
     <string name="ui_end_review">End review</string>
@@ -170,9 +161,6 @@
     <string name="ui_permission_denied">Notification permission was not granted.</string>
     <string name="ui_backup_exported">Backup exported.</string>
     <string name="ui_backup_write_error">Could not write the backup.</string>
-    <string name="ui_backup_create_error">Could not create the backup.</string>
-    <string name="ui_reading_backup">Reading backup…</string>
-    <string name="ui_backup_read_error">Could not read that file.</string>
     <string name="ui_settings_hint">Study on your terms.</string>
     <string name="ui_study">Study</string>
     <string name="ui_retention">Desired retention</string>

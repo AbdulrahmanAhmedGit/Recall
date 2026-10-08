@@ -253,13 +253,29 @@ handle timezone and daylight-saving changes; the grid remains chronological in R
 
 ## Insights and study activity
 
-Insights summarizes today's completed reviews, a rough study-time estimate, memory
-progress and lessons requiring attention. Attention rows open the relevant lesson.
-The current Learning/Mature overview is a simple reviewed-versus-unreviewed
-summary, not a calibrated mastery score; the Target tile currently displays 90%.
+Insights summarizes today's completed responses and a rough study-time estimate.
+The Review target tile shows the configured scheduling target. Observed recall
+reports self-reported success in eligible delayed, due review events over 30 days,
+with event and distinct-card counts; percentages require 30 events across 10 cards.
+It does not represent the remembered percentage of the library.
+
+Active cards are grouped exclusively into New, Learning and Mature — estimated.
+Mature requires review state and at least 21 days of finite FSRS stability; this
+estimates a memory horizon, not comprehension or mastery. Optional attention rows
+show evidence of repeated delayed recall failures, open the relevant lesson and
+never add obligations or reschedule cards. Legacy records without reliable audit
+fields are excluded conservatively. An optional expandable current predicted recall
+estimate averages eligible active review-state cards using the existing FSRS curve
+and UTC-day convention, with coverage and small-group/empty explanations. It is
+not comprehension and is not compared with observed events as calibration.
+See [exact definitions and limitations](learning-insights.md) and the
+[deferred historical/calibration options](learning-insights-phase2-proposal.md).
 
 **Study activity** is a contribution-style calendar from real completed response
-logs. Merely opening a card, skipping it, or having cards scheduled/due does not
+logs, displayed immediately beneath the Insights header. Arabic interface typography
+uses bundled Cairo weights offline; mathematical and chemical expressions retain
+their dedicated LTR rendering.
+Merely opening a card, skipping it, or having cards scheduled/due does not
 create activity. Multiple submitted responses to the same card count separately.
 
 - Approximately 16 recent weeks are visible initially; scroll back through a rolling year.

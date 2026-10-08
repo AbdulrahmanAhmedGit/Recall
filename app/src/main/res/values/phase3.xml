@@ -1,0 +1,9 @@
+<resources>
+    <string name="phase3_session_empty">No cards available in this session</string>
+    <string name="phase3_session_empty_hint">Your new-card preference may limit this session. Waiting cards keep their due dates.</string>
+    <string name="phase3_review_refreshed">Review times have changed. Check the intervals and choose again. If your device clock moved backwards, correct it first.</string>
+    <string name="phase3_backlog_intro">Reviews are waiting. Start with a manageable session.</string>
+    <string name="phase3_small_session">Review up to 20 cards</string>
+    <string name="phase3_all_due">Review all due cards</string>
+    <string name="phase3_remaining">Due now: %1$s. Continue whenever you like.</string>
+</resources>

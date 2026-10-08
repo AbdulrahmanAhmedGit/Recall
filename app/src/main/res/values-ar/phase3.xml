@@ -1,0 +1,9 @@
+<resources>
+    <string name="phase3_session_empty">لا توجد بطاقات متاحة لهذه الجلسة</string>
+    <string name="phase3_session_empty_hint">قد يحد إعداد البطاقات الجديدة من هذه الجلسة. البطاقات المنتظرة تحتفظ بمواعيدها.</string>
+    <string name="phase3_review_refreshed">تغيرت مواعيد المراجعة. تحقق من الفترات واختر مجددًا. إذا أعدت ساعة الجهاز إلى الوراء، صححها أولًا.</string>
+    <string name="phase3_backlog_intro">هناك مراجعات تنتظرك. ابدأ بجلسة قصيرة ومريحة.</string>
+    <string name="phase3_small_session">راجع حتى ٢٠ بطاقة</string>
+    <string name="phase3_all_due">راجع كل البطاقات المستحقة</string>
+    <string name="phase3_remaining">المستحق الآن: %1$s. أكمل متى شئت.</string>
+</resources>

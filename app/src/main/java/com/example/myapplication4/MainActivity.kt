@@ -55,7 +55,7 @@ fun RecallApp(viewModel: RecallViewModel = viewModel()) {
         RecallLocale.context(context, settings.language)
     }
     val rtl = localized.resources.configuration.layoutDirection == android.view.View.LAYOUT_DIRECTION_RTL
-    RecallTheme(darkTheme = dark, dynamicColor = settings.dynamicColor) {
+    RecallTheme(darkTheme = dark, dynamicColor = settings.dynamicColor, language = localized.resources.configuration.locales[0].language) {
         CompositionLocalProvider(LocalContext provides localized,
             LocalActivity provides activity,
             LocalActivityResultRegistryOwner provides resultOwner,

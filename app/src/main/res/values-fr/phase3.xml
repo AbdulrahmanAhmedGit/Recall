@@ -1,0 +1,9 @@
+<resources>
+    <string name="phase3_session_empty">Aucune carte disponible pour cette séance</string>
+    <string name="phase3_session_empty_hint">Votre préférence pour les nouvelles cartes peut limiter cette séance. Les cartes en attente gardent leurs dates.</string>
+    <string name="phase3_review_refreshed">Les intervalles ont changé. Vérifiez-les et choisissez à nouveau. Si vous avez reculé l’horloge, corrigez-la d’abord.</string>
+    <string name="phase3_backlog_intro">Des révisions vous attendent. Commencez par une courte séance.</string>
+    <string name="phase3_small_session">Réviser jusqu’à 20 cartes</string>
+    <string name="phase3_all_due">Réviser toutes les cartes dues</string>
+    <string name="phase3_remaining">À réviser : %1$s. Continuez à votre rythme.</string>
+</resources>

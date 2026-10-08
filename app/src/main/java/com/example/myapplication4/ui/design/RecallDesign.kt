@@ -16,11 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import com.example.myapplication4.R
 
 object RecallSpacing {
     val xxs = 4.dp
@@ -57,6 +60,13 @@ object RecallSizes {
 }
 
 private val RecallFont = FontFamily.SansSerif
+// Static weights also render correctly on API 24/25. All assets are bundled offline.
+internal val CairoFont = FontFamily(
+    Font(R.font.cairo_regular, FontWeight.Normal),
+    Font(R.font.cairo_medium, FontWeight.Medium),
+    Font(R.font.cairo_semibold, FontWeight.SemiBold),
+    Font(R.font.cairo_bold, FontWeight.Bold),
+)
 
 val RecallTypography = androidx.compose.material3.Typography(
     displayLarge = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.SemiBold, fontSize = 42.sp, lineHeight = 48.sp, letterSpacing = (-0.8).sp),
@@ -73,6 +83,27 @@ val RecallTypography = androidx.compose.material3.Typography(
     labelMedium = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.Medium, fontSize = 12.sp, lineHeight = 17.sp, letterSpacing = 0.12.sp),
     labelSmall = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.Medium, fontSize = 11.sp, lineHeight = 16.sp, letterSpacing = 0.18.sp),
 )
+
+private fun TextStyle.arabic() = copy(fontFamily = CairoFont, letterSpacing = 0.sp)
+private val ArabicTypography = RecallTypography.copy(
+    displayLarge = RecallTypography.displayLarge.arabic(),
+    displayMedium = RecallTypography.displayMedium.arabic(),
+    displaySmall = RecallTypography.displaySmall.arabic(),
+    headlineLarge = RecallTypography.headlineLarge.arabic(),
+    headlineMedium = RecallTypography.headlineMedium.arabic(),
+    headlineSmall = RecallTypography.headlineSmall.arabic(),
+    titleLarge = RecallTypography.titleLarge.arabic(),
+    titleMedium = RecallTypography.titleMedium.arabic(),
+    titleSmall = RecallTypography.titleSmall.arabic(),
+    bodyLarge = RecallTypography.bodyLarge.arabic(),
+    bodyMedium = RecallTypography.bodyMedium.arabic(),
+    bodySmall = RecallTypography.bodySmall.arabic(),
+    labelLarge = RecallTypography.labelLarge.arabic(),
+    labelMedium = RecallTypography.labelMedium.arabic(),
+    labelSmall = RecallTypography.labelSmall.arabic(),
+)
+
+internal fun recallTypography(language: String) = if (language.substringBefore('-') == "ar") ArabicTypography else RecallTypography
 
 private val LightColors = lightColorScheme(
     primary = Color(0xFF315F87), onPrimary = Color(0xFFFFFFFF),
@@ -117,7 +148,7 @@ val ColorScheme.muted get() = onSurfaceVariant
 val ColorScheme.isRecallLight get() = background.luminance() > .5f
 
 @Composable
-fun RecallTheme(darkTheme: Boolean = isSystemInDarkTheme(), dynamicColor: Boolean = false, content: @Composable () -> Unit) {
+fun RecallTheme(darkTheme: Boolean = isSystemInDarkTheme(), dynamicColor: Boolean = false, language: String? = null, content: @Composable () -> Unit) {
     val context = LocalContext.current
     val colors = when {
         dynamicColor && android.os.Build.VERSION.SDK_INT >= 31 && darkTheme -> dynamicDarkColorScheme(context)
@@ -125,7 +156,7 @@ fun RecallTheme(darkTheme: Boolean = isSystemInDarkTheme(), dynamicColor: Boolea
         darkTheme -> DarkColors
         else -> LightColors
     }
-    MaterialTheme(colorScheme = colors, typography = RecallTypography) {
+    MaterialTheme(colorScheme = colors, typography = recallTypography(language ?: LocalConfiguration.current.locales[0].language)) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,

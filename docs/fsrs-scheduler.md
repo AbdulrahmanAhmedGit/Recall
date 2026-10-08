@@ -6,8 +6,11 @@ default desired retention of 90%. The Kotlin model is ported from the MIT-licens
 `61159b9b3891b1279b63206afef4086d7ef92992`.
 
 The scheduling engine is independent from Compose. It calculates all four rating
-outcomes together; the review buttons display those exact results and the selected
-result is persisted without recalculating it at a different timestamp.
+outcomes together. Since Phase 3, the UI refreshes previews on resume and each minute,
+then evaluates the selected rating at submission time. If any displayed interval
+changed, it refreshes the buttons and requires a second, explicit choice. Otherwise
+the fresh submission-time result is persisted unchanged, with log, last-review and
+next-due timestamps all anchored to that same instant. The FSRS equations are unchanged.
 
 Recall keeps a deliberate product-level learning policy: **Again** schedules a
 10-minute learning or relearning step. Hard, Good, and Easy graduate to FSRS review

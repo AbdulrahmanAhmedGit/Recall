@@ -83,7 +83,6 @@
     <string name="ui_no_summary">Noch keine Zusammenfassung.</string>
     <string name="ui_last_review">Letzte Wiederholung</string>
     <string name="ui_not_reviewed">Noch nicht wiederholt</string>
-    <string name="ui_learned_cards">Gelernte Karten</string>
     <string name="ui_rename_tag">Tag überall umbenennen</string>
     <string name="ui_tag_name">Tag-Name</string>
     <string name="ui_remove_tag">Tag entfernen</string>
@@ -127,15 +126,7 @@
     <string name="ui_insights_hint">Ein hilfreicher Blick aufs Gedächtnis, keine Rangliste.</string>
     <string name="ui_reviewed">Wiederholt</string>
     <string name="ui_study_time">Lernzeit</string>
-    <string name="ui_target">Ziel</string>
-    <string name="ui_memory">Gedächtnis</string>
     <string name="ui_learning">In der Lernphase</string>
-    <string name="ui_mature">Gelernt</string>
-    <string name="ui_difficult">Schwierig</string>
-    <string name="ui_attention_lessons">Lektionen mit Lernbedarf</string>
-    <string name="ui_no_history">Noch kein Verlauf</string>
-    <string name="ui_history_hint">Wiederhole einige Karten, um Fortschritte zu sehen.</string>
-    <string name="ui_long_term_progress">Langfristiger Fortschritt</string>
     <string name="ui_nothing_due">Nichts fällig</string>
     <string name="ui_reviews_complete">Deine geplanten Wiederholungen sind abgeschlossen.</string>
     <string name="ui_end_review">Wiederholung beenden</string>
@@ -170,9 +161,6 @@
     <string name="ui_permission_denied">Benachrichtigungsberechtigung wurde nicht erteilt.</string>
     <string name="ui_backup_exported">Sicherung exportiert.</string>
     <string name="ui_backup_write_error">Sicherung konnte nicht geschrieben werden.</string>
-    <string name="ui_backup_create_error">Sicherung konnte nicht erstellt werden.</string>
-    <string name="ui_reading_backup">Sicherung wird gelesen…</string>
-    <string name="ui_backup_read_error">Datei konnte nicht gelesen werden.</string>
     <string name="ui_settings_hint">Lerne nach deinen Bedürfnissen.</string>
     <string name="ui_study">Lernen</string>
     <string name="ui_retention">Gewünschte Behaltensrate</string>

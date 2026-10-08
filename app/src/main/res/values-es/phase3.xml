@@ -1,0 +1,9 @@
+<resources>
+    <string name="phase3_session_empty">No hay tarjetas disponibles en esta sesión</string>
+    <string name="phase3_session_empty_hint">La preferencia de tarjetas nuevas puede limitar esta sesión. Las tarjetas pendientes mantienen sus fechas.</string>
+    <string name="phase3_review_refreshed">Los intervalos han cambiado. Revísalos y elige de nuevo. Si atrasaste el reloj del dispositivo, corrígelo primero.</string>
+    <string name="phase3_backlog_intro">Hay repasos pendientes. Empieza con una sesión breve.</string>
+    <string name="phase3_small_session">Repasar hasta 20 tarjetas</string>
+    <string name="phase3_all_due">Repasar todas las tarjetas pendientes</string>
+    <string name="phase3_remaining">Pendientes ahora: %1$s. Continúa cuando quieras.</string>
+</resources>

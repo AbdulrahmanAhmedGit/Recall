@@ -82,6 +82,7 @@ class LocalizationUiTest {
                 compose.onNodeWithContentDescription(s(R.string.ui_back)).performClick()
                 compose.onNodeWithContentDescription(s(R.string.ui_back)).performClick()
                 compose.onNodeWithContentDescription(s(R.string.ui_insights)).performClick()
+                compose.onNodeWithTag("insights-list").performScrollToNode(hasText(s(R.string.activity_title)))
                 compose.onNodeWithText(s(R.string.activity_title)).assertIsDisplayed()
                 compose.onNodeWithContentDescription(s(R.string.ui_settings)).performClick()
                 // Main destinations retain their scroll position between visits.

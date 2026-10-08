@@ -3,6 +3,8 @@ package com.example.myapplication4.domain
 import com.example.myapplication4.data.*
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.Reader
+import java.io.Writer
 
 sealed interface BackupResult {
     data class Success(val data: BackupData, val settings: UserSettings) : BackupResult
@@ -37,7 +39,9 @@ object RecallBackupCodec {
             .put("dynamic_color", settings.dynamicColor).put("speech_rate", settings.speechRate).put("debug_mode", settings.debugMode))
     }.toString(2)
 
-    fun decode(raw: String): BackupResult = try {
+    fun decode(raw: String): BackupResult = if (raw.length <= 50_000_000) read(raw.reader()) else BackupResult.Failure("Backup exceeds size limit")
+
+    private fun decodeDocument(raw: String, streamedLogs: List<ReviewLogEntity>?): BackupResult = try {
         require(raw.length <= 50_000_000)
         val root = JSONObject(raw)
         if (root.optString("format") != "recall-backup" || root.optInt("version") !in 1..3) {
@@ -59,28 +63,7 @@ object RecallBackupCodec {
         val tags = objects(arr("tags")) { TagEntity(req(it, "id"), req(it, "name")) }
         val links = objects(arr("lesson_tags")) { LessonTagEntity(req(it, "lesson_id"), req(it, "tag_id")) }
         val states = objects(arr("review_states")) { ReviewStateEntity(req(it, "card_id"), req(it, "state"), it.getLong("due_at"), nullableLong(it, "last_reviewed_at"), it.getDouble("stability"), it.getDouble("difficulty"), it.optInt("scheduled_days"), it.optInt("reps"), it.optInt("lapses")) }
-        val logs = objects(arr("review_logs")) {
-            ReviewLogEntity(
-                id = req(it, "id"),
-                cardId = req(it, "card_id"),
-                reviewedAt = it.getLong("reviewed_at"),
-                rating = it.getInt("rating"),
-                previousInterval = it.optInt("previous_interval"),
-                nextInterval = it.optInt("next_interval"),
-                previousStability = it.getDouble("previous_stability"),
-                newStability = it.getDouble("new_stability"),
-                durationMillis = it.optLong("duration_millis"),
-                previousDueAt = it.optLong("previous_due_at"),
-                nextDueAt = it.optLong("next_due_at"),
-                elapsedDays = it.optDouble("elapsed_days", 0.0),
-                previousDifficulty = it.optDouble("previous_difficulty", 5.0),
-                newDifficulty = it.optDouble("new_difficulty", 5.0),
-                previousState = it.optString("previous_state", "new"),
-                newState = it.optString("new_state", "new"),
-                reps = it.optInt("reps"),
-                lapses = it.optInt("lapses"),
-            )
-        }
+        val logs = streamedLogs ?: objects(arr("review_logs"), ::readLog)
         val schedules = objects(arr("schedules")) { ScheduleBlockEntity(req(it, "id"), req(it, "name"), req(it, "type").also { type -> require(type in setOf("quiet", "window")) }, it.getInt("start_minute").also { value -> require(value in 0..1439) }, it.getInt("end_minute").also { value -> require(value in 0..1439) }, req(it, "days"), it.optBoolean("enabled", true), nullable(it, "preferred_filter")) }
         val imports = objects(arr("import_history")) { ImportRecordEntity(req(it, "id"), req(it, "fingerprint"), it.getLong("imported_at"), it.optString("source", "backup")) }
         require(subjects.map { it.id }.toSet().size == subjects.size)
@@ -99,10 +82,54 @@ object RecallBackupCodec {
             debugMode = preferences.optBoolean("debug_mode", false),
             speechRate = preferences.optDouble("speech_rate", 1.0).toFloat().takeIf { it in .75f..1.25f } ?: 1f,
         )
-        BackupResult.Success(BackupData(subjects, chapters, lessons, cards, tags, links, states, logs, schedules, imports, resources, targets), settings)
+        val data = BackupData(subjects, chapters, lessons, cards, tags, links, states, logs, schedules, imports, resources, targets)
+        validateBackupData(data)
+        BackupResult.Success(data, settings)
     } catch (_: Exception) {
         BackupResult.Failure("The selected file is damaged or is not a valid Recall backup.")
     }
+
+    fun write(writer: Writer, data: BackupData, settings: UserSettings) {
+        val metadata = JSONObject(encode(data.copy(logs = emptyList()), settings))
+        metadata.remove("review_logs")
+        val header = metadata.toString()
+        writer.write(header.dropLast(1))
+        writer.write(",\"review_logs\":[")
+        data.logs.forEachIndexed { index, row ->
+            if (index > 0) writer.write(",")
+            writer.write(log(row).toString())
+        }
+        writer.write("]}")
+        writer.flush()
+    }
+
+    fun read(reader: Reader): BackupResult = try {
+        val logs = ArrayList<ReviewLogEntity>()
+        var consumed = 0L
+        val bounded = object : java.io.FilterReader(reader) {
+            override fun read(buffer: CharArray, offset: Int, length: Int): Int {
+                val count = super.read(buffer, offset, length)
+                if (count > 0) { consumed += count; require(consumed <= 50_000_000) }
+                return count
+            }
+            override fun read(): Int {
+                val c = super.read()
+                if (c >= 0) { consumed++; require(consumed <= 50_000_000) }
+                return c
+            }
+        }
+        val metadata = BackupEnvelopeReader(bounded).read { logs.add(readLog(it)) }
+        decodeDocument(metadata, logs)
+    } catch (_: Exception) { BackupResult.Failure("Invalid backup document") }
+
+    private fun readLog(it: JSONObject) = ReviewLogEntity(
+        id = req(it, "id"), cardId = req(it, "card_id"), reviewedAt = it.getLong("reviewed_at"),
+        rating = it.getInt("rating"), previousInterval = it.optInt("previous_interval"), nextInterval = it.optInt("next_interval"),
+        previousStability = it.getDouble("previous_stability"), newStability = it.getDouble("new_stability"), durationMillis = it.optLong("duration_millis"),
+        previousDueAt = it.optLong("previous_due_at"), nextDueAt = it.optLong("next_due_at"), elapsedDays = it.optDouble("elapsed_days", 0.0),
+        previousDifficulty = it.optDouble("previous_difficulty", 5.0), newDifficulty = it.optDouble("new_difficulty", 5.0),
+        previousState = it.optString("previous_state", "new"), newState = it.optString("new_state", "new"), reps = it.optInt("reps"), lapses = it.optInt("lapses"),
+    )
 
     private fun subject(v: SubjectEntity) = JSONObject().put("id", v.id).put("name", v.name).put("icon", v.icon).put("accent", v.accent).put("created_at", v.createdAt).put("position", v.position).put("archived", v.archived)
     private fun chapter(v: ChapterEntity) = JSONObject().put("id", v.id).put("subject_id", v.subjectId).put("name", v.name).put("position", v.position).put("created_at", v.createdAt)
@@ -119,6 +146,6 @@ object RecallBackupCodec {
         if (!value.has(key) || value.isNull(key)) return null
         return (value.get(key) as? String)?.also { require(it.length <= 1_000_000) } ?: error("Invalid $key")
     }
-    private fun nullableLong(value: JSONObject, key: String) = if (value.isNull(key)) null else value.getLong(key)
+    private fun nullableLong(value: JSONObject, key: String) = if (!value.has(key) || value.isNull(key)) null else value.getLong(key)
     private fun JSONObject.putNullable(key: String, value: Any?) = put(key, value ?: JSONObject.NULL)
 }

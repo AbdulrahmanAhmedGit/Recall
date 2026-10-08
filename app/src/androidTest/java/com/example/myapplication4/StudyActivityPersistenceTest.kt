@@ -34,7 +34,7 @@ class StudyActivityPersistenceTest {
             dao.addLog(log(today.minusDays(1).atTime(23, 45).atZone(zone).toInstant()))
             dao.addLog(log(today.plusDays(1).atTime(0, 15).atZone(zone).toInstant()))
             dao.addLog(log(period.firstDate.minusDays(1).atStartOfDay(zone).toInstant()))
-            val counts = dao.studyActivity(studyActivityQuery(period)).first().associate { LocalDate.ofEpochDay(it.epochDay) to it.reviewCount }
+            val counts = dao.studyActivity(studyActivityQuery(period, period.endMillis - 1)).first().associate { LocalDate.ofEpochDay(it.epochDay) to it.reviewCount }
             assertEquals(mapOf(today.minusDays(1) to 1, today to 2), counts)
         } finally { db.close() }
     }
@@ -53,7 +53,7 @@ class StudyActivityPersistenceTest {
                 db.dao().addLog(log(LocalDateTime.of(2026, 11, 1, 1, 30).toInstant(offset)))
             }
             db.dao().addLog(log(period.today.atTime(0, 15).atZone(zone).toInstant()))
-            val counts = db.dao().studyActivity(studyActivityQuery(period)).first().associate { LocalDate.ofEpochDay(it.epochDay) to it.reviewCount }
+            val counts = db.dao().studyActivity(studyActivityQuery(period, period.endMillis - 1)).first().associate { LocalDate.ofEpochDay(it.epochDay) to it.reviewCount }
             assertEquals(1, counts[dates[0]])
             assertEquals(1, counts[dates[1]])
             assertEquals(2, counts[dates[2]])

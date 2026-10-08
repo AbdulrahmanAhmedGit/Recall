@@ -1,5 +1,54 @@
 # Latest source changes
 
+## v1.0.0-preview.4 — October 9, 2026
+
+Includes the Learning Insights, Cairo typography and Phase 3 changes below.
+Android version code is 4; optimized non-debuggable preview with unchanged signing.
+See [release notes](releases/v1.0.0-preview.4.md).
+
+## Unreleased — Phase 3 reliability and manageable sessions
+
+- Evaluate new ratings coherently at submission time; refresh changed intervals
+  before confirmation and use monotonic foreground duration across interruptions.
+- Retain session progress/in-flight guards in the ViewModel across recreation;
+  reject inactive, edited, deleted and duplicate rating submissions atomically.
+- Exclude future responses from Today/activity without delaying new completed logs.
+- Validate backup relationships/conflicts before mutation, protect existing state
+  and history together, and stream history in JSON/ZIP to avoid a demonstrated
+  large-export memory failure. Backup contracts and Room version remain unchanged.
+- At 60 due cards, offer optional oldest-due sessions of up to 20, preserve new-card
+  limits and every untouched due date, and show real remaining counts.
+- Added synthetic 100–10,000 card / 1,000–100,000 history benchmarks and reliability
+  regressions. See [Phase 3 results and limitations](phase3-reliability.md).
+
+## Unreleased — Insights placement and Arabic typography
+
+- Moved Study Activity directly below the Insights header, above today's metrics.
+- Bundled Cairo Regular/Medium/SemiBold/Bold for the Arabic interface; retained
+  other languages' typography and the existing separate science-expression font.
+- Review context headers can grow for enlarged text instead of clipping at a
+  fixed height.
+- Use the optimized `preview` APK for everyday testing. Debug builds deliberately
+  include unshrunk code and Compose tooling and are substantially larger; APK size
+  is not itself a measurement of runtime performance.
+
+## Unreleased — Learning Insights Phase 1 and Phase 2A
+
+- Replaced reviewed-once “Mature” statistics with mutually exclusive active-card
+  categories and a documented 21-day FSRS stability threshold, labelled as an estimate.
+- Added event-based, self-reported observed recall for 30 days, explicit eligibility,
+  counts, small-sample safeguards and descriptive previous-period comparison.
+- Added at most three optional attention lessons based on repeated delayed failures,
+  with evidence, recovery handling and lesson links. Scheduling remains unchanged.
+- Added all five UI translations, calculation/Room/Compose tests and historical
+  limitations.
+- Added optional expandable current predicted recall using the existing FSRS-6
+  curve, UTC-day elapsed time, equal card weighting and explicit active-card coverage.
+  Empty and small groups remain clearly explained in all five interface languages.
+- Verified Phase 1 and documented frozen presentation-time review timestamps,
+  including midnight effects. Historical reconstruction and calibration remain deferred.
+- No database schema, stored memory-state, scheduler, or due-date changes.
+
 ## v1.0.0-preview.3 — October 8, 2026
 
 - Complete offline interfaces in English, Arabic, Spanish, French and German:

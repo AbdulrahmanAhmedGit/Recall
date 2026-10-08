@@ -12,6 +12,34 @@ import org.junit.Test
 import java.io.File
 
 class FullBackupDeviceTest {
+    @Test fun streamingJsonFileRoundTripPreservesStateHistoryAndNotes() = runBlocking {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val app = instrumentation.targetContext.applicationContext as Application
+        val original = app.recallPreferences.data.first()
+        val source = Room.inMemoryDatabaseBuilder(app, RecallDatabase::class.java).build()
+        val destination = Room.inMemoryDatabaseBuilder(app, RecallDatabase::class.java).build()
+        val sourceVm = RecallViewModel(app, source)
+        val targetVm = RecallViewModel(app, destination)
+        val store = androidx.lifecycle.ViewModelStore().apply { put("json-source", sourceVm); put("json-destination", targetVm) }
+        val file = File.createTempFile("phase3-json", ".json", app.cacheDir)
+        try {
+            UserPreferences(app).setRemindersEnabled(false)
+            source.dao().insertSubject(SubjectEntity(id = "s", name = "Chemistry"))
+            source.dao().insertLesson(LessonEntity(id = "l", subjectId = "s", title = "Iron"))
+            source.dao().insertCard(CardEntity(id = "c", lessonId = "l", front = "Why?", back = "[[chem:Fe³⁺]]"))
+            source.dao().saveState(ReviewStateEntity("c", state = "review", dueAt = 12345, stability = 25.0, reps = 10))
+            source.dao().insertResource(SubjectResourceEntity(subjectId = "s", title = "Notes", note = "قانون [[math:V = IR]]"))
+            repeat(1000) { i -> source.dao().addLog(ReviewLogEntity(cardId = "c", reviewedAt = i.toLong(), rating = 3, previousInterval = 1, nextInterval = 2, previousStability = 20.0, newStability = 25.0, durationMillis = 100)) }
+            var result = ""
+            sourceVm.exportBackupFile(Uri.fromFile(file)) { result = it }.join()
+            assertEquals(app.getString(R.string.ui_backup_exported), result)
+            targetVm.importBackupFile(Uri.fromFile(file)) { result = it }.join()
+            assertEquals(app.getString(R.string.ui_backup_restored), result)
+            assertEquals(source.dao().backup(), destination.dao().backup())
+            targetVm.importBackupFile(Uri.fromFile(file)) { result = it }.join()
+            assertEquals(1000, destination.dao().allLogs().size)
+        } finally { file.delete(); app.recallPreferences.updateData { original }; instrumentation.runOnMainSync { store.clear() } }
+    }
     @Test fun exportAndRestoreCopiesRealMaterialsToOpenablePrivateProvider() = runBlocking {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val app = instrumentation.targetContext.applicationContext as Application

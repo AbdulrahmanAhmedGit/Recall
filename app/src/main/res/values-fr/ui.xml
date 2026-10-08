@@ -83,7 +83,6 @@
     <string name="ui_no_summary">Aucun résumé pour le moment.</string>
     <string name="ui_last_review">Dernière révision</string>
     <string name="ui_not_reviewed">Pas encore révisé</string>
-    <string name="ui_learned_cards">Cartes étudiées</string>
     <string name="ui_rename_tag">Renommer l’étiquette partout</string>
     <string name="ui_tag_name">Nom de l’étiquette</string>
     <string name="ui_remove_tag">Retirer l’étiquette</string>
@@ -127,15 +126,7 @@
     <string name="ui_insights_hint">Un aperçu utile de la mémoire, pas un classement.</string>
     <string name="ui_reviewed">Révisées</string>
     <string name="ui_study_time">Temps d’étude</string>
-    <string name="ui_target">Objectif</string>
-    <string name="ui_memory">Mémoire</string>
     <string name="ui_learning">En apprentissage</string>
-    <string name="ui_mature">Étudiées</string>
-    <string name="ui_difficult">Difficiles</string>
-    <string name="ui_attention_lessons">Leçons à approfondir</string>
-    <string name="ui_no_history">Aucun historique pour le moment</string>
-    <string name="ui_history_hint">Révisez quelques cartes pour voir vos progrès.</string>
-    <string name="ui_long_term_progress">Progrès à long terme</string>
     <string name="ui_nothing_due">Rien à réviser</string>
     <string name="ui_reviews_complete">Vos révisions programmées sont terminées.</string>
     <string name="ui_end_review">Terminer la révision</string>
@@ -170,9 +161,6 @@
     <string name="ui_permission_denied">L’autorisation de notification n’a pas été accordée.</string>
     <string name="ui_backup_exported">Sauvegarde exportée.</string>
     <string name="ui_backup_write_error">Impossible d’écrire la sauvegarde.</string>
-    <string name="ui_backup_create_error">Impossible de créer la sauvegarde.</string>
-    <string name="ui_reading_backup">Lecture de la sauvegarde…</string>
-    <string name="ui_backup_read_error">Impossible de lire ce fichier.</string>
     <string name="ui_settings_hint">Étudiez à votre rythme.</string>
     <string name="ui_study">Étude</string>
     <string name="ui_retention">Rétention souhaitée</string>

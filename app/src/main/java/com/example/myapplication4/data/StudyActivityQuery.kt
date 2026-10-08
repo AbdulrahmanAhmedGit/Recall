@@ -9,7 +9,7 @@ import java.time.Instant
  * DST/zone transition in this range, rather than applying today's offset to old reviews
  * or depending on SQLite's device-localtime implementation.
  */
-fun studyActivityQuery(period: ActivityPeriod): SimpleSQLiteQuery {
+fun studyActivityQuery(period: ActivityPeriod, now: Long = System.currentTimeMillis()): SimpleSQLiteQuery {
     val args = mutableListOf<Any>()
     val rules = period.zone.rules
     var cursor = Instant.ofEpochMilli(period.startMillis)
@@ -28,9 +28,10 @@ fun studyActivityQuery(period: ActivityPeriod): SimpleSQLiteQuery {
     args += offsetMillis
     args += period.startMillis
     args += period.endMillis
+    args += now
     return SimpleSQLiteQuery(
         "SELECT (reviewedAt + $offsetSql) / 86400000 AS epochDay, COUNT(*) AS reviewCount " +
-            "FROM ReviewLogEntity WHERE reviewedAt >= ? AND reviewedAt < ? " +
+            "FROM ReviewLogEntity WHERE reviewedAt >= ? AND reviewedAt < ? AND reviewedAt <= ? " +
             "GROUP BY epochDay ORDER BY epochDay",
         args.toTypedArray(),
     )

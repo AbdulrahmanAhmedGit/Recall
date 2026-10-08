@@ -1,0 +1,41 @@
+<resources>
+    <string name="insights_predicted_title">Aktuell geschätzter Abruf · FSRS</string>
+    <string name="insights_predicted_coverage">Vorhersageabdeckung: %1$s / %2$s aktive Karten</string>
+    <string name="insights_predicted_empty">Noch keine geeigneten Gedächtnisschätzungen. Nur Karten im Wiederholungszustand mit gültigen Gedächtnisdaten zählen; die Abdeckung steht unten.</string>
+    <string name="insights_predicted_small">Diese Schätzung umfasst eine kleine Kartengruppe, nicht die gesamte Bibliothek.</string>
+    <string name="insights_predicted_scope">Gleich gewichtete FSRS-Schätzung für aktive Karten im Wiederholungszustand mit bekannter vorheriger Wiederholung und gültiger Stabilität. Die Zeit folgt UTC-Tagesgrenzen und wird etwa jede Minute aktualisiert. Keine beobachtete Erfolgsrate, kein Verständnis und keine Kalibrierung; die beiden Kennzahlen beschreiben unterschiedliche Gruppen und Zeiträume.</string>
+    <string name="insights_recall_title">Beobachtete Erinnerung</string>
+    <string name="insights_recall_period">Letzte 30 Tage · selbst bewerteter Erfolg je Antwort</string>
+    <string name="insights_recall_scope">Selbst bewerteter Wiederholungserfolg, nicht der erinnerte Anteil deiner Bibliothek.</string>
+    <string name="insights_sample">%1$s erfolgreich / %2$s geeignete Wiederholungen · %3$s Karten</string>
+    <string name="insights_insufficient">Noch zu wenige zeitlich verteilte Wiederholungen für eine hilfreiche Prozentzahl. Die verfügbaren Zahlen stehen unten.</string>
+    <string name="insights_no_sample">Erstes Lernen und kurze Wiederholungsversuche werden getrennt betrachtet. Zeitlich verteilte, geplante Wiederholungen erscheinen hier während deines Lernens.</string>
+    <string name="insights_legacy_sample">Einigen älteren Wiederholungen fehlen die nötigen Informationen. Ihr Verlauf bleibt erhalten; die verfügbaren Zahlen stehen unten.</string>
+    <string name="insights_details">So funktionieren diese Einblicke</string>
+    <string name="insights_recall_rules">Nochmal gilt als fehlgeschlagene Erinnerung; Schwer, Gut und Leicht als Erfolg laut deiner Bewertung. Es zählen nur fällige Wiederholungen im Wiederholungszustand, mindestens 24 Stunden nach der vorherigen Antwort. Erstes Lernen, erneutes Lernen, vorzeitiges Üben und unzuverlässige historische Daten sind ausgeschlossen. Nur die erste geeignete Antwort je Karte und lokalem Tag zählt. Die Prozentzahl erfordert 30 geeignete Wiederholungen auf 10 Karten.</string>
+    <string name="insights_excluded">%1$s Antworten ausgeschlossen · %2$s ohne zuverlässige historische Daten</string>
+    <string name="insights_change">%1$s Prozentpunkte gegenüber den vorherigen 30 Tagen</string>
+    <string name="insights_change_note">Ein beschreibender Vergleich von Antworten; er belegt keine Veränderung des Verständnisses.</string>
+    <string name="insights_memory_title">Geschätzte Gedächtnisreife</string>
+    <string name="insights_memory_scope">Aktive Karten · FSRS-Schätzungen, kein Verständnis- oder Wissensnachweis</string>
+    <string name="insights_new">Neu</string>
+    <string name="insights_mature">Reif · geschätzt</string>
+    <string name="insights_longer_memory">Länger anhaltende Erinnerung</string>
+    <string name="insights_memory_rules">Neue Karten haben keine abgeschlossenen Antworten. Reife Karten sind im Wiederholungszustand und haben mindestens 21 Tage geschätzte Stabilität. Lernen umfasst alle anderen bereits beantworteten Karten, auch erneutes Lernen. Stabilität schätzt die Zeit bis zu 90 Prozent Erinnerungswahrscheinlichkeit; die Grenze von 21 Tagen dient der Darstellung und beweist keine Beherrschung.</string>
+    <string name="insights_active_scope">Erinnerungs- und Gedächtnisdaten betreffen nur derzeit aktive Karten. Ausgesetzte Karten sowie archivierte Lektionen oder Fächer sind ausgeschlossen. Gelöschter Verlauf trägt nicht mehr bei. Der Aktivitätskalender zeigt weiterhin alle gespeicherten abgeschlossenen Antworten.</string>
+    <string name="insights_review_target">Wiederholungsziel</string>
+    <string name="insights_attention_title">Optionale Hinweise</string>
+    <string name="insights_attention_intro">Einige Muster, die du bei Bedarf ansehen kannst. Diese Hinweise ändern deinen Wiederholungsplan nicht.</string>
+    <string name="insights_attention_empty">Im verfügbaren Verlauf fallen keine wiederholten Erinnerungsschwierigkeiten auf. Bleib bei deinem üblichen Plan.</string>
+    <string name="insights_failure_pattern">Nochmal bei %1$s der letzten %2$s geeigneten Wiederholungen</string>
+    <string name="insights_attention_rules">Hinweise nutzen die letzten fünf geeigneten Wiederholungen innerhalb von 90 Tagen. Eine Karte benötigt mindestens drei geeignete Wiederholungen und zwei Nochmal-Antworten. Zwei aufeinanderfolgende aktuelle Erfolge entfernen den Hinweis. Die Reihenfolge folgt dem Fehleranteil, dann der Fehlerzahl und dem letzten Fehler. Fällige Karten bestimmen diese Reihenfolge nicht.</string>
+    <string name="insights_card_context">Schwierigkeit %1$s · Fehler %2$s · Stabilität %3$s Tage · geplantes Intervall %4$s Tage</string>
+    <string name="insights_next_review">Nächste geplante Wiederholung: %1$s</string>
+    <string name="insights_due_now">Fällig oder überfällig</string>
+    <string name="insights_activity_scope">Alle aufgezeichneten Lernaktivitäten</string>
+    <string name="insights_reviewed_once">Mindestens einmal beantwortet</string>
+    <plurals name="insights_affected_cards">
+        <item quantity="one">%1$s Karte hat wiederholt Erinnerungsschwierigkeiten gezeigt</item>
+        <item quantity="other">%1$s Karten haben wiederholt Erinnerungsschwierigkeiten gezeigt</item>
+    </plurals>
+</resources>

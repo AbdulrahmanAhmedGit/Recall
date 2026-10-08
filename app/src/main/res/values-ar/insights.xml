@@ -1,0 +1,45 @@
+<resources>
+    <string name="insights_predicted_title">التذكر المتوقع حاليًا · FSRS</string>
+    <string name="insights_predicted_coverage">تغطية التوقع: %1$s / %2$s بطاقة نشطة</string>
+    <string name="insights_predicted_empty">لا توجد تقديرات ذاكرة مؤهلة بعد. يشمل التقدير فقط البطاقات في حالة المراجعة ذات بيانات ذاكرة صالحة؛ التغطية أدناه.</string>
+    <string name="insights_predicted_small">يشمل هذا التقدير مجموعة صغيرة من البطاقات، وليس مكتبتك بأكملها.</string>
+    <string name="insights_predicted_scope">تقدير FSRS بوزن متساوٍ للبطاقات النشطة في حالة المراجعة، ذات مراجعة سابقة معروفة وثبات صالح. يستخدم حدود الأيام بتوقيت UTC ويُحدَّث كل دقيقة تقريبًا. لا يقيس النجاح المرصود أو الفهم أو معايرة الخوارزمية؛ مقياسا التذكر يصفان مجموعتين وفترتين مختلفتين.</string>
+    <string name="insights_recall_title">التذكر المُلاحظ</string>
+    <string name="insights_recall_period">آخر 30 يومًا · نجاح التذكر حسب إجاباتك</string>
+    <string name="insights_recall_scope">نجاح المراجعة حسب تقييمك، وليس نسبة ما تتذكره من مكتبتك.</string>
+    <string name="insights_sample">%1$s إجابة ناجحة / %2$s مراجعة مؤهلة · %3$s بطاقة</string>
+    <string name="insights_insufficient">لا تكفي المراجعات المتباعدة لعرض نسبة مفيدة بعد. الأعداد المتاحة أدناه.</string>
+    <string name="insights_no_sample">التعلم الأولي والمحاولات القصيرة منفصلان. ستظهر هنا المراجعات المجدولة المتباعدة أثناء استمرار دراستك.</string>
+    <string name="insights_legacy_sample">تفتقر بعض المراجعات القديمة إلى المعلومات اللازمة لهذا المؤشر. يظل سجلها محفوظًا؛ والأعداد المتاحة أدناه.</string>
+    <string name="insights_details">كيف تعمل هذه الإحصاءات</string>
+    <string name="insights_recall_rules">«مجدّدًا» تعني عدم نجاح التذكر، و«صعب» و«جيد» و«سهل» تعني نجاحه حسب تقييمك. تُحسب فقط المراجعات المستحقة في حالة المراجعة وبعد 24 ساعة على الأقل من الإجابة السابقة. يُستبعد التعلم الأولي وإعادة التعلم والتدريب المبكر والسجلات التي تفتقر إلى بيانات تاريخية موثوقة. تُحسب أول إجابة مؤهلة لكل بطاقة في اليوم المحلي فقط. يتطلب عرض النسبة 30 مراجعة مؤهلة موزعة على 10 بطاقات.</string>
+    <string name="insights_excluded">%1$s إجابة مستبعدة · %2$s تفتقر إلى بيانات تاريخية موثوقة</string>
+    <string name="insights_change">%1$s نقطة مئوية مقارنة بالأيام الثلاثين السابقة</string>
+    <string name="insights_change_note">مقارنة وصفية لإجابات المراجعة؛ لا تثبت تغيرًا في الفهم.</string>
+    <string name="insights_memory_title">نضج الذاكرة التقديري</string>
+    <string name="insights_memory_scope">البطاقات النشطة · تقديرات FSRS، وليست قياسًا للفهم أو الإتقان</string>
+    <string name="insights_new">جديدة</string>
+    <string name="insights_mature">ناضجة · تقديريًا</string>
+    <string name="insights_longer_memory">ذاكرة أطول بقاءً</string>
+    <string name="insights_memory_rules">البطاقات الجديدة لم تُجب عنها بعد. البطاقات الناضجة في حالة المراجعة ولها ثبات تقديري لا يقل عن 21 يومًا. تشمل «قيد التعلم» بقية البطاقات التي أُجيب عنها، بما فيها إعادة التعلم. الثبات هو الزمن التقديري حتى يصل احتمال التذكر إلى 90٪؛ وحدّ 21 يومًا معيار للعرض وليس دليلًا على الإتقان.</string>
+    <string name="insights_active_scope">تشمل إحصاءات التذكر والذاكرة البطاقات النشطة حاليًا فقط. تُستبعد البطاقات الموقوفة والدروس أو المواد المؤرشفة. حذف السجل يزيل مساهمته. يظل تقويم النشاط يعرض جميع الإجابات المكتملة المحفوظة.</string>
+    <string name="insights_review_target">هدف المراجعة</string>
+    <string name="insights_attention_title">اهتمام اختياري</string>
+    <string name="insights_attention_intro">أنماط قليلة يمكنك استكشافها إن أفادتك. لا تغيّر هذه الاقتراحات جدول مراجعتك.</string>
+    <string name="insights_attention_empty">لا تظهر صعوبة متكررة في التذكر ضمن السجل المتاح. تابع جدولك المعتاد.</string>
+    <string name="insights_failure_pattern">«مجدّدًا» في %1$s من آخر %2$s مراجعة مؤهلة</string>
+    <string name="insights_attention_rules">تعتمد الاقتراحات على آخر خمس مراجعات مؤهلة خلال 90 يومًا. يلزم ثلاث مراجعات مؤهلة على الأقل وإجابتان «مجدّدًا». يزيل نجاح آخر مراجعتين مؤهلتين الاقتراح. تُرتّب البطاقات حسب نسبة الإخفاق، ثم عدد الإخفاقات ثم أحدث إخفاق. لا يحدد عدد البطاقات المستحقة هذا الترتيب.</string>
+    <string name="insights_card_context">الصعوبة %1$s · الإخفاقات %2$s · الثبات %3$s يومًا · الفاصل المجدول %4$s يومًا</string>
+    <string name="insights_next_review">المراجعة المجدولة التالية: %1$s</string>
+    <string name="insights_due_now">مستحقة أو متأخرة</string>
+    <string name="insights_activity_scope">جميع أنشطة الدراسة المسجلة</string>
+    <string name="insights_reviewed_once">أُجيب عنها مرة واحدة على الأقل</string>
+    <plurals name="insights_affected_cards">
+        <item quantity="zero">لا توجد بطاقات ذات صعوبة متكررة في التذكر</item>
+        <item quantity="one">بطاقة واحدة أظهرت صعوبة متكررة في التذكر</item>
+        <item quantity="two">بطاقتان أظهرتا صعوبة متكررة في التذكر</item>
+        <item quantity="few">%1$s بطاقات أظهرت صعوبة متكررة في التذكر</item>
+        <item quantity="many">%1$s بطاقة أظهرت صعوبة متكررة في التذكر</item>
+        <item quantity="other">%1$s بطاقة أظهرت صعوبة متكررة في التذكر</item>
+    </plurals>
+</resources>

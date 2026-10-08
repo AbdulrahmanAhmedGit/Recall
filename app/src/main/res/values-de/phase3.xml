@@ -1,0 +1,9 @@
+<resources>
+    <string name="phase3_session_empty">Keine Karten für diese Sitzung verfügbar</string>
+    <string name="phase3_session_empty_hint">Die Einstellung für neue Karten kann diese Sitzung begrenzen. Wartende Karten behalten ihre Termine.</string>
+    <string name="phase3_review_refreshed">Die Intervalle haben sich geändert. Prüfe sie und wähle erneut. Wenn du die Geräteuhr zurückgestellt hast, korrigiere sie zuerst.</string>
+    <string name="phase3_backlog_intro">Wiederholungen warten. Beginne mit einer kurzen Sitzung.</string>
+    <string name="phase3_small_session">Bis zu 20 Karten wiederholen</string>
+    <string name="phase3_all_due">Alle fälligen Karten wiederholen</string>
+    <string name="phase3_remaining">Jetzt fällig: %1$s. Mach weiter, wann du möchtest.</string>
+</resources>
