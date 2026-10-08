@@ -33,25 +33,30 @@ the localization, calendar and reliability improvements included in this source 
 ### Inside Recall
 
 <table>
-  <tr><th>Lesson-based library</th><th>Focused review</th><th>Arabic &amp; science</th></tr>
+  <tr><th>Lesson-based library</th><th>Subject resources</th></tr>
   <tr>
-    <td><img src="docs/screenshots/library-light.png" width="220" alt="Native Library capture with demonstration Chemistry, German and Physics subjects"></td>
-    <td><img src="docs/screenshots/review-answer-dark.png" width="220" alt="Native dark review capture with mixed Arabic and Latin content, Skip, and four rating choices"></td>
-    <td><img src="docs/screenshots/review-localized-arabic.png" width="220" alt="Native Arabic RTL review capture with an intact left-to-right chemical equation"></td>
+    <td><a href="docs/screenshots/preview4/readme-preview4/library.png"><img src="docs/images/inside-recall/library.png" width="360" alt="AI-assisted presentation of the real Preview 4 Library capture with demo Chemistry, German and Physics subjects"></a></td>
+    <td><a href="docs/screenshots/preview4/readme-preview4/resources.png"><img src="docs/images/inside-recall/resources.png" width="360" alt="AI-assisted presentation of the real Preview 4 subject resources capture with demo notes and file filters"></a></td>
   </tr>
-  <tr><th>Study activity</th><th>Review calendar</th><th>Subject resources</th></tr>
+  <tr><th>Focused review</th><th>Arabic &amp; science</th></tr>
   <tr>
-    <td><img src="docs/screenshots/activity-light.png" width="220" alt="Native completed-review activity heatmap capture with synthetic history"></td>
-    <td><img src="docs/screenshots/calendar-month-light.png" width="220" alt="Native upcoming review calendar capture with demonstration due counts"></td>
-    <td><img src="docs/screenshots/resources-light.png" width="220" alt="Native subject resources capture with search, filters and a demonstration note"></td>
+    <td><a href="docs/screenshots/preview4/readme-preview4/review.png"><img src="docs/images/inside-recall/review.png" width="360" alt="AI-assisted presentation of the real dark Preview 4 review capture with Skip and four rating choices"></a></td>
+    <td><a href="docs/screenshots/preview4/readme-preview4/review-arabic.png"><img src="docs/images/inside-recall/review-arabic.png" width="360" alt="AI-assisted presentation of the real Cairo Arabic RTL review capture with mixed Arabic and chemical notation"></a></td>
+  </tr>
+  <tr><th>Study activity</th><th>Review calendar</th></tr>
+  <tr>
+    <td><a href="docs/screenshots/preview4/readme-preview4/insights.png"><img src="docs/images/inside-recall/insights.png" width="360" alt="AI-assisted presentation of the real Preview 4 Insights capture with synthetic completed-review activity"></a></td>
+    <td><a href="docs/screenshots/preview4/readme-preview4/calendar.png"><img src="docs/images/inside-recall/calendar.png" width="360" alt="AI-assisted presentation of the real Preview 4 calendar capture with demo next-review counts"></a></td>
   </tr>
 </table>
 
-These are native Android UI captures with demonstration content, not AI-generated
-mockups or a user's private study history. Screenshot dates and counts are examples;
-the running app uses your actual data. Capture details are in the
-[screenshot inventory](docs/screenshots/README.md).
-Some captures predate Preview 4 and may differ from its latest layout and Cairo font.
+These are **AI-assisted feature panels based on real Preview 4 Android captures**,
+not proposed UI designs or untouched screenshots. AI rendering can slightly alter
+small visual details; click a panel to inspect its unedited screenshot. All content
+and review history are synthetic demonstration data; no personal library is shown.
+Dates, counts and intervals are examples, not promises about your workload or retention.
+The running app uses your actual data. See the [capture inventory](docs/screenshots/README.md)
+and [presentation provenance and prompts](docs/images/inside-recall/README.md).
 
 ## Features
 

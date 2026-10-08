@@ -1,5 +1,32 @@
 # Native screenshot inventory
 
+## Preview 4 README captures — October 9, 2026
+
+The six originals in `preview4/readme-preview4/` were freshly captured from the
+current native Compose app on the API 34 Small_Phone emulator using
+`ReadmeScreenshotsTest.captureCurrentNativeScreensWithDemoData`.
+That workflow passed and built successfully. It navigates Library, subject resources,
+English review, Cairo Arabic review, Insights and the calendar. It uses an isolated
+in-memory Room library (three subjects, eighteen cards, synthetic historical events
+and two notes), disables reminders, and restores the original preferences afterward.
+No personal study database or files are read or published.
+
+The README's feature panels are AI-assisted edits of these originals, not untouched
+screen captures or pixel-identical composites. Each panel links to its original. Generation prompts
+and provenance are in [the presentation inventory](../images/inside-recall/README.md).
+Only test/documentation assets were changed; app behavior and the published APK are unchanged.
+
+| Original | Captured feature |
+| --- | --- |
+| [library.png](preview4/readme-preview4/library.png) | Populated Library and native dock |
+| [resources.png](preview4/readme-preview4/resources.png) | Subject notes, search and resource filters |
+| [review.png](preview4/readme-preview4/review.png) | Revealed science card, intervals, ratings and Skip |
+| [review-arabic.png](preview4/readme-preview4/review-arabic.png) | Cairo Arabic controls/content, RTL and isolated chemistry |
+| [insights.png](preview4/readme-preview4/insights.png) | Activity at the top of Insights, synthetic completed events |
+| [calendar.png](preview4/readme-preview4/calendar.png) | October 2026 next-review calendar and demo due counts |
+
+## Earlier native captures
+
 These images are captures of Recall's Android Compose UI, not AI-generated mockups.
 All study content and populated review history are synthetic test fixtures. The
 Today capture is an empty emulator installation. No personal study database,
