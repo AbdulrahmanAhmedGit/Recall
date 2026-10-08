@@ -1,8 +1,9 @@
 # Recall
 
-![Recall — Honest insights. Reliable reviews. Preview 4](docs/images/recall-preview4-cover.png)
+![Recall — library, resources, English and Arabic review, Insights and calendar](docs/images/inside-recall/all-screens-hero-v1.png)
 
-*AI-generated promotional cover, not an app screenshot.*
+*AI-assisted six-screen hero based on demo captures, not untouched screenshots.
+[Originals and presentation notes](docs/images/inside-recall/README.md).*
 
 Offline-first native Android study companion built around subjects, optional
 chapters, and lessons. Flashcards help retain lessons over time rather than

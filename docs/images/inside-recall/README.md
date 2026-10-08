@@ -1,5 +1,7 @@
 # Inside Recall — AI-assisted feature panels
 
+[Six-screen hero and its generation prompts](HERO.md) — the README's wide main image.
+
 ## Sources and provenance
 
 Six portrait feature panels use real screenshots captured on October 9, 2026 from current Preview 4 source. The built-in image generation tool created each presentation using its native screenshot and two user-supplied marketing-layout references. No external AI API account was required. The references informed editorial hierarchy and focused callouts, not app functionality or branding.
