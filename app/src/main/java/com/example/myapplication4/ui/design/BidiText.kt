@@ -15,14 +15,22 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import com.example.myapplication4.domain.ScienceTextProcessor
 import com.example.myapplication4.domain.StudyDisplayText
 
 fun studyDisplayText(value: String): StudyDisplayText = ScienceTextProcessor.process(value)
 fun isolateStudyText(value: String): String = studyDisplayText(value).text
 
+// Select Arabic glyphs by content, independently of the interface locale.
+// Latin words retain the theme font; formula ranges below retain their existing font.
+private val ArabicRun = Regex("[\\p{IsArabic}][\\p{IsArabic}\\p{M}]*")
+
 fun StudyDisplayText.annotated(): AnnotatedString = buildAnnotatedString {
     append(text)
+    ArabicRun.findAll(text).forEach { match ->
+        addStyle(SpanStyle(fontFamily = CairoFont, letterSpacing = 0.sp), match.range.first, match.range.last + 1)
+    }
     scienceRanges.forEach { range ->
         addStyle(SpanStyle(fontFamily = FontFamily.SansSerif, fontWeight = FontWeight.Medium), range.start, range.end)
     }

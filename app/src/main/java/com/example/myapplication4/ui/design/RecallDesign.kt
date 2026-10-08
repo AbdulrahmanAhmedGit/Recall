@@ -59,7 +59,12 @@ object RecallSizes {
     val contentMaxWidth = 720.dp
 }
 
-private val RecallFont = FontFamily.SansSerif
+internal val InterFont = FontFamily(
+    Font(R.font.inter_regular, FontWeight.Normal),
+    Font(R.font.inter_medium, FontWeight.Medium),
+    Font(R.font.inter_semibold, FontWeight.SemiBold),
+)
+private val RecallFont = InterFont
 // Static weights also render correctly on API 24/25. All assets are bundled offline.
 internal val CairoFont = FontFamily(
     Font(R.font.cairo_regular, FontWeight.Normal),
@@ -72,7 +77,9 @@ val RecallTypography = androidx.compose.material3.Typography(
     displayLarge = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.SemiBold, fontSize = 42.sp, lineHeight = 48.sp, letterSpacing = (-0.8).sp),
     displayMedium = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.SemiBold, fontSize = 32.sp, lineHeight = 39.sp, letterSpacing = (-0.45).sp),
     displaySmall = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.SemiBold, fontSize = 27.sp, lineHeight = 34.sp, letterSpacing = (-0.25).sp),
+    headlineLarge = androidx.compose.material3.Typography().headlineLarge.copy(fontFamily = RecallFont),
     headlineMedium = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.Medium, fontSize = 24.sp, lineHeight = 34.sp),
+    headlineSmall = androidx.compose.material3.Typography().headlineSmall.copy(fontFamily = RecallFont),
     titleLarge = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 28.sp),
     titleMedium = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.Medium, fontSize = 17.sp, lineHeight = 25.sp),
     titleSmall = TextStyle(fontFamily = RecallFont, fontWeight = FontWeight.Medium, fontSize = 15.sp, lineHeight = 22.sp),

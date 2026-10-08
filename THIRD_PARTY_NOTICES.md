@@ -1,5 +1,20 @@
 # Third-party notices
 
+## Inter font
+
+Copyright (c) 2016 The Inter Project Authors (https://github.com/rsms/inter).
+Licensed under SIL Open Font License 1.1. The full license is bundled in the APK
+at `assets/licenses/inter-OFL.txt` and preserved in this repository at
+`app/src/main/assets/licenses/inter-OFL.txt`.
+
+The unmodified upright static Regular (400), Medium (500), and SemiBold (600)
+TTF files come from the official Inter 4.1 release's `extras/ttf` directory:
+https://github.com/rsms/inter/releases/tag/v4.1. Static weights support API 24/25
+and load offline. No italic, display, variable or unused weights are bundled.
+Inter is used for the non-Arabic interface; Cairo remains the Arabic interface
+font and is explicitly applied to Arabic runs in study content. Scientific spans
+keep their existing system-font fallback and bidirectional isolation.
+
 ## Cairo font
 
 Copyright 2009 The Cairo Project Authors (https://github.com/Gue3bara/Cairo).
