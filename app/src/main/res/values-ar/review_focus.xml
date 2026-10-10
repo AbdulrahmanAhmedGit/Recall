@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_title">دراسة مركّزة</string>
+    <string name="focus_hint">اختر مادة أو بابًا أو درسًا. يمكن أن تشمل الدراسة المركّزة الدروس المتوقفة مؤقتًا.</string>
+    <string name="focus_choose_subject">اختر مادة</string>
+    <string name="focus_all_chapters">كل الأبواب</string>
+    <string name="focus_all_lessons">كل الدروس</string>
+    <string name="focus_due">البطاقات المستحقة</string>
+    <string name="focus_practice">تدرّب على كل البطاقات</string>
+    <string name="focus_practice_hint">تدرّب على ما يصل إلى ٢٠٠ بطاقة: التقييمات لا تغيّر المواعيد أو سجل المراجعة.</string>
+    <string name="focus_complete">اكتمل التدريب</string>
+    <string name="focus_due_hint">جدولة عادية. حتى ٢٠٠ بطاقة في الجلسة مع تطبيق حد البطاقات الجديدة.</string>
+    <string name="focus_empty">لا توجد بطاقات مؤهلة في هذا الاختيار. جرّب التدريب أو اختيارًا آخر.</string>
+    <string name="focus_start">ابدأ الدراسة المركّزة</string>
+    <string name="focus_no_schedule">دون تغيير الموعد</string>
+    <string name="lesson_pause_title">إيقاف الدرس مؤقتًا</string>
+    <string name="lesson_pause_hint">استبعد هذا الدرس من مراجعات اليوم المختلطة وعدّاد التذكيرات خلال الفترة. تظل مواعيده كما هي ويمكنك مراجعته باختياره مباشرة.</string>
+    <string name="lesson_pause_dates">متوقف مؤقتًا: %1$s – %2$s</string>
+    <string name="lesson_pause_today">لهذا اليوم</string>
+    <string name="lesson_pause_week">لمدة ٧ أيام</string>
+    <string name="lesson_pause_custom">تواريخ مخصصة</string>
+    <string name="lesson_pause_resume">استئناف / إلغاء الإيقاف</string>
+    <string name="lesson_pause_count">%1$s دروس مستبعدة مؤقتًا من المراجعات المختلطة</string>
+</resources>

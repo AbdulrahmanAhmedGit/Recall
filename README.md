@@ -1,15 +1,15 @@
 # Recall
 
-![Recall — library, resources, English and Arabic review, Insights and calendar](docs/images/inside-recall/all-screens-hero-v1.png)
+![Recall Preview 5 — lesson pauses and focused study](docs/images/releases/recall-preview5-banner.png)
 
-*AI-assisted six-screen hero based on demo captures, not untouched screenshots.
-[Originals and presentation notes](docs/images/inside-recall/README.md).*
+*AI-assisted release artwork based on demo captures, not untouched screenshots.
+[Originals and presentation notes](docs/images/releases/preview5-banner.md).*
 
 Offline-first native Android study companion built around subjects, optional
 chapters, and lessons. Flashcards help retain lessons over time rather than
 acting as the primary organization system.
 
-Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.4)
+Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.5)
 for Android 7.0 or newer. Preview APKs are debug-signed; export a full backup before
 updating and read the release's installation notes.
 
@@ -32,6 +32,10 @@ screenshots, and current limitations. See [latest changes](docs/CHANGELOG.md) fo
 the localization, calendar and reliability improvements included in this source version.
 
 ### Inside Recall
+
+![Recall — library, resources, English and Arabic review, Insights and calendar](docs/images/inside-recall/all-screens-hero-v1.png)
+
+*AI-assisted six-screen overview; [source captures and presentation notes](docs/images/inside-recall/README.md).*
 
 <table>
   <tr><th>Lesson-based library</th><th>Subject resources</th></tr>
@@ -67,6 +71,9 @@ and [presentation provenance and prompts](docs/images/inside-recall/README.md).
 - Subject resources for notes, PDFs, and photos; portable full-data backups.
 - Quiet times, study windows, reminder pauses, and notification diagnostics.
 - Review activity heatmap and Skip for now without changing card schedules.
+- [Lesson pauses and focused study](docs/review-focus.md): temporarily exclude a lesson
+  from mixed reviews, or focus on a subject, chapter or lesson using due-card review
+  or schedule-free practice.
 - Review calendar in Today and Insights: current next due dates, daily counts and types, read-only card previews, and lesson links. Overdue cards remain under Today; suspended/archived content is excluded. Local midnight boundaries handle timezone/DST changes. No scheduling or database-schema change is required.
 - Subtle short navigation/dock/calendar transitions, saved tab scroll positions, bounded calendar detail loading, and fresh due counts while the app is open.
 - Offline English, Arabic, Spanish, French and German interfaces—not just layout direction—with localized settings, review controls, reminders, errors, plurals and dates. Study content and pronunciation languages stay independent of the interface.

@@ -90,7 +90,7 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
     if (index >= cards.size) {
         val dueFlow: kotlinx.coroutines.flow.Flow<Int?> = remember(vm) { vm.remainingDueReviews() }
         val remaining by dueFlow.collectAsStateWithLifecycle(initialValue = null)
-        ReviewComplete(counts.values.sum(), skipped, counts, resources, done, remaining)
+        ReviewComplete(counts.values.sum(), skipped, counts, resources, done, if (vm.reviewIsPractice) null else remaining, vm.reviewIsPractice)
         return
     }
     val card = cards[index]
@@ -123,6 +123,7 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
         Column(Modifier.fillMaxSize().padding(horizontal = pagePadding).widthIn(max = RecallSizes.contentMaxWidth).align(Alignment.TopCenter)) {
             Row(Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch), verticalAlignment = Alignment.CenterVertically) { RecallIconButton(Icons.Outlined.Close, s(R.string.ui_end_review), done); Column(Modifier.weight(1f).padding(horizontal = RecallSpacing.xs)) { BidiAwareText(card.lessonTitle, style = MaterialTheme.typography.labelLarge, maxLines = 1); BidiAwareText(s(R.string.ui_review_progress, s.number(index + 1), s.number(cards.size)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) }; CircularProgressIndicator(progress = { (index + 1f) / cards.size }, modifier = Modifier.size(30.dp), strokeWidth = 3.dp, trackColor = MaterialTheme.colorScheme.surfaceVariant) }
             ReviewCardStack(card, targets, cards.size - index, revealed, Modifier.weight(1f).fillMaxWidth())
+            if (vm.reviewIsPractice) Text(s(R.string.focus_practice_hint), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted)
             TextButton(onClick = {
                 // Skipping only advances this session: no review event or memory-state update.
                 vm.skipReviewCard(card.id)
@@ -130,7 +131,7 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
                 Text(resources.getString(R.string.review_skip))
             }
             if (!revealed) RecallPrimaryButton(s(R.string.ui_show_answer), Icons.Outlined.Visibility, { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); vm.revealReviewAnswer() }, Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = RecallSpacing.md))
-            else RatingBar(previews, enabled = !saving) { result ->
+            else RatingBar(previews, enabled = !saving, practice = vm.reviewIsPractice) { result ->
                 if (!saving) {
                     vm.submitReview(card, previews, result.rating) { previews = it }
                 }
@@ -139,16 +140,16 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
     }
 }
 
-@Composable private fun RatingBar(previews: Map<Rating, ScheduleResult>, enabled: Boolean, rate: (ScheduleResult) -> Unit) {
+@Composable private fun RatingBar(previews: Map<Rating, ScheduleResult>, enabled: Boolean, practice: Boolean = false, rate: (ScheduleResult) -> Unit) {
     val s = recallStrings()
- Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = RecallSpacing.md)) { BidiAwareText(s(R.string.ui_rate_question), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(bottom = RecallSpacing.xs)); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.xs)) { Rating.entries.forEach { rating -> val result = previews.getValue(rating); RatingChoice(rating, s.interval(result.intervalMillis), Modifier.weight(1f), enabled) { rate(result) } } } } }
+ Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = RecallSpacing.md)) { BidiAwareText(s(R.string.ui_rate_question), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(bottom = RecallSpacing.xs)); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.xs)) { Rating.entries.forEach { rating -> val result = previews.getValue(rating); RatingChoice(rating, if (practice) s(R.string.focus_no_schedule) else s.interval(result.intervalMillis), Modifier.weight(1f), enabled) { rate(result) } } } } }
 
 @Composable private fun RatingChoice(rating: Rating, interval: String, modifier: Modifier, enabled: Boolean, click: () -> Unit) {
     val s = recallStrings()
  val tint = when(rating) { Rating.AGAIN -> MaterialTheme.colorScheme.error; Rating.HARD -> MaterialTheme.colorScheme.warning; Rating.GOOD -> MaterialTheme.colorScheme.primary; Rating.EASY -> MaterialTheme.colorScheme.success }; Surface(onClick = click, enabled = enabled, modifier = modifier.heightIn(min = 68.dp), color = MaterialTheme.colorScheme.surfaceInteractive, contentColor = MaterialTheme.colorScheme.onSurface, shape = RecallRadii.medium) { Column(Modifier.padding(vertical = RecallSpacing.sm, horizontal = RecallSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(s.rating(rating), style = MaterialTheme.typography.labelLarge, color = tint); BidiAwareText(interval, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) } } }
 
 @Composable
-private fun ReviewComplete(total: Int, skipped: Int, counts: Map<Rating, Int>, resources: android.content.res.Resources, done: () -> Unit, remaining: Int?) {
+private fun ReviewComplete(total: Int, skipped: Int, counts: Map<Rating, Int>, resources: android.content.res.Resources, done: () -> Unit, remaining: Int?, practice: Boolean = false) {
     val s = recallStrings()
 
     ScreenFrame {
@@ -156,7 +157,7 @@ private fun ReviewComplete(total: Int, skipped: Int, counts: Map<Rating, Int>, r
             Box(Modifier.size(56.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceSelected), contentAlignment = Alignment.Center) {
                 Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary)
             }
-            Text(s(R.string.ui_review_complete), style = MaterialTheme.typography.displayMedium, modifier = Modifier.padding(top = RecallSpacing.lg))
+            Text(s(if (practice) R.string.focus_complete else R.string.ui_review_complete), style = MaterialTheme.typography.displayMedium, modifier = Modifier.padding(top = RecallSpacing.lg))
             Text(resources.getQuantityString(R.plurals.review_answered_count, total, total), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.muted)
             if (skipped > 0) Text(resources.getQuantityString(R.plurals.review_skipped_count, skipped, skipped), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted)
             remaining?.let { Text(resources.getString(R.string.phase3_remaining, s.number(it)), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted) }

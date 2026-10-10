@@ -11,6 +11,8 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.example.myapplication4.domain.LessonReviewPause
+import com.example.myapplication4.domain.LessonPauseCodec
 
 val Context.recallPreferences by preferencesDataStore("recall_preferences")
 
@@ -25,9 +27,11 @@ data class UserSettings(
     val dynamicColor: Boolean = false,
     val speechRate: Float = 1f,
     val debugMode: Boolean = false,
+    val lessonPauses: List<LessonReviewPause> = emptyList(),
 )
 
 object PreferenceKeys {
+    val lessonPauses = stringPreferencesKey("lesson_review_pauses")
     val introductionSeen = booleanPreferencesKey("introduction_seen")
     val debugMode = booleanPreferencesKey("debug_mode")
     val speechRate = floatPreferencesKey("speech_rate")
@@ -57,9 +61,22 @@ class UserPreferences(private val context: Context) {
             dynamicColor = values[PreferenceKeys.dynamicColor] ?: false,
             speechRate = values[PreferenceKeys.speechRate]?.takeIf { it in .75f..1.25f } ?: 1f,
             debugMode = values[PreferenceKeys.debugMode] ?: false,
+            lessonPauses = LessonPauseCodec.readPreference(values[PreferenceKeys.lessonPauses]),
         )
     }
 
+    suspend fun setLessonPause(lessonId: String, pause: LessonReviewPause?) {
+        require(pause == null || pause.lessonId == lessonId)
+        context.recallPreferences.edit {
+            val remaining = LessonPauseCodec.readPreference(it[PreferenceKeys.lessonPauses]).filter { entry -> entry.lessonId != lessonId && entry.endAt > System.currentTimeMillis() }
+            it[PreferenceKeys.lessonPauses] = LessonPauseCodec.encode(remaining + listOfNotNull(pause))
+        }
+    }
+    suspend fun removeLessonPauses(ids: Set<String>) {
+        context.recallPreferences.edit {
+            it[PreferenceKeys.lessonPauses] = LessonPauseCodec.encode(LessonPauseCodec.readPreference(it[PreferenceKeys.lessonPauses]).filter { pause -> pause.lessonId !in ids })
+        }
+    }
     suspend fun setDebugMode(value: Boolean) = update(PreferenceKeys.debugMode, value)
     suspend fun setSpeechRate(value: Float) = update(PreferenceKeys.speechRate, value.takeIf { it in .75f..1.25f } ?: 1f)
     suspend fun setRetention(value: Double) = update(PreferenceKeys.desiredRetention, value.coerceIn(.85, .95))
@@ -82,6 +99,7 @@ class UserPreferences(private val context: Context) {
             it[PreferenceKeys.dynamicColor] = value.dynamicColor
             it[PreferenceKeys.speechRate] = value.speechRate
             it[PreferenceKeys.debugMode] = value.debugMode
+            it[PreferenceKeys.lessonPauses] = LessonPauseCodec.encode(value.lessonPauses)
         }
     }
 

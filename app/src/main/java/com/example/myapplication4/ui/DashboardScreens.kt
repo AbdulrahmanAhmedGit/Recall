@@ -12,6 +12,7 @@ import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material.icons.outlined.LocalLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
@@ -41,9 +42,12 @@ fun TodayScreen(due: Int, lessons: List<LessonOverview>, vm: RecallViewModel, re
     val s = recallStrings()
 
     val reviewLoading by vm.reviewLoading.collectAsStateWithLifecycle()
+    val pausedIds by vm.pausedLessonIds.collectAsStateWithLifecycle()
+    var focus by rememberSaveable { mutableStateOf(false) }
+    var pausedLesson by remember { mutableStateOf<String?>(null) }
     val backlog = com.example.myapplication4.domain.BacklogPolicy.isBacklog(due)
-    val dueLessons = remember(lessons) { lessons.filter { it.due > 0 } }
-    val upcoming = remember(lessons) { lessons.filter { it.due == 0 && it.total > 0 }.take(3) }
+    val dueLessons = remember(lessons, pausedIds) { lessons.filter { it.due > 0 && it.id !in pausedIds } }
+    val upcoming = remember(lessons, pausedIds) { lessons.filter { it.due == 0 && it.total > 0 && it.id !in pausedIds }.take(3) }
     ScreenFrame {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = RecallSpacing.lg)) {
             item {
@@ -62,13 +66,23 @@ fun TodayScreen(due: Int, lessons: List<LessonOverview>, vm: RecallViewModel, re
                 if (backlog) Text(s(R.string.phase3_backlog_intro), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(top = RecallSpacing.sm))
                 RecallPrimaryButton(if (reviewLoading) s(R.string.ui_loading) else if (backlog) s(R.string.phase3_small_session) else if (due > 0) s(R.string.ui_start_review) else s(R.string.ui_review_anyway), Icons.Outlined.AutoStories, { if (backlog) vm.reviewBatch(review) else vm.reviewDue(review) }, Modifier.fillMaxWidth().padding(top = RecallSpacing.lg), enabled = !reviewLoading)
                 if (backlog) TextButton({ vm.reviewDue(review) }, enabled = !reviewLoading) { Text(s(R.string.phase3_all_due)) }
+                TextButton({ focus = true }, enabled = !reviewLoading) { Icon(Icons.Outlined.AutoStories, null); Spacer(Modifier.width(RecallSpacing.xs)); Text(s(R.string.focus_title)) }
+                if (pausedIds.isNotEmpty()) Text(s(R.string.lesson_pause_count, s.number(pausedIds.size)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
                 SectionHeader(s(R.string.ui_due_lessons), if (dueLessons.isEmpty()) s(R.string.ui_import) else null, import)
             }
             if (dueLessons.isEmpty()) item { RecallEmptyState(Icons.Outlined.AutoStories, s(R.string.ui_caught_up_title), s(R.string.ui_due_empty)) }
             else items(dueLessons, key = { it.id }) { lesson -> LessonRow(lesson) { vm.reviewLesson(lesson.id, review) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
             if (upcoming.isNotEmpty()) { item { SectionHeader(s(R.string.ui_upcoming)) }; items(upcoming, key = { "up-${it.id}" }) { LessonRow(it) { vm.reviewLesson(it.id, review) } } }
+            if (pausedIds.isNotEmpty()) {
+                item { SectionHeader(s(R.string.lesson_pause_title)) }
+                items(lessons.filter { it.id in pausedIds }, key = { "paused-${it.id}" }) { lesson ->
+                    TextButton({ pausedLesson = lesson.id }) { BidiAwareText(lesson.title) }
+                }
+            }
         }
     }
+    if (focus) ReviewFocusSheet(vm, review = review) { focus = false }
+    pausedLesson?.let { id -> LessonPauseSheet(id, vm) { pausedLesson = null } }
 }
 
 @Composable

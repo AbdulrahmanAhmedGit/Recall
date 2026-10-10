@@ -86,8 +86,8 @@ data class BackupData(val subjects: List<SubjectEntity>, val chapters: List<Chap
 
 @Dao
 interface RecallDao {
-    @Query("SELECT COUNT(*) FROM CardEntity c JOIN ReviewStateEntity r ON r.cardId=c.id JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId WHERE c.suspended=0 AND l.archived=0 AND s.archived=0 AND r.dueAt<=:now")
-    suspend fun reminderDueCount(now: Long): Int
+    @Query("SELECT COUNT(*) FROM CardEntity c JOIN ReviewStateEntity r ON r.cardId=c.id JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId WHERE c.suspended=0 AND l.archived=0 AND s.archived=0 AND r.dueAt<=:now AND l.id NOT IN (:excludedLessonIds)")
+    suspend fun reminderDueCount(now: Long, excludedLessonIds: List<String> = emptyList()): Int
     @Query("SELECT * FROM card_pronunciation_targets WHERE cardId=:cardId ORDER BY side, occurrenceIndex") fun pronunciationTargets(cardId: String): Flow<List<PronunciationTargetEntity>>
     @Query("SELECT * FROM card_pronunciation_targets WHERE cardId=:cardId") suspend fun targetsForCard(cardId: String): List<PronunciationTargetEntity>
     @Query("SELECT * FROM card_pronunciation_targets") suspend fun allPronunciationTargets(): List<PronunciationTargetEntity>
@@ -149,14 +149,14 @@ interface RecallDao {
     @Query("SELECT * FROM ChapterEntity WHERE subjectId = :subjectId ORDER BY position, name") fun chapters(subjectId: String): Flow<List<ChapterEntity>>
     @Query("SELECT l.id, l.learningLanguage, l.chapterId, l.title, l.summary, s.name subjectName, s.id subjectId, ch.name chapterName, s.accent, COUNT(c.id) total, SUM(CASE WHEN rs.dueAt <= :now AND c.suspended = 0 THEN 1 ELSE 0 END) due, SUM(CASE WHEN rs.reps > 0 THEN 1 ELSE 0 END) learned, SUM(CASE WHEN rs.difficulty >= 7 THEN 1 ELSE 0 END) difficult, MIN(CASE WHEN c.suspended = 0 THEN rs.dueAt END) nextDue, MAX(rs.lastReviewedAt) lastReviewed FROM LessonEntity l JOIN SubjectEntity s ON s.id = l.subjectId LEFT JOIN ChapterEntity ch ON ch.id = l.chapterId LEFT JOIN CardEntity c ON c.lessonId = l.id LEFT JOIN ReviewStateEntity rs ON rs.cardId = c.id WHERE l.archived = 0 AND s.archived = 0 GROUP BY l.id ORDER BY due DESC, l.updatedAt DESC") fun lessonOverviews(now: Long): Flow<List<LessonOverview>>
     @Query("SELECT l.id, l.learningLanguage, l.chapterId, l.title, l.summary, s.name subjectName, s.id subjectId, ch.name chapterName, s.accent, COUNT(c.id) total, SUM(CASE WHEN rs.dueAt <= :now AND c.suspended = 0 THEN 1 ELSE 0 END) due, SUM(CASE WHEN rs.reps > 0 THEN 1 ELSE 0 END) learned, SUM(CASE WHEN rs.difficulty >= 7 THEN 1 ELSE 0 END) difficult, MIN(CASE WHEN c.suspended = 0 THEN rs.dueAt END) nextDue, MAX(rs.lastReviewedAt) lastReviewed FROM LessonEntity l JOIN SubjectEntity s ON s.id = l.subjectId LEFT JOIN ChapterEntity ch ON ch.id = l.chapterId LEFT JOIN CardEntity c ON c.lessonId = l.id LEFT JOIN ReviewStateEntity rs ON rs.cardId = c.id WHERE l.subjectId = :subjectId AND l.archived = 0 AND s.archived = 0 GROUP BY l.id ORDER BY ch.position, l.title") fun lessonOverviewsForSubject(subjectId: String, now: Long): Flow<List<LessonOverview>>
-    @Query("SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended, l.title lessonTitle, l.learningLanguage, s.name subjectName, rs.state, rs.dueAt, rs.lastReviewedAt, rs.stability, rs.difficulty, rs.scheduledDays, rs.reps, rs.lapses FROM CardEntity c JOIN LessonEntity l ON l.id = c.lessonId JOIN SubjectEntity s ON s.id = l.subjectId JOIN ReviewStateEntity rs ON rs.cardId = c.id WHERE c.suspended = 0 AND l.archived = 0 AND s.archived = 0 AND rs.dueAt <= :now AND (:subjectId IS NULL OR l.subjectId = :subjectId) ORDER BY rs.dueAt, RANDOM()") suspend fun dueCards(now: Long, subjectId: String? = null): List<CardWithLesson>
+    @Query("SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended, l.title lessonTitle, l.learningLanguage, s.name subjectName, rs.state, rs.dueAt, rs.lastReviewedAt, rs.stability, rs.difficulty, rs.scheduledDays, rs.reps, rs.lapses FROM CardEntity c JOIN LessonEntity l ON l.id = c.lessonId JOIN SubjectEntity s ON s.id = l.subjectId JOIN ReviewStateEntity rs ON rs.cardId = c.id WHERE c.suspended = 0 AND l.archived = 0 AND s.archived = 0 AND rs.dueAt <= :now AND (:subjectId IS NULL OR l.subjectId = :subjectId) AND l.id NOT IN (:excludedLessonIds) ORDER BY rs.dueAt, RANDOM()") suspend fun dueCards(now: Long, subjectId: String? = null, excludedLessonIds: List<String> = emptyList()): List<CardWithLesson>
     @Query("SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended, l.title lessonTitle, l.learningLanguage, s.name subjectName, rs.state, rs.dueAt, rs.lastReviewedAt, rs.stability, rs.difficulty, rs.scheduledDays, rs.reps, rs.lapses FROM CardEntity c JOIN LessonEntity l ON l.id = c.lessonId JOIN SubjectEntity s ON s.id = l.subjectId JOIN ReviewStateEntity rs ON rs.cardId = c.id WHERE c.lessonId = :lessonId AND c.suspended = 0 ORDER BY RANDOM()") suspend fun lessonCards(lessonId: String): List<CardWithLesson>
     // Two bounded candidate sets preserve the independent new-card cap without loading the backlog.
     @Query("""WITH eligible AS (
         SELECT c.id, rs.dueAt, rs.reps FROM ReviewStateEntity rs
         JOIN CardEntity c ON c.id=rs.cardId JOIN LessonEntity l ON l.id=c.lessonId
         JOIN SubjectEntity s ON s.id=l.subjectId
-        WHERE rs.dueAt<=:now AND c.suspended=0 AND l.archived=0 AND s.archived=0 AND c.id NOT IN (:deferredIds)
+        WHERE rs.dueAt<=:now AND c.suspended=0 AND l.archived=0 AND s.archived=0 AND c.id NOT IN (:deferredIds) AND l.id NOT IN (:excludedLessonIds)
     ), started AS (SELECT id FROM eligible WHERE reps>0 ORDER BY dueAt, id LIMIT :limit),
     fresh AS (SELECT id FROM eligible WHERE reps<=0 ORDER BY dueAt, id LIMIT :newLimit)
     SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended,
@@ -166,10 +166,26 @@ interface RecallDao {
     JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId
     WHERE c.id IN (SELECT id FROM started UNION ALL SELECT id FROM fresh)
     ORDER BY rs.dueAt, c.id LIMIT :limit""")
-    suspend fun dueBatch(now: Long, newLimit: Int, limit: Int, deferredIds: List<String> = emptyList()): List<CardWithLesson>
+    suspend fun dueBatch(now: Long, newLimit: Int, limit: Int, deferredIds: List<String> = emptyList(), excludedLessonIds: List<String> = emptyList()): List<CardWithLesson>
+
+    @Query("""WITH scoped AS (
+        SELECT c.id, rs.reps FROM CardEntity c JOIN LessonEntity l ON l.id=c.lessonId
+        JOIN SubjectEntity s ON s.id=l.subjectId JOIN ReviewStateEntity rs ON rs.cardId=c.id
+        WHERE c.suspended=0 AND l.archived=0 AND s.archived=0 AND l.subjectId=:subjectId
+        AND (:chapterId IS NULL OR l.chapterId=:chapterId) AND (:lessonId IS NULL OR l.id=:lessonId)
+        AND (:practice OR rs.dueAt<=:now)
+    ), started AS (SELECT id FROM scoped WHERE :practice OR reps>0 ORDER BY RANDOM() LIMIT :limit),
+    fresh AS (SELECT id FROM scoped WHERE NOT :practice AND reps<=0 ORDER BY RANDOM() LIMIT :newLimit)
+    SELECT c.id, c.lessonId, c.type, c.front, c.back, c.hint, c.sourceReference, c.suspended,
+        l.title lessonTitle, l.learningLanguage, s.name subjectName, rs.state, rs.dueAt,
+        rs.lastReviewedAt, rs.stability, rs.difficulty, rs.scheduledDays, rs.reps, rs.lapses
+    FROM CardEntity c JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId
+    JOIN ReviewStateEntity rs ON rs.cardId=c.id
+    WHERE c.id IN (SELECT id FROM started UNION ALL SELECT id FROM fresh) ORDER BY RANDOM() LIMIT :limit""")
+    suspend fun focusCards(subjectId: String, chapterId: String?, lessonId: String?, now: Long, practice: Boolean, limit: Int = 200, newLimit: Int = 200): List<CardWithLesson>
     @Query("SELECT * FROM CardEntity WHERE lessonId = :lessonId ORDER BY createdAt DESC") fun cardsForLesson(lessonId: String): Flow<List<CardEntity>>
     @Query("SELECT t.* FROM TagEntity t JOIN LessonTagEntity lt ON lt.tagId = t.id WHERE lt.lessonId = :lessonId ORDER BY t.name") fun tagsForLesson(lessonId: String): Flow<List<TagEntity>>
-    @Query("SELECT COUNT(*) FROM CardEntity c JOIN ReviewStateEntity rs ON rs.cardId=c.id JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId WHERE c.suspended=0 AND l.archived=0 AND s.archived=0 AND rs.dueAt <= :now") fun dueCount(now: Long): Flow<Int>
+    @Query("SELECT COUNT(*) FROM CardEntity c JOIN ReviewStateEntity rs ON rs.cardId=c.id JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId WHERE c.suspended=0 AND l.archived=0 AND s.archived=0 AND rs.dueAt <= :now AND l.id NOT IN (:excludedLessonIds)") fun dueCount(now: Long, excludedLessonIds: List<String> = emptyList()): Flow<Int>
     @Query("SELECT COUNT(*) FROM ReviewLogEntity WHERE reviewedAt >= :since AND reviewedAt <= :now") fun reviewCountSince(since: Long, now: Long = System.currentTimeMillis()): Flow<Int>
     @Query("""SELECT COUNT(*) total,
         COALESCE(SUM(CASE WHEN COALESCE(rs.reps, 0) <= 0 THEN 1 ELSE 0 END), 0) new,
@@ -220,6 +236,7 @@ interface RecallDao {
     @Query("SELECT * FROM SubjectEntity") suspend fun allSubjects(): List<SubjectEntity>
     @Query("SELECT * FROM ChapterEntity") suspend fun allChapters(): List<ChapterEntity>
     @Query("SELECT * FROM LessonEntity") suspend fun allLessons(): List<LessonEntity>
+    @Query("SELECT id FROM LessonEntity WHERE subjectId=:subjectId") suspend fun lessonIdsForSubject(subjectId: String): List<String>
     @Query("SELECT * FROM CardEntity") suspend fun allCards(): List<CardEntity>
     @Query("SELECT * FROM TagEntity") suspend fun allTags(): List<TagEntity>
     @Query("SELECT * FROM LessonTagEntity") suspend fun allLessonTags(): List<LessonTagEntity>

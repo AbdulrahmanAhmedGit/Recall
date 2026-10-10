@@ -34,6 +34,7 @@ object RecallBackupCodec {
             .put("reminders_enabled", settings.remindersEnabled)
             .put("study_window_reminder", settings.studyWindowReminder)
             .putNullable("paused_until", settings.pausedUntil)
+            .put("lesson_pauses", JSONArray(LessonPauseCodec.encode(settings.lessonPauses)))
             .put("theme_mode", settings.themeMode)
             .put("language", settings.language)
             .put("dynamic_color", settings.dynamicColor).put("speech_rate", settings.speechRate).put("debug_mode", settings.debugMode))
@@ -70,12 +71,14 @@ object RecallBackupCodec {
         require(cards.map { it.id }.toSet().size == cards.size)
         val resources = objects(arr("resources")) { SubjectResourceEntity(req(it, "id"), req(it, "subject_id"), req(it, "title"), req(it, "kind"), it.optString("note"), nullable(it, "uri"), nullable(it, "mime_type"), it.getLong("created_at"), it.getLong("updated_at")) }
         val preferences = root.optJSONObject("settings") ?: JSONObject()
+        require(!preferences.has("lesson_pauses") || preferences.get("lesson_pauses") is JSONArray)
         val settings = UserSettings(
             desiredRetention = preferences.optDouble("desired_retention", .90).coerceIn(.85, .95),
             newCardLimit = preferences.optInt("new_card_limit", 20).coerceIn(0, 1000),
             remindersEnabled = preferences.optBoolean("reminders_enabled", false),
             studyWindowReminder = preferences.optBoolean("study_window_reminder", true),
             pausedUntil = nullableLong(preferences, "paused_until"),
+            lessonPauses = LessonPauseCodec.decode((preferences.optJSONArray("lesson_pauses") ?: JSONArray()).toString()).also { pauses -> require(pauses.all { it.lessonId in lessonMap }) },
             themeMode = preferences.optString("theme_mode", "system").takeIf { it in setOf("system", "light", "dark") } ?: "system",
             language = preferences.optString("language", "system").takeIf { it in setOf("system", "en", "ar", "es", "fr", "de") } ?: "system",
             dynamicColor = preferences.optBoolean("dynamic_color", false),

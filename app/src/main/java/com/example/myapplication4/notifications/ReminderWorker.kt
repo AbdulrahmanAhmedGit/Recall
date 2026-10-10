@@ -43,7 +43,7 @@ class ReminderWorker @JvmOverloads constructor(
                 record("Reminders are disabled"); return@withLock Result.success()
             }
             val dao = db.dao()
-            val due = dao.reminderDueCount(now)
+            val due = dao.reminderDueCount(now, com.example.myapplication4.domain.LessonPauseCodec.readPreference(prefs[PreferenceKeys.lessonPauses]).filter { it.activeAt(now) }.map { it.lessonId })
             if (due == 0) {
                 record("No due cards; background checks remain active")
                 applicationContext.getSystemService(android.app.NotificationManager::class.java).cancel(1001)
@@ -71,12 +71,17 @@ class ReminderWorker @JvmOverloads constructor(
             if (latest[PreferenceKeys.remindersEnabled] != true || (latest[PreferenceKeys.pausedUntil] ?: 0) > now) {
                 record("Reminders disabled or paused"); return@withLock Result.success()
             }
-            val error = ReminderNotifications.post(com.example.myapplication4.util.RecallLocale.context(applicationContext, latest[PreferenceKeys.language] ?: "system"), due, windowStart = window != null && prefs[PreferenceKeys.studyWindowReminder] != false)
+            val latestDue = dao.reminderDueCount(now, com.example.myapplication4.domain.LessonPauseCodec.readPreference(latest[PreferenceKeys.lessonPauses]).filter { it.activeAt(now) }.map { it.lessonId })
+            if (latestDue == 0) {
+                applicationContext.getSystemService(android.app.NotificationManager::class.java).cancel(1001)
+                record("No unpaused due cards"); return@withLock Result.success()
+            }
+            val error = ReminderNotifications.post(com.example.myapplication4.util.RecallLocale.context(applicationContext, latest[PreferenceKeys.language] ?: "system"), latestDue, windowStart = window != null && prefs[PreferenceKeys.studyWindowReminder] != false)
             if (error != null) record(error) else applicationContext.recallPreferences.edit {
                 it[ReminderDiagnostics.lastRun] = now
                 it[ReminderDiagnostics.lastSent] = now
                 if (window != null) it[ReminderDiagnostics.lastWindow] = window
-                it[ReminderDiagnostics.reason] = "Posted reminder for " + due + " due cards"
+                it[ReminderDiagnostics.reason] = "Posted reminder for " + latestDue + " due cards"
                 it.remove(ReminderDiagnostics.nextEligible)
             }
             Result.success()

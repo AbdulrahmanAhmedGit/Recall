@@ -8,6 +8,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.*
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.example.myapplication4.data.*
+import com.example.myapplication4.domain.LessonReviewPause
 import com.example.myapplication4.notifications.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -22,6 +23,7 @@ class ReminderDeliveryTest {
         val original = context.recallPreferences.data.first()
         val name = "reminder-test-${UUID.randomUUID()}"
         val notifications = context.getSystemService(NotificationManager::class.java)
+        var lessonId = ""
         var now = ZonedDateTime.now().withHour(12).withMinute(0).withSecond(0).withNano(0).toInstant().toEpochMilli()
         fun database() = Room.databaseBuilder(context, RecallDatabase::class.java, name).build()
         suspend fun runWorker(): ListenableWorker.Result {
@@ -43,11 +45,19 @@ class ReminderDeliveryTest {
                 try {
                     val subject = SubjectEntity(name = "Chemistry")
                     val lesson = LessonEntity(subjectId = subject.id, title = "Oxidation")
+                    lessonId = lesson.id
                     val card = CardEntity(lessonId = lesson.id, front = "Mn²⁺?", back = "[Ar] 3d⁵")
                     db.dao().insertSubject(subject); db.dao().insertLesson(lesson); db.dao().insertCard(card)
                     db.dao().saveState(ReviewStateEntity(cardId = card.id, dueAt = now - 1))
                 } finally { db.close() }
             }
+            // An active lesson pause suppresses an otherwise due reminder; expiry
+            // restores eligibility without changing the stored due date.
+            UserPreferences(context).setLessonPause(lessonId, LessonReviewPause(lessonId, now - 1, now + 60_000))
+            assertEquals(ListenableWorker.Result.success(), runWorker())
+            assertTrue(notifications.activeNotifications.none { it.id == 1001 })
+            assertNull(context.recallPreferences.data.first()[ReminderDiagnostics.lastSent])
+            now += 60_000
             assertEquals(ListenableWorker.Result.success(), runWorker())
             assertEquals(now, context.recallPreferences.data.first()[ReminderDiagnostics.lastSent])
             val posted = notifications.activeNotifications.single { it.id == 1001 }.notification

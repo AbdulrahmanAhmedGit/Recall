@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_title">Estudio enfocado</string>
+    <string name="focus_hint">Elige una asignatura, capítulo o lección. El estudio enfocado puede incluir lecciones pausadas.</string>
+    <string name="focus_choose_subject">Elige una asignatura</string>
+    <string name="focus_all_chapters">Todos los capítulos</string>
+    <string name="focus_all_lessons">Todas las lecciones</string>
+    <string name="focus_due">Tarjetas pendientes</string>
+    <string name="focus_practice">Practicar todas las tarjetas</string>
+    <string name="focus_practice_hint">Practica hasta 200 tarjetas: las valoraciones no cambian fechas ni historial.</string>
+    <string name="focus_complete">Práctica completada</string>
+    <string name="focus_due_hint">Programación normal. Hasta 200 tarjetas por sesión; se aplica tu límite de tarjetas nuevas.</string>
+    <string name="focus_empty">No hay tarjetas elegibles. Prueba la práctica u otra selección.</string>
+    <string name="focus_start">Comenzar estudio enfocado</string>
+    <string name="focus_no_schedule">Sin cambiar fechas</string>
+    <string name="lesson_pause_title">Pausar lección</string>
+    <string name="lesson_pause_hint">Excluye esta lección de las revisiones mixtas de Hoy y del recuento de recordatorios durante este periodo. Las fechas no cambian y puedes estudiarla directamente.</string>
+    <string name="lesson_pause_dates">Pausada: %1$s – %2$s</string>
+    <string name="lesson_pause_today">Solo hoy</string>
+    <string name="lesson_pause_week">Durante 7 días</string>
+    <string name="lesson_pause_custom">Fechas personalizadas</string>
+    <string name="lesson_pause_resume">Reanudar / cancelar pausa</string>
+    <string name="lesson_pause_count">%1$s lecciones pausadas en revisiones mixtas</string>
+</resources>

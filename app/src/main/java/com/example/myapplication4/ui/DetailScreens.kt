@@ -41,6 +41,8 @@ fun SubjectScreen(subjectId: String, vm: RecallViewModel, back: () -> Unit, open
     var subjectMenu by remember { mutableStateOf(false) }
     var deleteSubject by remember { mutableStateOf(false) }
     var deleteChapter by remember { mutableStateOf<ChapterEntity?>(null) }
+    var focus by rememberSaveable { mutableStateOf(false) }
+    var focusChapter by rememberSaveable { mutableStateOf<String?>(null) }
     ScreenFrame {
         RecallTopBar(subject?.name.orEmpty(), s.count(R.plurals.ui_lessons, lessons.size) + " · " + s.count(R.plurals.ui_cards, lessons.sumOf { it.total }) + " · " + s.count(R.plurals.ui_due, lessons.sumOf { it.due }), back, { Row { RecallIconButton(Icons.Outlined.Add, s(R.string.ui_add), { addKind = "choice" }); Box { RecallIconButton(Icons.Outlined.MoreVert, s(R.string.ui_subject_actions)) { subjectMenu = true }; DropdownMenu(subjectMenu, { subjectMenu = false }) { DropdownMenuItem({ Text(s(R.string.ui_edit_subject)) }, { subjectMenu = false; editingSubject = true }); DropdownMenuItem({ Text(s(R.string.ui_delete_subject), color = MaterialTheme.colorScheme.error) }, { subjectMenu = false; deleteSubject = true }, leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) }) } } } })
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.xs)) {
@@ -51,9 +53,10 @@ fun SubjectScreen(subjectId: String, vm: RecallViewModel, back: () -> Unit, open
         if(resourcesTab) SubjectResources(subjectId, vm)
         else LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = RecallSpacing.xl)) {
         item { if (lessons.sumOf { it.total } > 0) RecallPrimaryButton(if (lessons.sumOf { it.due } > 0) s.count(R.plurals.ui_review_cards, lessons.sumOf { it.due }) else s(R.string.ui_review_anyway), Icons.Outlined.AutoStories, { vm.reviewSubject(subjectId, review) }, Modifier.fillMaxWidth()) }
+        item { TextButton({ focusChapter = null; focus = true }) { Text(s(R.string.focus_title)) } }
         val direct = lessonsByChapter[null].orEmpty()
         if (direct.isNotEmpty()) { item { SectionHeader(s(R.string.ui_lessons)) }; items(direct, key = { it.id }) { LessonRow(it, false) { openLesson(it.id) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) } }
-        chapters.forEach { chapter -> val child = lessonsByChapter[chapter.id].orEmpty(); item(key = chapter.id) { ChapterHeader(chapter, child.size, { editingChapter = chapter }, { addKind = "lesson:${chapter.id}" }, { deleteChapter = chapter }) }; if (child.isEmpty()) item(key = "empty-${chapter.id}") { Text(s(R.string.ui_chapter_empty), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(bottom = RecallSpacing.sm)) } else items(child, key = { it.id }) { LessonRow(it, false) { openLesson(it.id) } } }
+        chapters.forEach { chapter -> val child = lessonsByChapter[chapter.id].orEmpty(); item(key = chapter.id) { ChapterHeader(chapter, child.size, { editingChapter = chapter }, { addKind = "lesson:${chapter.id}" }, { deleteChapter = chapter }, { focusChapter = chapter.id; focus = true }) }; if (child.isEmpty()) item(key = "empty-${chapter.id}") { Text(s(R.string.ui_chapter_empty), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(bottom = RecallSpacing.sm)) } else items(child, key = { it.id }) { LessonRow(it, false) { openLesson(it.id) } } }
         if (lessons.isEmpty() && chapters.isEmpty()) item { RecallEmptyState(Icons.Outlined.Book, s(R.string.ui_start_lesson), s(R.string.ui_optional_hierarchy), s(R.string.ui_add_lesson)) { addKind = "lesson" } }
     } }
     when { addKind == "choice" -> AddChoiceSheet({ addKind = "lesson" }, { addKind = "chapter" }) { addKind = null }; addKind == "chapter" -> NameSheet(s(R.string.ui_new_chapter), s(R.string.ui_chapter_name), save = { vm.addChapter(subjectId, it); addKind = null }) { addKind = null }; addKind?.startsWith("lesson") == true -> LessonSheet(chapters = chapters, selectedChapter = addKind?.substringAfter(':', "")?.takeIf { it.isNotEmpty() }, save = { title, summary, tags, chapter -> vm.addLesson(subjectId, chapter, title, summary, tags); addKind = null }) { addKind = null } }
@@ -61,11 +64,12 @@ fun SubjectScreen(subjectId: String, vm: RecallViewModel, back: () -> Unit, open
     editingChapter?.let { chapter -> NameSheet(s(R.string.ui_edit_chapter), s(R.string.ui_name), initial = chapter.name, save = { vm.editChapter(chapter.copy(name = it)); editingChapter = null }) { editingChapter = null } }
     if (deleteSubject) ConfirmDeleteDialog(s(R.string.ui_delete_named, subject?.name ?: s(R.string.ui_subject)), s(R.string.ui_delete_subject_body, s.number(lessons.size), s.number(lessons.sumOf { it.total })), s(R.string.ui_delete_subject), { deleteSubject = false }) { vm.deleteSubject(subjectId, back) }
     deleteChapter?.let { chapter -> val count = lessons.count { it.chapterId == chapter.id }; ConfirmDeleteDialog(s(R.string.ui_delete_named, chapter.name), s(R.string.ui_delete_chapter_body, s.number(count)), s(R.string.ui_delete_chapter), { deleteChapter = null }) { vm.deleteChapter(chapter.id); deleteChapter = null } }
+    if (focus) ReviewFocusSheet(vm, initialSubject = subjectId, initialChapter = focusChapter, review = review) { focus = false }
 }
 
-@Composable private fun ChapterHeader(chapter: ChapterEntity, lessonCount: Int, edit: () -> Unit, add: () -> Unit, delete: () -> Unit) {
+@Composable private fun ChapterHeader(chapter: ChapterEntity, lessonCount: Int, edit: () -> Unit, add: () -> Unit, delete: () -> Unit, focus: () -> Unit) {
     val s = recallStrings()
- var menu by remember { mutableStateOf(false) }; Row(Modifier.fillMaxWidth().padding(top = RecallSpacing.lg, bottom = RecallSpacing.sm), verticalAlignment = Alignment.CenterVertically) { Column(Modifier.weight(1f)) { BidiAwareText(chapter.name, style = MaterialTheme.typography.titleLarge); Text(s.count(R.plurals.ui_lessons, lessonCount), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }; TextButton(add) { Text(s(R.string.ui_add_lesson)) }; Box { RecallIconButton(Icons.Outlined.MoreVert, s(R.string.ui_chapter_actions)) { menu = true }; DropdownMenu(menu, { menu = false }) { DropdownMenuItem({ Text(s(R.string.ui_edit_chapter)) }, { menu = false; edit() }); DropdownMenuItem({ Text(s(R.string.ui_delete_chapter), color = MaterialTheme.colorScheme.error) }, { menu = false; delete() }, leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) }) } } } }
+ var menu by remember { mutableStateOf(false) }; Row(Modifier.fillMaxWidth().padding(top = RecallSpacing.lg, bottom = RecallSpacing.sm), verticalAlignment = Alignment.CenterVertically) { Column(Modifier.weight(1f)) { BidiAwareText(chapter.name, style = MaterialTheme.typography.titleLarge); Text(s.count(R.plurals.ui_lessons, lessonCount), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }; TextButton(add) { Text(s(R.string.ui_add_lesson)) }; Box { RecallIconButton(Icons.Outlined.MoreVert, s(R.string.ui_chapter_actions)) { menu = true }; DropdownMenu(menu, { menu = false }) { DropdownMenuItem({ Text(s(R.string.focus_title)) }, { menu = false; focus() }); DropdownMenuItem({ Text(s(R.string.ui_edit_chapter)) }, { menu = false; edit() }); DropdownMenuItem({ Text(s(R.string.ui_delete_chapter), color = MaterialTheme.colorScheme.error) }, { menu = false; delete() }, leadingIcon = { Icon(Icons.Outlined.Delete, null, tint = MaterialTheme.colorScheme.error) }) } } } }
 
 private enum class LessonTab { Cards, Summary, History }
 
@@ -79,6 +83,10 @@ fun LessonScreen(lessonId: String, lesson: LessonOverview?, vm: RecallViewModel,
     var editingLesson by remember { mutableStateOf<LessonEntity?>(null) }
     var editingCard by remember { mutableStateOf<CardEntity?>(null) }
     var editingTag by remember { mutableStateOf<TagEntity?>(null) }
+    var focus by rememberSaveable { mutableStateOf(false) }
+    var pauseEditor by rememberSaveable { mutableStateOf(false) }
+    val reviewSettings by vm.settings.collectAsStateWithLifecycle()
+    val pause = reviewSettings.lessonPauses.firstOrNull { it.lessonId == lessonId && it.endAt > System.currentTimeMillis() }
     val chapters by remember(lesson?.subjectId) { vm.chapters(lesson?.subjectId.orEmpty()) }.collectAsStateWithLifecycle(emptyList())
     var tab by rememberSaveable { mutableStateOf(LessonTab.Cards) }; var addingCard by remember { mutableStateOf(false) }; var delete by remember { mutableStateOf<CardEntity?>(null) }; var lessonMenu by remember { mutableStateOf(false) }; var deleteLesson by remember { mutableStateOf(false) }
     ScreenFrame { Column(Modifier.fillMaxSize()) {
@@ -86,6 +94,11 @@ fun LessonScreen(lessonId: String, lesson: LessonOverview?, vm: RecallViewModel,
         if (tags.isNotEmpty()) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.xs)) { tags.take(4).forEach { tag -> InputChip(false, { editingTag = tag }, { BidiAwareText("#${tag.name}", style = MaterialTheme.typography.labelMedium) }, trailingIcon = { IconButton({ vm.removeLessonTag(lessonId, tag.id) }, Modifier.size(32.dp)) { Icon(Icons.Outlined.Close, s(R.string.ui_remove_tag), Modifier.size(16.dp)) } }) } }
         Spacer(Modifier.height(RecallSpacing.md)); Row(Modifier.fillMaxWidth()) { StatItem(s(R.string.ui_cards), s.number(lesson?.total ?: cards.size), Modifier.weight(1f)); StatItem(s(R.string.ui_due), s.number(lesson?.due ?: 0), Modifier.weight(1f)); StatItem(s(R.string.ui_next), dueLabel(lesson?.nextDue, s), Modifier.weight(1f)) }
         RecallPrimaryButton(if ((lesson?.due ?: 0) > 0) s.count(R.plurals.ui_review_cards, lesson?.due ?: 0) else s(R.string.ui_review_anyway), Icons.Outlined.AutoStories, { vm.reviewLesson(lessonId, review) }, Modifier.fillMaxWidth().padding(top = RecallSpacing.ml))
+        Row(Modifier.fillMaxWidth()) {
+            TextButton({ focus = true }, Modifier.weight(1f)) { Text(s(R.string.focus_title)) }
+            TextButton({ pauseEditor = true }, Modifier.weight(1f)) { Text(s(R.string.lesson_pause_title)) }
+        }
+        pause?.let { Text(s(R.string.lesson_pause_dates, s.date(it.startAt), s.date(it.endAt - 1)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
         PrimaryTabRow(tab.ordinal, modifier = Modifier.padding(top = RecallSpacing.lg)) { LessonTab.entries.forEach { item -> Tab(tab == item, { tab = item }, text = { Text(s(when (item) { LessonTab.Cards -> R.string.ui_cards; LessonTab.Summary -> R.string.ui_summary; LessonTab.History -> R.string.ui_history })) }) } }
         when (tab) {
             LessonTab.Cards -> LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(top = RecallSpacing.sm, bottom = RecallSpacing.lg)) { item { Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) { Text(s.count(R.plurals.ui_cards, cards.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.muted, modifier = Modifier.weight(1f)); TextButton(onClick = { addingCard = true }) { Icon(Icons.Outlined.Add, null, Modifier.size(18.dp)); Spacer(Modifier.width(RecallSpacing.xxs)); Text(s(R.string.ui_add_card)) } } }; if (cards.isEmpty()) item { RecallEmptyState(Icons.Outlined.Style, s(R.string.ui_no_cards), s(R.string.ui_add_or_import), s(R.string.ui_add_card)) { addingCard = true } } else items(cards, key = { it.id }) { card -> CardRow(card, { editingCard = card }, { vm.setSuspended(card.id, !card.suspended) }, { vm.duplicateCard(card) }, { delete = card }); HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) } }
@@ -99,6 +112,8 @@ fun LessonScreen(lessonId: String, lesson: LessonOverview?, vm: RecallViewModel,
     if (addingCard) CardEditorSheet(learningLanguage = lesson?.learningLanguage, save = { front, backText, hint, type, targets -> vm.addCard(lessonId, front, backText, hint, type, targets); addingCard = false }) { addingCard = false }
     delete?.let { card -> AlertDialog(onDismissRequest = { delete = null }, icon = { Icon(Icons.Outlined.Delete, null) }, title = { Text(s(R.string.ui_delete_card_question)) }, text = { BidiAwareText(card.front, maxLines = 3) }, confirmButton = { TextButton(onClick = { vm.deleteCard(card.id); delete = null }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text(s(R.string.ui_delete)) } }, dismissButton = { TextButton(onClick = { delete = null }) { Text(s(R.string.ui_keep_card)) } }) }
     if (deleteLesson) ConfirmDeleteDialog(s(R.string.ui_delete_named, lesson?.title ?: s(R.string.ui_lesson)), s(R.string.ui_delete_lesson_body, s.number(cards.size)), s(R.string.ui_delete_lesson), { deleteLesson = false }) { vm.deleteLesson(lessonId, back) }
+    if (focus && lesson != null) ReviewFocusSheet(vm, lesson.subjectId, lesson.chapterId, lessonId, review) { focus = false }
+    if (pauseEditor) LessonPauseSheet(lessonId, vm) { pauseEditor = false }
 }
 
 @Composable private fun ConfirmDeleteDialog(title: String, message: String, action: String, dismiss: () -> Unit, confirm: () -> Unit) {

@@ -16,6 +16,7 @@ subscription, cloud database, AI API key, or backend.
 - [Editing, tags and deletion](#editing-tags-and-deletion)
 - [Subject resources](#subject-resources)
 - [Cards and review](#cards-and-review)
+- [Lesson pauses and focused study](review-focus.md)
 - [Adaptive spaced repetition](#adaptive-spaced-repetition)
 - [Universal AI import](#universal-ai-import)
 - [Scientific notation and mixed-direction text](#scientific-notation-and-mixed-direction-text)
@@ -42,6 +43,11 @@ count, a rough time estimate, a primary review action and due lesson rows. Tap a
 lesson to open it. The calendar icon opens upcoming review dates, and Import opens
 the JSON workflow. An empty library or a cleared queue shows a calm empty state.
 The review-time estimate is a heuristic, not a stopwatch measurement.
+
+**Focused study** narrows review to a subject, chapter or lesson, with scheduled
+due-card review or schedule-free practice. **Pause lesson** temporarily excludes
+a lesson from mixed review and reminders without changing its due dates. See
+[lesson pauses and focused study](review-focus.md) for precise behavior.
 
 <img src="screenshots/today-empty-light.png" width="260" alt="Today on a fresh empty installation, with the calendar shortcut and main dock">
 

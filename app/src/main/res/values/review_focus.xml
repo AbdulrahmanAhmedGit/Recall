@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_title">Focused study</string>
+    <string name="focus_hint">Choose a subject, chapter or lesson. Explicit focus can include paused lessons.</string>
+    <string name="focus_choose_subject">Choose a subject</string>
+    <string name="focus_all_chapters">All chapters</string>
+    <string name="focus_all_lessons">All lessons</string>
+    <string name="focus_due">Due cards</string>
+    <string name="focus_practice">Practice all cards</string>
+    <string name="focus_practice_hint">Practice up to 200 cards: ratings do not change schedules or review history.</string>
+    <string name="focus_complete">Practice complete</string>
+    <string name="focus_due_hint">Normal scheduling. Up to 200 cards per session; your new-card limit applies.</string>
+    <string name="focus_empty">No eligible cards in this selection. Try practice or another scope.</string>
+    <string name="focus_start">Start focused study</string>
+    <string name="focus_no_schedule">No schedule change</string>
+    <string name="lesson_pause_title">Pause lesson</string>
+    <string name="lesson_pause_hint">Hide this lesson from Today’s mixed reviews and reminder counts during this period. Due dates stay unchanged. You can still study it explicitly.</string>
+    <string name="lesson_pause_dates">Paused: %1$s – %2$s</string>
+    <string name="lesson_pause_today">For today</string>
+    <string name="lesson_pause_week">For 7 days</string>
+    <string name="lesson_pause_custom">Custom dates</string>
+    <string name="lesson_pause_resume">Resume / cancel pause</string>
+    <string name="lesson_pause_count">%1$s lessons paused from mixed reviews</string>
+</resources>

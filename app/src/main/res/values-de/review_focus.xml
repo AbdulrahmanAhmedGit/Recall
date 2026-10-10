@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_title">Gezielt lernen</string>
+    <string name="focus_hint">Wähle ein Fach, Kapitel oder eine Lektion. Gezieltes Lernen kann pausierte Lektionen einschließen.</string>
+    <string name="focus_choose_subject">Fach auswählen</string>
+    <string name="focus_all_chapters">Alle Kapitel</string>
+    <string name="focus_all_lessons">Alle Lektionen</string>
+    <string name="focus_due">Fällige Karten</string>
+    <string name="focus_practice">Alle Karten üben</string>
+    <string name="focus_practice_hint">Bis zu 200 Karten üben: Bewertungen ändern weder Termine noch den Wiederholungsverlauf.</string>
+    <string name="focus_complete">Übung abgeschlossen</string>
+    <string name="focus_due_hint">Normale Planung. Bis zu 200 Karten pro Sitzung; dein Limit für neue Karten gilt.</string>
+    <string name="focus_empty">Keine passenden Karten. Versuche den Übungsmodus oder eine andere Auswahl.</string>
+    <string name="focus_start">Gezieltes Lernen starten</string>
+    <string name="focus_no_schedule">Keine Terminänderung</string>
+    <string name="lesson_pause_title">Lektion pausieren</string>
+    <string name="lesson_pause_hint">Schließt diese Lektion während des Zeitraums aus gemischten Wiederholungen und Erinnerungszahlen aus. Termine bleiben unverändert; gezieltes Lernen ist weiterhin möglich.</string>
+    <string name="lesson_pause_dates">Pausiert: %1$s – %2$s</string>
+    <string name="lesson_pause_today">Für heute</string>
+    <string name="lesson_pause_week">Für 7 Tage</string>
+    <string name="lesson_pause_custom">Eigene Daten</string>
+    <string name="lesson_pause_resume">Fortsetzen / Pause aufheben</string>
+    <string name="lesson_pause_count">%1$s Lektionen für gemischte Wiederholungen pausiert</string>
+</resources>

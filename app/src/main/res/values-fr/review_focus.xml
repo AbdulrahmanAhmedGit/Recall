@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="focus_title">Étude ciblée</string>
+    <string name="focus_hint">Choisissez une matière, un chapitre ou une leçon. Vous pouvez cibler les leçons en pause.</string>
+    <string name="focus_choose_subject">Choisir une matière</string>
+    <string name="focus_all_chapters">Tous les chapitres</string>
+    <string name="focus_all_lessons">Toutes les leçons</string>
+    <string name="focus_due">Cartes à réviser</string>
+    <string name="focus_practice">Pratiquer toutes les cartes</string>
+    <string name="focus_practice_hint">Pratiquez jusqu’à 200 cartes : les évaluations ne modifient ni les dates ni l’historique.</string>
+    <string name="focus_complete">Entraînement terminé</string>
+    <string name="focus_due_hint">Planification normale. Jusqu’à 200 cartes par session ; votre limite de nouvelles cartes s’applique.</string>
+    <string name="focus_empty">Aucune carte admissible. Essayez la pratique ou un autre choix.</string>
+    <string name="focus_start">Commencer l’étude ciblée</string>
+    <string name="focus_no_schedule">Dates inchangées</string>
+    <string name="lesson_pause_title">Mettre la leçon en pause</string>
+    <string name="lesson_pause_hint">Exclut cette leçon des révisions mixtes du jour et du décompte des rappels pendant cette période. Les dates restent inchangées et vous pouvez l’étudier directement.</string>
+    <string name="lesson_pause_dates">En pause : %1$s – %2$s</string>
+    <string name="lesson_pause_today">Pour aujourd’hui</string>
+    <string name="lesson_pause_week">Pendant 7 jours</string>
+    <string name="lesson_pause_custom">Dates personnalisées</string>
+    <string name="lesson_pause_resume">Reprendre / annuler la pause</string>
+    <string name="lesson_pause_count">%1$s leçons en pause dans les révisions mixtes</string>
+</resources>

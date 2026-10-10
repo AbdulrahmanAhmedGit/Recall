@@ -1,5 +1,22 @@
 # Latest source changes
 
+## v1.0.0-preview.5 — October 10, 2026
+
+- Pause individual lessons for today, seven days, or an inclusive custom date
+  range. Mixed Today queues, backlog batches and reminders omit active pauses;
+  due dates, card memory state and review history are unchanged.
+- Focus on a subject, optional chapter or lesson. Due cards use normal FSRS;
+  practice includes future cards without writing schedules or review logs.
+  Sessions are randomized and bounded to 200 cards; due mode keeps new-card limits.
+- Saved pauses persist offline, expire automatically on subsequent checks and
+  round-trip in backups. Legacy backups remain compatible; no Room migration.
+- Added all five interface translations and enlarged-text Arabic/RTL checks.
+- Inter and Cairo typography now ship together in this versioned release.
+- New AI-assisted release banner uses synthetic native app captures.
+
+See [release notes](releases/v1.0.0-preview.5.md) and the
+[pause/focus guide](review-focus.md). Android version code is 5.
+
 ## v1.0.0-preview.4 — October 9, 2026
 
 Includes the Learning Insights, Cairo typography and Phase 3 changes below.
