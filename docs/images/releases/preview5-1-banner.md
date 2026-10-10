@@ -27,4 +27,3 @@ Composition: spacious warm off-white canvas with refined graphite sans-serif typ
 Text (verbatim): "Recall"; small "PREVIEW 5.1"; main headline "A calmer way to remember."; smaller supporting line "Pause subjects, chapters or lessons."; final feature line "Focused study · Thoughtful motion · Offline-first"; discreet footnote "AI-assisted presentation · Demo data".
 Constraints: one finished release banner, clear large text with generous negative space, authentic modern Android identity. No iPhone Dynamic Island, Apple branding, fake badges, awards, scores, exaggerated promises, hands, confetti, glowing gradients or invented AI interface. No additional text. This is promotional artwork from demo captures, not an untouched screenshot. Preserve important scientific notation and Arabic glyph order.
 ```
-
