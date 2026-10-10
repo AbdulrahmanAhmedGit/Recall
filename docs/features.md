@@ -45,9 +45,12 @@ the JSON workflow. An empty library or a cleared queue shows a calm empty state.
 The review-time estimate is a heuristic, not a stopwatch measurement.
 
 **Focused study** narrows review to a subject, chapter or lesson, with scheduled
-due-card review or schedule-free practice. **Pause lesson** temporarily excludes
-a lesson from mixed review and reminders without changing its due dates. See
-[lesson pauses and focused study](review-focus.md) for precise behavior.
+due-card review or schedule-free practice. **Pause reviews** temporarily excludes
+a subject, chapter or lesson from mixed review and reminders without changing
+its due dates. Parent rules cover later-added lessons too. See
+[pauses and focused study](review-focus.md) for precise behavior. Shared navigation,
+actions, review reveals and changing statistics use [restrained motion](motion-design.md)
+that respects Android's Remove animations setting.
 
 <img src="screenshots/today-empty-light.png" width="260" alt="Today on a fresh empty installation, with the calendar shortcut and main dock">
 

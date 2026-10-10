@@ -158,7 +158,7 @@ fun ReviewCalendarScreen(vm: RecallViewModel, back: () -> Unit, openLesson: (Str
                 }
                 else -> {
                     items(cards, key = { it.id }) { card ->
-                        CalendarCardRow(card, clock, locale) { selectedCardId = card.id }
+                        Column(recallItemMotion()) { CalendarCardRow(card, clock, locale) { selectedCardId = card.id } }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                     }
                     item {
@@ -211,7 +211,7 @@ internal fun ReviewCalendarMonth(
     val weekdayLabels = remember(resources) { resources.getStringArray(R.array.activity_weekdays) }
     val fullDate = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale).withDecimalStyle(DecimalStyle.of(locale)) }
     Surface(shape = RecallRadii.large, color = MaterialTheme.colorScheme.surfaceElevated, modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.animateContentSize(tween(RecallMotion.quick)).padding(vertical = RecallSpacing.sm)) {
+        Column(Modifier.animateContentSize(tween(motionDuration(RecallMotion.quick))).padding(vertical = RecallSpacing.sm)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 IconButton({ onMonth(month.minusMonths(1)) }, enabled = month > YearMonth.from(today), modifier = Modifier.testTag("calendar-previous")) {
                     Icon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, resources.getString(R.string.calendar_previous))
@@ -239,12 +239,12 @@ internal fun ReviewCalendarMonth(
                             val active = day != null && day >= today
                             val selected = day == selectedDate
                             val count = counts[day]?.total ?: 0
-                            val tint by animateColorAsState(when { selected -> MaterialTheme.colorScheme.onPrimary; !active -> MaterialTheme.colorScheme.outline; else -> MaterialTheme.colorScheme.onSurface }, tween(RecallMotion.quick), label = "calendarText")
+                            val tint by animateColorAsState(when { selected -> MaterialTheme.colorScheme.onPrimary; !active -> MaterialTheme.colorScheme.outline; else -> MaterialTheme.colorScheme.onSurface }, tween(motionDuration(RecallMotion.quick)), label = "calendarText")
                             val background by animateColorAsState(when {
                                 day == null -> androidx.compose.ui.graphics.Color.Transparent
                                 selected -> MaterialTheme.colorScheme.primary
                                 else -> MaterialTheme.colorScheme.surface
-                            }, tween(RecallMotion.quick), label = "calendarSelection")
+                            }, tween(motionDuration(RecallMotion.quick)), label = "calendarSelection")
                             val label = day?.let { resources.getString(R.string.calendar_day_label, fullDate.format(it), numbers.format(count)) }.orEmpty()
                             Column(Modifier.weight(1f).heightIn(min = CalendarSizes.dayMinimumHeight).clip(RecallRadii.small)
                                 .then(if (day != null) Modifier.testTag("calendar-day-$day") else Modifier)

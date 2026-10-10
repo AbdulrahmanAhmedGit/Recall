@@ -21,4 +21,12 @@
     <string name="lesson_pause_custom">Custom dates</string>
     <string name="lesson_pause_resume">Resume / cancel pause</string>
     <string name="lesson_pause_count">%1$s lessons paused from mixed reviews</string>
+    <string name="pause_title">Pause reviews</string>
+    <string name="pause_subject">Pause subject</string>
+    <string name="pause_chapter">Pause chapter</string>
+    <string name="pause_rules">Review pauses</string>
+    <string name="pause_picker_hint">Choose a subject, or narrow it to a chapter or lesson.</string>
+    <string name="pause_choose_dates">Choose pause dates</string>
+    <string name="pause_scope_hint">Exclude the selected content from mixed reviews and reminders for this period. Subject and chapter pauses also cover new lessons added inside them. Due dates stay unchanged; explicit focused study is still available.</string>
+    <string name="pause_overlap_hint">Overlapping pauses combine. Removing a narrower pause does not override an active subject or chapter pause.</string>
 </resources>

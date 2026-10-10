@@ -26,7 +26,7 @@ fun ObservedRecallSection(history: RecallHistoryAnalysis) {
         Text(s(R.string.insights_recall_title), style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
         BidiAwareText(s(R.string.insights_recall_period), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
         sample.rate?.let { rate ->
-            Text(percent.format(rate), Modifier.testTag("observed-recall-percentage"), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+            AnimatedRecallNumber(rate, { percent.format(it) }, Modifier.testTag("observed-recall-percentage"), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
         } ?: BidiAwareText(s(when {
             sample.total > 0 -> R.string.insights_insufficient
             history.missingAuditCurrent > 0 -> R.string.insights_legacy_sample
@@ -51,10 +51,10 @@ fun PredictedRecallSection(prediction: CurrentPredictedRecall) {
     TextButton(onClick = { expanded = !expanded }, modifier = Modifier.heightIn(min = RecallSizes.touch).testTag("predicted-recall-toggle")) {
         Text(s(R.string.insights_predicted_title))
     }
-    if (expanded) Column(Modifier.fillMaxWidth().testTag("predicted-recall"), verticalArrangement = Arrangement.spacedBy(RecallSpacing.xs)) {
+    RecallExpansion(expanded) { Column(Modifier.fillMaxWidth().testTag("predicted-recall"), verticalArrangement = Arrangement.spacedBy(RecallSpacing.xs)) {
         val percent = remember(s.locale) { NumberFormat.getPercentInstance(s.locale).apply { maximumFractionDigits = 0 } }
         prediction.probability?.let { probability ->
-            Text(percent.format(probability), Modifier.testTag("predicted-recall-percentage"),
+            AnimatedRecallNumber(probability, { percent.format(it) }, Modifier.testTag("predicted-recall-percentage"),
                 style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
         } ?: BidiAwareText(s(R.string.insights_predicted_empty), style = MaterialTheme.typography.bodyMedium)
         BidiAwareText(s(R.string.insights_predicted_coverage, s.number(prediction.eligibleCards), s.number(prediction.activeCards)),
@@ -62,7 +62,7 @@ fun PredictedRecallSection(prediction: CurrentPredictedRecall) {
         if (prediction.eligibleCards in 1..9) BidiAwareText(s(R.string.insights_predicted_small),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
         BidiAwareText(s(R.string.insights_predicted_scope), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
-    }
+    } }
 }
 
 @Composable
@@ -73,14 +73,15 @@ fun MemoryMaturitySection(memory: MemoryCounts) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) {
             listOf(R.string.insights_new to memory.new, R.string.ui_learning to memory.learning, R.string.insights_mature to memory.mature).forEach { (label, count) ->
                 Column(Modifier.weight(1f)) {
-                    Text(s.number(count), style = MaterialTheme.typography.titleLarge)
+                    AnimatedRecallCount(count, style = MaterialTheme.typography.titleLarge)
                     BidiAwareText(s(label), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
                 }
             }
         }
         BidiAwareText(s(R.string.insights_longer_memory) + " · " + s.number(memory.mature) + " / " + s.number(memory.total),
             style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.muted)
-        LinearProgressIndicator(progress = { if (memory.total == 0) 0f else memory.mature.toFloat() / memory.total },
+        val progress = animatedRecallProgress(if (memory.total == 0) 0f else memory.mature.toFloat() / memory.total)
+        LinearProgressIndicator(progress = { progress.value },
             modifier = Modifier.fillMaxWidth(), trackColor = MaterialTheme.colorScheme.surfaceVariant)
     }
 }
@@ -92,13 +93,13 @@ fun InsightsExplanation(history: RecallHistoryAnalysis) {
     TextButton(onClick = { expanded = !expanded }, modifier = Modifier.heightIn(min = RecallSizes.touch).testTag("insights-explanation-toggle")) {
         Text(s(R.string.insights_details))
     }
-    if (expanded) Column(Modifier.fillMaxWidth().testTag("insights-explanation"), verticalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) {
+    RecallExpansion(expanded) { Column(Modifier.fillMaxWidth().testTag("insights-explanation"), verticalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) {
         listOf(R.string.insights_recall_rules, R.string.insights_memory_rules, R.string.insights_attention_rules, R.string.insights_active_scope).forEach { resource ->
             BidiAwareText(s(resource), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
         }
         BidiAwareText(s(R.string.insights_excluded, s.number(history.excludedCurrent), s.number(history.missingAuditCurrent)),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
-    }
+    } }
 }
 
 @Composable
@@ -120,13 +121,13 @@ fun AttentionLessonRow(lesson: AttentionLesson, now: Long, onOpenLesson: () -> U
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
         }
         TextButton(onClick = { expanded = !expanded }, modifier = Modifier.heightIn(min = RecallSizes.touch)) { Text(s(R.string.ui_history)) }
-        if (expanded) {
+        RecallExpansion(expanded) { Column {
             val numbers = NumberFormat.getNumberInstance(s.locale).apply { maximumFractionDigits = 1 }
             fun finiteNumber(value: Double) = if (value.isFinite()) numbers.format(value) else s(R.string.ui_none)
             BidiAwareText(s(R.string.insights_card_context, finiteNumber(card.difficulty), s.number(card.lapses),
                 finiteNumber(card.stability), s.number(card.scheduledDays)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
             BidiAwareText(s(R.string.insights_next_review, if (card.dueAt <= now) s(R.string.insights_due_now) else s.date(card.dueAt)),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
-        }
+        } }
     }
 }

@@ -121,7 +121,8 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
     BoxWithConstraints(Modifier.fillMaxSize().statusBarsPadding()) {
         val pagePadding = if (maxWidth < 360.dp) RecallSpacing.md else RecallSpacing.ml
         Column(Modifier.fillMaxSize().padding(horizontal = pagePadding).widthIn(max = RecallSizes.contentMaxWidth).align(Alignment.TopCenter)) {
-            Row(Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch), verticalAlignment = Alignment.CenterVertically) { RecallIconButton(Icons.Outlined.Close, s(R.string.ui_end_review), done); Column(Modifier.weight(1f).padding(horizontal = RecallSpacing.xs)) { BidiAwareText(card.lessonTitle, style = MaterialTheme.typography.labelLarge, maxLines = 1); BidiAwareText(s(R.string.ui_review_progress, s.number(index + 1), s.number(cards.size)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) }; CircularProgressIndicator(progress = { (index + 1f) / cards.size }, modifier = Modifier.size(30.dp), strokeWidth = 3.dp, trackColor = MaterialTheme.colorScheme.surfaceVariant) }
+            val animatedProgress = animatedRecallProgress((index + 1f) / cards.size)
+            Row(Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch), verticalAlignment = Alignment.CenterVertically) { RecallIconButton(Icons.Outlined.Close, s(R.string.ui_end_review), done); Column(Modifier.weight(1f).padding(horizontal = RecallSpacing.xs)) { BidiAwareText(card.lessonTitle, style = MaterialTheme.typography.labelLarge, maxLines = 1); BidiAwareText(s(R.string.ui_review_progress, s.number(index + 1), s.number(cards.size)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) }; CircularProgressIndicator(progress = { animatedProgress.value }, modifier = Modifier.size(30.dp), strokeWidth = 3.dp, trackColor = MaterialTheme.colorScheme.surfaceVariant) }
             ReviewCardStack(card, targets, cards.size - index, revealed, Modifier.weight(1f).fillMaxWidth())
             if (vm.reviewIsPractice) Text(s(R.string.focus_practice_hint), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted)
             TextButton(onClick = {
@@ -146,14 +147,15 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
 
 @Composable private fun RatingChoice(rating: Rating, interval: String, modifier: Modifier, enabled: Boolean, click: () -> Unit) {
     val s = recallStrings()
- val tint = when(rating) { Rating.AGAIN -> MaterialTheme.colorScheme.error; Rating.HARD -> MaterialTheme.colorScheme.warning; Rating.GOOD -> MaterialTheme.colorScheme.primary; Rating.EASY -> MaterialTheme.colorScheme.success }; Surface(onClick = click, enabled = enabled, modifier = modifier.heightIn(min = 68.dp), color = MaterialTheme.colorScheme.surfaceInteractive, contentColor = MaterialTheme.colorScheme.onSurface, shape = RecallRadii.medium) { Column(Modifier.padding(vertical = RecallSpacing.sm, horizontal = RecallSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(s.rating(rating), style = MaterialTheme.typography.labelLarge, color = tint); BidiAwareText(interval, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) } } }
+ val interaction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+ val tint = when(rating) { Rating.AGAIN -> MaterialTheme.colorScheme.error; Rating.HARD -> MaterialTheme.colorScheme.warning; Rating.GOOD -> MaterialTheme.colorScheme.primary; Rating.EASY -> MaterialTheme.colorScheme.success }; Surface(onClick = click, enabled = enabled, modifier = modifier.heightIn(min = 68.dp).recallPress(interaction), interactionSource = interaction, color = MaterialTheme.colorScheme.surfaceInteractive, contentColor = MaterialTheme.colorScheme.onSurface, shape = RecallRadii.medium) { Column(Modifier.padding(vertical = RecallSpacing.sm, horizontal = RecallSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(s.rating(rating), style = MaterialTheme.typography.labelLarge, color = tint); BidiAwareText(interval, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) } } }
 
 @Composable
 private fun ReviewComplete(total: Int, skipped: Int, counts: Map<Rating, Int>, resources: android.content.res.Resources, done: () -> Unit, remaining: Int?, practice: Boolean = false) {
     val s = recallStrings()
 
     ScreenFrame {
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+        Column(Modifier.fillMaxSize().recallArrival("completed"), verticalArrangement = Arrangement.Center) {
             Box(Modifier.size(56.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceSelected), contentAlignment = Alignment.Center) {
                 Icon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary)
             }
@@ -238,7 +240,7 @@ fun ImportScreen(vm: RecallViewModel, targetSubjectId: String? = null, targetLes
                     enabled = !busy,
                 )
                 notice?.let { Text(it, color = MaterialTheme.colorScheme.muted, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = RecallSpacing.xs)) }
-                if (result is ImportResult.Failure) Text(s.importError((result as ImportResult.Failure).message), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = RecallSpacing.xs))
+                RecallExpansion(result is ImportResult.Failure) { if (result is ImportResult.Failure) Text(s.importError((result as ImportResult.Failure).message), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = RecallSpacing.xs)) }
                 Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(vertical = RecallSpacing.md), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) {
                     OutlinedButton({ clipboard.setPrimaryClip(android.content.ClipData.newPlainText(s(R.string.ui_ai_prompt_clip), selectedSubject?.let { subjectAiPrompt(it.name, selectedLesson?.title) } ?: AI_PROMPT)) }, Modifier.weight(1f).heightIn(min = RecallSizes.buttonHeight), shape = RecallRadii.medium) { Icon(Icons.Outlined.ContentCopy, null); Spacer(Modifier.width(RecallSpacing.xs)); Text(s(R.string.ui_ai_prompt)) }
                     RecallPrimaryButton(if (busy) s(R.string.ui_processing) else s(R.string.ui_preview), Icons.AutoMirrored.Outlined.ArrowForward, {
@@ -270,7 +272,7 @@ fun ImportScreen(vm: RecallViewModel, targetSubjectId: String? = null, targetLes
     if (cards.any { it.pronunciationTargets.isNotEmpty() }) Text(androidx.compose.ui.res.stringResource(com.example.myapplication4.R.string.pronunciation_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
     LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(vertical = RecallSpacing.md)) {
         itemsIndexed(cards, key = { index, _ -> index }) { index, card ->
-            Row(Modifier.fillMaxWidth().padding(vertical = RecallSpacing.sm), verticalAlignment = Alignment.Top) {
+            Row(recallItemMotion().fillMaxWidth().padding(vertical = RecallSpacing.sm), verticalAlignment = Alignment.Top) {
                 Checkbox(card.included && !card.duplicate, { checked -> cards = cards.toMutableList().also { it[index] = card.copy(included = checked) } }, enabled = !card.duplicate)
                 Column(Modifier.weight(1f)) {
                     PronounceableStudyText(card.front, "front", card.pronunciationTargets, initial.learningLanguage, style = MaterialTheme.typography.titleSmall)

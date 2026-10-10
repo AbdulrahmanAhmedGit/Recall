@@ -49,11 +49,12 @@ fun RecallDock(selected: RecallDestination, onSelected: (RecallDestination) -> U
 @Composable private fun RowScope.DockItem(destination: RecallDestination, selected: Boolean, onClick: () -> Unit) {
     val s = recallStrings()
 
-    val color by animateColorAsState(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.muted, tween(RecallMotion.quick), label = "dockColor")
-    val scale by animateFloatAsState(if (selected) 1f else .96f, tween(RecallMotion.quick), label = "dockScale")
-    val background by animateColorAsState(if (selected) MaterialTheme.colorScheme.surfaceSelected else Color.Transparent, tween(RecallMotion.quick), label = "dockIndicator")
+    val duration = motionDuration(RecallMotion.quick)
+    val color by animateColorAsState(if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.muted, tween(duration), label = "dockColor")
+    val scale by animateFloatAsState(if (selected) 1f else .96f, tween(duration), label = "dockScale")
+    val background by animateColorAsState(if (selected) MaterialTheme.colorScheme.surfaceSelected else Color.Transparent, tween(duration), label = "dockIndicator")
     val interaction = remember { MutableInteractionSource() }
-    Column(Modifier.weight(1f).fillMaxHeight().clip(RecallRadii.medium).clickable(interaction, null, role = Role.Tab, onClick = onClick).scale(scale), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+    Column(Modifier.weight(1f).fillMaxHeight().clip(RecallRadii.medium).clickable(interaction, null, role = Role.Tab, onClick = onClick).scale(scale).recallPress(interaction), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Box(Modifier.height(30.dp).width(42.dp).clip(CircleShape).background(background), contentAlignment = Alignment.Center) { Icon(destination.icon, s(destination.label), Modifier.size(RecallSizes.icon), tint = color) }
         Text(s(destination.label), style = MaterialTheme.typography.labelSmall, color = color, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium)
     }
@@ -73,20 +74,27 @@ fun RecallTopBar(title: String, subtitle: String? = null, onBack: (() -> Unit)? 
     }
 }
 
-@Composable fun RecallIconButton(icon: ImageVector, description: String, onClick: () -> Unit) { IconButton(onClick, Modifier.size(RecallSizes.touch)) { Icon(icon, description, Modifier.size(RecallSizes.icon)) } }
+@Composable fun RecallIconButton(icon: ImageVector, description: String, onClick: () -> Unit) {
+    val interaction = remember { MutableInteractionSource() }
+    IconButton(onClick, Modifier.size(RecallSizes.touch).recallPress(interaction), interactionSource = interaction) { Icon(icon, description, Modifier.size(RecallSizes.icon)) }
+}
 
 @Composable
 fun RecallPrimaryButton(text: String, icon: ImageVector? = null, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    Button(onClick, modifier.heightIn(min = RecallSizes.buttonHeight), enabled = enabled, shape = RecallRadii.medium, contentPadding = PaddingValues(horizontal = RecallSpacing.ml)) { if (icon != null) { Icon(icon, null, Modifier.size(20.dp)); Spacer(Modifier.width(RecallSpacing.xs)) }; Text(text, style = MaterialTheme.typography.labelLarge) }
+    val interaction = remember { MutableInteractionSource() }
+    val container by animateColorAsState(if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = .12f), tween(motionDuration(RecallMotion.quick)), label = "buttonEnabled")
+    val foreground by animateColorAsState(if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface.copy(alpha = .38f), tween(motionDuration(RecallMotion.quick)), label = "buttonText")
+    Button(onClick, modifier.heightIn(min = RecallSizes.buttonHeight).recallPress(interaction), enabled = enabled, interactionSource = interaction, colors = ButtonDefaults.buttonColors(containerColor = container, contentColor = foreground, disabledContainerColor = container, disabledContentColor = foreground), shape = RecallRadii.medium, contentPadding = PaddingValues(horizontal = RecallSpacing.ml)) { if (icon != null) { Icon(icon, null, Modifier.size(20.dp)); Spacer(Modifier.width(RecallSpacing.xs)) }; Text(text, style = MaterialTheme.typography.labelLarge) }
 }
 
 @Composable fun SectionHeader(title: String, action: String? = null, onAction: () -> Unit = {}) { Row(Modifier.fillMaxWidth().padding(top = RecallSpacing.lg, bottom = RecallSpacing.sm), verticalAlignment = Alignment.CenterVertically) { Text(title, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f).semantics { heading() }); if (action != null) TextButton(onClick = onAction) { Text(action) } } }
 
 @Composable
-fun SubjectRow(subject: SubjectEntity, lessonCount: Int, cardCount: Int, due: Int, onClick: () -> Unit) {
+fun SubjectRow(subject: SubjectEntity, lessonCount: Int, cardCount: Int, due: Int, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val s = recallStrings()
 
-    Row(Modifier.fillMaxWidth().clip(RecallRadii.medium).clickable(onClick = onClick).padding(vertical = RecallSpacing.md, horizontal = RecallSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
+    val interaction = remember { MutableInteractionSource() }
+    Row(modifier.fillMaxWidth().recallPress(interaction).clip(RecallRadii.medium).clickable(interactionSource = interaction, indication = ripple(), onClick = onClick).padding(vertical = RecallSpacing.md, horizontal = RecallSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
         val accent = subjectAccent(subject.accent)
         Box(Modifier.size(46.dp).clip(RecallRadii.medium).background(subjectAccentContainer(subject.accent)), contentAlignment = Alignment.Center) { Icon(Icons.Outlined.LocalLibrary, null, tint = accent, modifier = Modifier.size(22.dp)) }
         Spacer(Modifier.width(RecallSpacing.sm)); Column(Modifier.weight(1f)) { BidiAwareText(subject.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis); Text(s.count(R.plurals.ui_lessons, lessonCount) + " · " + s.count(R.plurals.ui_cards, cardCount), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
@@ -95,10 +103,11 @@ fun SubjectRow(subject: SubjectEntity, lessonCount: Int, cardCount: Int, due: In
 }
 
 @Composable
-fun LessonRow(lesson: LessonOverview, showSubject: Boolean = true, onClick: () -> Unit) {
+fun LessonRow(lesson: LessonOverview, showSubject: Boolean = true, modifier: Modifier = Modifier, onClick: () -> Unit) {
     val s = recallStrings()
 
-    Row(Modifier.fillMaxWidth().clip(RecallRadii.medium).clickable(onClick = onClick).padding(vertical = RecallSpacing.md, horizontal = RecallSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
+    val interaction = remember { MutableInteractionSource() }
+    Row(modifier.fillMaxWidth().recallPress(interaction).clip(RecallRadii.medium).clickable(interactionSource = interaction, indication = ripple(), onClick = onClick).padding(vertical = RecallSpacing.md, horizontal = RecallSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.width(3.dp).height(42.dp).clip(CircleShape).background(subjectAccent(lesson.accent)))
         Spacer(Modifier.width(RecallSpacing.sm)); Column(Modifier.weight(1f)) { BidiAwareText(lesson.title, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis); val meta = listOfNotNull(if (showSubject) lesson.subjectName else null, lesson.chapterName).joinToString(" · "); if(meta.isNotEmpty()) BidiAwareText(meta, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted, maxLines = 1) }
         Column(horizontalAlignment = Alignment.End) { Text(if (lesson.due > 0) s(R.string.ui_due_short, s.number(lesson.due)) else s(R.string.ui_caught_up), style = MaterialTheme.typography.labelMedium, color = if (lesson.due > 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.muted); Text(s.count(R.plurals.ui_cards, lesson.total), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }

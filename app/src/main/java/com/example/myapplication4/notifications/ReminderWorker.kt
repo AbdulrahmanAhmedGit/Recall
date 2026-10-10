@@ -43,7 +43,7 @@ class ReminderWorker @JvmOverloads constructor(
                 record("Reminders are disabled"); return@withLock Result.success()
             }
             val dao = db.dao()
-            val due = dao.reminderDueCount(now, com.example.myapplication4.domain.LessonPauseCodec.readPreference(prefs[PreferenceKeys.lessonPauses]).filter { it.activeAt(now) }.map { it.lessonId })
+            val due = dao.reminderDueCount(now, UserPreferences(applicationContext).settings.first().reviewPauses.excludedLessonIds(now, dao.pauseLessonScopes().first()))
             if (due == 0) {
                 record("No due cards; background checks remain active")
                 applicationContext.getSystemService(android.app.NotificationManager::class.java).cancel(1001)
@@ -71,7 +71,7 @@ class ReminderWorker @JvmOverloads constructor(
             if (latest[PreferenceKeys.remindersEnabled] != true || (latest[PreferenceKeys.pausedUntil] ?: 0) > now) {
                 record("Reminders disabled or paused"); return@withLock Result.success()
             }
-            val latestDue = dao.reminderDueCount(now, com.example.myapplication4.domain.LessonPauseCodec.readPreference(latest[PreferenceKeys.lessonPauses]).filter { it.activeAt(now) }.map { it.lessonId })
+            val latestDue = dao.reminderDueCount(now, UserPreferences(applicationContext).settings.first().reviewPauses.excludedLessonIds(now, dao.pauseLessonScopes().first()))
             if (latestDue == 0) {
                 applicationContext.getSystemService(android.app.NotificationManager::class.java).cancel(1001)
                 record("No unpaused due cards"); return@withLock Result.success()

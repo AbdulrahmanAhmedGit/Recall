@@ -76,7 +76,7 @@ fun SubjectResources(subjectId: String, vm: RecallViewModel) {
                         DropdownMenuItem({ Text(s(R.string.ui_remove), color = MaterialTheme.colorScheme.error) }, { menu = false; deletion = resource })
                     } } },
                     colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.background),
-                    modifier = Modifier.clickable {
+                    modifier = recallItemMotion().clickable {
                         if(resource.uri == null) { creating = false; editor = resource }
                         else runCatching { (activity ?: context).startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(resource.uri), resource.mimeType).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION).apply { if (activity == null) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) }) }.onFailure { message = s(R.string.ui_file_open_error) }
                     },

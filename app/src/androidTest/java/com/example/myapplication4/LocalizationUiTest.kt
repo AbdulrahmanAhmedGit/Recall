@@ -67,7 +67,7 @@ class LocalizationUiTest {
                 compose.onNodeWithText(s(R.string.focus_due)).assertExists()
                 compose.onNodeWithText(s(R.string.focus_practice)).assertExists()
                 capture("focus-$language")
-                androidx.test.espresso.Espresso.pressBack()
+                pressSystemBack()
                 compose.onNodeWithText(s(R.string.ui_start_review)).performClick()
                 compose.onNodeWithText(s(R.string.ui_show_answer)).assertIsDisplayed().performClick()
                 compose.onNodeWithText(s.rating(Rating.GOOD)).assertIsDisplayed()
@@ -84,13 +84,13 @@ class LocalizationUiTest {
                 compose.onNodeWithText(s(R.string.lesson_pause_today)).assertExists()
                 compose.onNodeWithText(s(R.string.lesson_pause_custom)).assertExists()
                 capture("lesson-pause-$language")
-                androidx.test.espresso.Espresso.pressBack()
+                pressSystemBack()
                 compose.onNodeWithContentDescription(s(R.string.ui_lesson_actions)).performClick()
                 compose.onNodeWithText(s(R.string.ui_edit_lesson)).performClick()
                 compose.onNodeWithText(s(R.string.ui_lesson_title)).assertExists()
                 compose.onNodeWithText(lesson.title).assertExists()
                 // Dismiss editor and leave both nested destinations using their actual navigation.
-                androidx.test.espresso.Espresso.pressBack()
+                pressSystemBack()
                 compose.onNodeWithContentDescription(s(R.string.ui_back)).performClick()
                 compose.onNodeWithContentDescription(s(R.string.ui_back)).performClick()
                 compose.onNodeWithContentDescription(s(R.string.ui_insights)).performClick()
@@ -165,6 +165,14 @@ class LocalizationUiTest {
                 assertEquals(s(R.string.ui_notification_pause), notification.actions[1].title.toString())
             }
         } finally { manager.cancel(1002) }
+    }
+
+    // Compose sheets have their own focused window. Send a real Android Back
+    // event instead of asking Espresso to focus the obscured activity root.
+    private fun pressSystemBack() {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        android.os.ParcelFileDescriptor.AutoCloseInputStream(automation.executeShellCommand("input keyevent KEYCODE_BACK")).use { it.readBytes() }
+        compose.waitForIdle()
     }
 
     private fun capture(name: String) {

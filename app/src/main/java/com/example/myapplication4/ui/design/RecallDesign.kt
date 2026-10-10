@@ -14,6 +14,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.Font
@@ -44,8 +45,11 @@ object RecallRadii {
 }
 
 object RecallMotion {
+    const val press = 120
     const val quick = 160
     const val standard = 240
+    const val page = 280
+    const val number = 600
     val softSpring = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
 }
 
@@ -121,6 +125,7 @@ private val LightColors = lightColorScheme(
     tertiaryContainer = Color(0xFFE8E5F7), onTertiaryContainer = Color(0xFF35315F),
     background = Color(0xFFF7F7F5), onBackground = Color(0xFF1B1D20),
     surface = Color(0xFFFFFFFF), onSurface = Color(0xFF1B1D20),
+    surfaceContainerLow = Color(0xFFFFFFFF), surfaceContainerHigh = Color(0xFFF0F2F4),
     surfaceVariant = Color(0xFFEEF0F2), onSurfaceVariant = Color(0xFF5B626A),
     outline = Color(0xFF858C94), outlineVariant = Color(0xFFD9DDE1),
     error = Color(0xFFB3262D), onError = Color(0xFFFFFFFF),
@@ -138,6 +143,7 @@ private val DarkColors = darkColorScheme(
     tertiaryContainer = Color(0xFF47426F), onTertiaryContainer = Color(0xFFE7E2FF),
     background = Color(0xFF111315), onBackground = Color(0xFFE8EAED),
     surface = Color(0xFF191C1F), onSurface = Color(0xFFE8EAED),
+    surfaceContainerLow = Color(0xFF202428), surfaceContainerHigh = Color(0xFF252A2F),
     surfaceVariant = Color(0xFF292D31), onSurfaceVariant = Color(0xFFB8C0C8),
     outline = Color(0xFF8A929A), outlineVariant = Color(0xFF3A4046),
     error = Color(0xFFFFB3B5), onError = Color(0xFF68000A),
@@ -146,9 +152,9 @@ private val DarkColors = darkColorScheme(
     inversePrimary = Color(0xFF315F87), scrim = Color(0xFF000000),
 )
 
-val ColorScheme.surfaceElevated get() = if (isRecallLight) Color(0xFFFFFFFF) else Color(0xFF202428)
-val ColorScheme.surfaceInteractive get() = if (isRecallLight) Color(0xFFF0F2F4) else Color(0xFF252A2F)
-val ColorScheme.surfaceSelected get() = if (isRecallLight) Color(0xFFE3EDF8) else Color(0xFF24394B)
+val ColorScheme.surfaceElevated get() = surfaceContainerLow
+val ColorScheme.surfaceInteractive get() = surfaceContainerHigh
+val ColorScheme.surfaceSelected get() = primary.copy(alpha = if (isRecallLight) .12f else .16f).compositeOver(surface)
 val ColorScheme.success get() = if (isRecallLight) Color(0xFF2F7156) else Color(0xFF82D3AA)
 val ColorScheme.warning get() = if (isRecallLight) Color(0xFF8A5A13) else Color(0xFFF2C174)
 val ColorScheme.muted get() = onSurfaceVariant
@@ -163,14 +169,14 @@ fun RecallTheme(darkTheme: Boolean = isSystemInDarkTheme(), dynamicColor: Boolea
         darkTheme -> DarkColors
         else -> LightColors
     }
-    MaterialTheme(colorScheme = colors, typography = recallTypography(language ?: LocalConfiguration.current.locales[0].language)) {
+    RecallMotionProvider { MaterialTheme(colorScheme = colors, typography = recallTypography(language ?: LocalConfiguration.current.locales[0].language)) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
             contentColor = MaterialTheme.colorScheme.onBackground,
             content = content,
         )
-    }
+    } }
 }
 
 private fun Color.luminance(): Float = (red * .299f) + (green * .587f) + (blue * .114f)

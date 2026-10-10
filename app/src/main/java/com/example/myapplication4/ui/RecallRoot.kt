@@ -17,6 +17,10 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import com.example.myapplication4.ui.design.motionDuration
+import com.example.myapplication4.ui.design.recallScreenTransition
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myapplication4.RecallViewModel
 import com.example.myapplication4.data.CardWithLesson
@@ -67,6 +71,8 @@ private fun RecallContent(vm: RecallViewModel) {
     var route by rememberSaveable(stateSaver = routeSaver) { mutableStateOf<RecallRoute>(RecallRoute.Main) }
     LaunchedEffect(route is RecallRoute.Review) { if (route !is RecallRoute.Review) vm.activeReviewCards = null }
     val mainState = rememberSaveableStateHolder()
+    val duration = motionDuration(RecallMotion.page)
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val reviewLink by vm.pendingReviewLink.collectAsStateWithLifecycle()
     val introductionSeen by vm.introductionSeen.collectAsStateWithLifecycle()
     LaunchedEffect(reviewLink) {
@@ -90,15 +96,21 @@ private fun RecallContent(vm: RecallViewModel) {
         return
     }
     Box(Modifier.fillMaxSize()) {
-        AnimatedContent(route, contentKey = { it.key() }, transitionSpec = { fadeIn(tween(RecallMotion.quick)) togetherWith fadeOut(tween(RecallMotion.quick)) }, label = "route") { current ->
+        AnimatedContent(route, contentKey = { it.key() }, transitionSpec = {
+            recallScreenTransition(targetState.depth() >= initialState.depth(), rtl, duration)
+                .using(androidx.compose.animation.SizeTransform(clip = false, sizeAnimationSpec = { _, _ -> tween(0) }))
+        }, label = "route") { current ->
             when (current) {
-                RecallRoute.Main -> mainState.SaveableStateProvider(destination) {
+                RecallRoute.Main -> AnimatedContent(destination, transitionSpec = {
+                    recallScreenTransition(targetState.ordinal > initialState.ordinal, rtl, duration, mainTab = true)
+                        .using(androidx.compose.animation.SizeTransform(clip = false, sizeAnimationSpec = { _, _ -> tween(0) }))
+                }, label = "destination") { mainDestination -> mainState.SaveableStateProvider(mainDestination) {
                     // The dock floats visually, but must not intercept content taps
                     // or cover focus/bring-into-view targets in scrollable screens.
                     Box(Modifier.fillMaxSize().navigationBarsPadding().padding(bottom = RecallSizes.dockHeight + RecallSpacing.md)) {
-                        RecallMain(destination, vm) { route = it }
+                        RecallMain(mainDestination, vm) { route = it }
                     }
-                }
+                } }
                 RecallRoute.Info -> RecallInfoScreen(vm.settings.collectAsStateWithLifecycle().value.language, onClose = { route = RecallRoute.Main })
                 RecallRoute.Calendar -> ReviewCalendarScreen(vm, { route = RecallRoute.Main }, { route = RecallRoute.Lesson(it) })
                 is RecallRoute.Subject -> SubjectScreen(current.id, vm, { route = RecallRoute.Main }, { route = RecallRoute.Lesson(it) }, { route = RecallRoute.Review(it) }, { route = RecallRoute.Import(current.id) })
@@ -107,10 +119,17 @@ private fun RecallContent(vm: RecallViewModel) {
                 is RecallRoute.Review -> ReviewScreen(current.cards, vm) { route = RecallRoute.Main }
             }
         }
-        AnimatedVisibility(route is RecallRoute.Main, modifier = Modifier.align(Alignment.BottomCenter), enter = fadeIn(), exit = fadeOut()) {
+        AnimatedVisibility(route is RecallRoute.Main, modifier = Modifier.align(Alignment.BottomCenter), enter = fadeIn(tween(duration)), exit = fadeOut(tween(duration))) {
             RecallDock(destination, { destination = it }, Modifier.padding(bottom = RecallSpacing.xs))
         }
     }
+}
+
+private fun RecallRoute.depth() = when (this) {
+    RecallRoute.Main -> 0
+    is RecallRoute.Lesson -> 2
+    is RecallRoute.Review -> 3
+    else -> 1
 }
 
 // Never use a full review queue (including every answer) as an animation hash key.

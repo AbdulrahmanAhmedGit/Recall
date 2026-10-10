@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.myapplication4.RecallViewModel
 import com.example.myapplication4.data.*
+import com.example.myapplication4.domain.ReviewPause
+import com.example.myapplication4.domain.ReviewPauseScope
 import com.example.myapplication4.ui.components.*
 import com.example.myapplication4.ui.design.*
 import java.text.DateFormat
@@ -44,7 +46,11 @@ fun TodayScreen(due: Int, lessons: List<LessonOverview>, vm: RecallViewModel, re
     val reviewLoading by vm.reviewLoading.collectAsStateWithLifecycle()
     val pausedIds by vm.pausedLessonIds.collectAsStateWithLifecycle()
     var focus by rememberSaveable { mutableStateOf(false) }
-    var pausedLesson by remember { mutableStateOf<String?>(null) }
+    var pausePicker by rememberSaveable { mutableStateOf(false) }
+    var editingPause by remember { mutableStateOf<ReviewPause?>(null) }
+    val pauseRules by vm.reviewPauses.collectAsStateWithLifecycle()
+    val subjects by vm.subjects.collectAsStateWithLifecycle()
+    val chapters by vm.allChapters.collectAsStateWithLifecycle()
     val backlog = com.example.myapplication4.domain.BacklogPolicy.isBacklog(due)
     val dueLessons = remember(lessons, pausedIds) { lessons.filter { it.due > 0 && it.id !in pausedIds } }
     val upcoming = remember(lessons, pausedIds) { lessons.filter { it.due == 0 && it.total > 0 && it.id !in pausedIds }.take(3) }
@@ -59,30 +65,44 @@ fun TodayScreen(due: Int, lessons: List<LessonOverview>, vm: RecallViewModel, re
                 }
                 Spacer(Modifier.height(RecallSpacing.xl))
                 Row(verticalAlignment = Alignment.Bottom) {
-                    Text(s.number(due), style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
+                    AnimatedRecallCount(due, style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
                     Text(s.resources.getQuantityString(R.plurals.ui_due_suffix, due), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 5.dp, start = RecallSpacing.xs))
                 }
                 Text(s(R.string.ui_today_counts, s.count(R.plurals.ui_lessons, dueLessons.size), s.count(R.plurals.ui_minutes, if (due == 0) 0 else maxOf(1, due / 4))), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted)
                 if (backlog) Text(s(R.string.phase3_backlog_intro), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted, modifier = Modifier.padding(top = RecallSpacing.sm))
                 RecallPrimaryButton(if (reviewLoading) s(R.string.ui_loading) else if (backlog) s(R.string.phase3_small_session) else if (due > 0) s(R.string.ui_start_review) else s(R.string.ui_review_anyway), Icons.Outlined.AutoStories, { if (backlog) vm.reviewBatch(review) else vm.reviewDue(review) }, Modifier.fillMaxWidth().padding(top = RecallSpacing.lg), enabled = !reviewLoading)
                 if (backlog) TextButton({ vm.reviewDue(review) }, enabled = !reviewLoading) { Text(s(R.string.phase3_all_due)) }
-                TextButton({ focus = true }, enabled = !reviewLoading) { Icon(Icons.Outlined.AutoStories, null); Spacer(Modifier.width(RecallSpacing.xs)); Text(s(R.string.focus_title)) }
+                Row(Modifier.fillMaxWidth()) {
+                    TextButton({ focus = true }, Modifier.weight(1f), enabled = !reviewLoading) { Text(s(R.string.focus_title)) }
+                    TextButton({ pausePicker = true }, Modifier.weight(1f)) { Text(s(R.string.pause_title)) }
+                }
                 if (pausedIds.isNotEmpty()) Text(s(R.string.lesson_pause_count, s.number(pausedIds.size)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
                 SectionHeader(s(R.string.ui_due_lessons), if (dueLessons.isEmpty()) s(R.string.ui_import) else null, import)
             }
             if (dueLessons.isEmpty()) item { RecallEmptyState(Icons.Outlined.AutoStories, s(R.string.ui_caught_up_title), s(R.string.ui_due_empty)) }
-            else items(dueLessons, key = { it.id }) { lesson -> LessonRow(lesson) { vm.reviewLesson(lesson.id, review) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
-            if (upcoming.isNotEmpty()) { item { SectionHeader(s(R.string.ui_upcoming)) }; items(upcoming, key = { "up-${it.id}" }) { LessonRow(it) { vm.reviewLesson(it.id, review) } } }
-            if (pausedIds.isNotEmpty()) {
-                item { SectionHeader(s(R.string.lesson_pause_title)) }
-                items(lessons.filter { it.id in pausedIds }, key = { "paused-${it.id}" }) { lesson ->
-                    TextButton({ pausedLesson = lesson.id }) { BidiAwareText(lesson.title) }
+            else items(dueLessons, key = { it.id }) { lesson -> LessonRow(lesson, modifier = recallItemMotion()) { vm.reviewLesson(lesson.id, review) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
+            if (upcoming.isNotEmpty()) { item { SectionHeader(s(R.string.ui_upcoming)) }; items(upcoming, key = { "up-${it.id}" }) { LessonRow(it, modifier = recallItemMotion()) { vm.reviewLesson(it.id, review) } } }
+            if (pauseRules.isNotEmpty()) {
+                item { SectionHeader(s(R.string.pause_rules)) }
+                items(pauseRules, key = { "pause-${it.scope}-${it.targetId}" }) { rule ->
+                    val name = when (rule.scope) {
+                        ReviewPauseScope.SUBJECT -> subjects.firstOrNull { it.id == rule.targetId }?.name
+                        ReviewPauseScope.CHAPTER -> chapters.firstOrNull { it.id == rule.targetId }?.name
+                        ReviewPauseScope.LESSON -> lessons.firstOrNull { it.id == rule.targetId }?.title
+                    }
+                    TextButton({ editingPause = rule }, Modifier.fillMaxWidth()) {
+                        Column(Modifier.fillMaxWidth()) {
+                            BidiAwareText(name ?: pauseTitle(rule.scope))
+                            Text(s(R.string.lesson_pause_dates, s.date(rule.startAt), s.date(rule.endAt - 1)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
+                        }
+                    }
                 }
             }
         }
     }
     if (focus) ReviewFocusSheet(vm, review = review) { focus = false }
-    pausedLesson?.let { id -> LessonPauseSheet(id, vm) { pausedLesson = null } }
+    if (pausePicker) ReviewPausePicker(vm) { pausePicker = false }
+    editingPause?.let { rule -> ReviewPauseSheet(rule.scope, rule.targetId, vm) { editingPause = null } }
 }
 
 @Composable
@@ -97,7 +117,7 @@ fun LibraryScreen(subjects: List<SubjectEntity>, lessons: List<LessonOverview>, 
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = RecallSizes.buttonHeight + RecallSpacing.lg)) {
             item { RecallTopBar(s(R.string.ui_library), s(R.string.ui_library_hint), action = { RecallIconButton(Icons.Outlined.FileDownload, s(R.string.ui_import_cards), import) }); SectionHeader(s(R.string.ui_subjects), s(R.string.ui_add)) { adding = true } }
             if (subjects.isEmpty()) item { RecallEmptyState(Icons.Outlined.LocalLibrary, s(R.string.ui_first_subject), s(R.string.ui_chapters_optional), s(R.string.ui_add_subject)) { adding = true } }
-            else items(subjects, key = { it.id }) { subject -> val subjectLessons = lessonsBySubject[subject.id].orEmpty(); SubjectRow(subject, subjectLessons.size, subjectLessons.sumOf { it.total }, subjectLessons.sumOf { it.due }) { openSubject(subject.id) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
+            else items(subjects, key = { it.id }) { subject -> val subjectLessons = lessonsBySubject[subject.id].orEmpty(); SubjectRow(subject, subjectLessons.size, subjectLessons.sumOf { it.total }, subjectLessons.sumOf { it.due }, modifier = recallItemMotion()) { openSubject(subject.id) }; HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant) }
         }
         RecallPrimaryButton(s(R.string.ui_quick_add), Icons.Outlined.Add, { adding = true }, Modifier.align(Alignment.BottomEnd).padding(bottom = RecallSpacing.xs))
         }
@@ -122,7 +142,7 @@ fun InsightsScreen(vm: RecallViewModel, calendar: () -> Unit = {}, openLesson: (
     ScreenFrame { LazyColumn(Modifier.fillMaxSize().testTag("insights-list"), contentPadding = PaddingValues(bottom = RecallSpacing.lg)) {
         item { RecallTopBar(s(R.string.ui_insights), s(R.string.ui_insights_hint), action = { ReviewCalendarAction(vm, calendar) }) }
         item(key = "activity") { BidiAwareText(s(R.string.insights_activity_scope), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted); StudyActivityCard(activity, Modifier.padding(top = RecallSpacing.xs), locale) }
-        item { SectionHeader(s(R.string.ui_today)); StatStrip(listOf(s(R.string.ui_reviewed) to s.number(reviewed), s(R.string.ui_study_time) to s(R.string.ui_estimated_minutes, s.number(reviewed / 4)), s(R.string.insights_review_target) to java.text.NumberFormat.getPercentInstance(s.locale).format(settings.desiredRetention))) }
+        item { SectionHeader(s(R.string.ui_today)); StatStrip(reviewed, settings.desiredRetention) }
         val summary = insights
         if (summary == null) item { Text(s(R.string.ui_loading), Modifier.padding(vertical = RecallSpacing.lg), color = MaterialTheme.colorScheme.muted) }
         else {
@@ -137,4 +157,12 @@ fun InsightsScreen(vm: RecallViewModel, calendar: () -> Unit = {}, openLesson: (
     } }
 }
 
-@Composable private fun StatStrip(values: List<Pair<String, String>>) { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) { values.forEach { (label, value) -> Column(Modifier.weight(1f)) { Text(value, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold); Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) } } } }
+@Composable private fun StatStrip(reviewed: Int, retention: Double) {
+    val s = recallStrings()
+    val percent = remember(s.locale) { java.text.NumberFormat.getPercentInstance(s.locale) }
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) {
+        Column(Modifier.weight(1f)) { AnimatedRecallCount(reviewed); Text(s(R.string.ui_reviewed), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
+        Column(Modifier.weight(1f)) { AnimatedRecallNumber((reviewed / 4).toDouble(), { s(R.string.ui_estimated_minutes, s.number(it.toInt())) }); Text(s(R.string.ui_study_time), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
+        Column(Modifier.weight(1f)) { AnimatedRecallNumber(retention, { percent.format(it) }); Text(s(R.string.insights_review_target), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted) }
+    }
+}

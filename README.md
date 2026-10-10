@@ -1,15 +1,15 @@
 # Recall
 
-![Recall Preview 5 — lesson pauses and focused study](docs/images/releases/recall-preview5-banner.png)
+![Recall Preview 5.1 — broader pauses and thoughtful motion](docs/images/releases/recall-preview5-1-banner.png)
 
 *AI-assisted release artwork based on demo captures, not untouched screenshots.
-[Originals and presentation notes](docs/images/releases/preview5-banner.md).*
+[Originals and presentation notes](docs/images/releases/preview5-1-banner.md).*
 
 Offline-first native Android study companion built around subjects, optional
 chapters, and lessons. Flashcards help retain lessons over time rather than
 acting as the primary organization system.
 
-Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.5)
+Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.5.1)
 for Android 7.0 or newer. Preview APKs are debug-signed; export a full backup before
 updating and read the release's installation notes.
 

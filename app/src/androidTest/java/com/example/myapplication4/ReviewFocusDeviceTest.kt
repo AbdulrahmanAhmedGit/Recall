@@ -57,7 +57,7 @@ class ReviewFocusDeviceTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val app = instrumentation.targetContext.applicationContext as android.app.Application
         val original = app.recallPreferences.data.first()
-        app.recallPreferences.edit { it[PreferenceKeys.language] = "en"; it[PreferenceKeys.introductionSeen] = true; it[PreferenceKeys.remindersEnabled] = false; it.remove(PreferenceKeys.lessonPauses) }
+        app.recallPreferences.edit { it[PreferenceKeys.language] = "en"; it[PreferenceKeys.introductionSeen] = true; it[PreferenceKeys.remindersEnabled] = false; it.remove(PreferenceKeys.lessonPauses); it.remove(PreferenceKeys.reviewPauses) }
         val db = Room.inMemoryDatabaseBuilder(app, RecallDatabase::class.java).build()
         val vm = RecallViewModel(app, db)
         val store = ViewModelStore().apply { put("focus", vm) }

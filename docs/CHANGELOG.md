@@ -1,5 +1,25 @@
 # Latest source changes
 
+## v1.0.0-preview.5.1 — October 11, 2026
+
+- Pause subjects and chapters as well as lessons. Parent rules dynamically cover
+  new lessons; overlapping rules remain independent. Compatible preference and
+  backup handling without a Room migration or FSRS changes.
+- Dynamic wallpaper colors now apply to shared selected/interactive/elevated
+  surfaces on Android 12+. Long lesson tags wrap into rows instead of narrow
+  vertical columns, retaining edit/remove actions and accessible touch targets.
+
+- Shared Compose motion tokens, eased numeric updates and progress interpolation.
+- RTL-aware detail/tab navigation; consistent press feedback for shared actions,
+  library rows and review ratings; smooth answer and Insights-detail reveals.
+- Keyed list placement/insertion/removal in Today, Library, lesson cards,
+  calendar cards, resources and import preview; no decorative heatmap animation.
+- Live Android Remove animations support, exact accessible numeric targets,
+  no dependencies or scheduling/data-contract changes from the motion pass.
+- New release/README banner based on native demo captures. See
+  [release notes](releases/v1.0.0-preview.5.1.md) and
+  [motion design and implementation](motion-design.md). Android version code is 6.
+
 ## v1.0.0-preview.5 — October 10, 2026
 
 - Pause individual lessons for today, seven days, or an inclusive custom date

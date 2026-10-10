@@ -1,11 +1,18 @@
-# Lesson pauses and focused study
+# Subject, chapter and lesson pauses, and focused study
 
-## Temporarily leave a lesson out of mixed review
+## Temporarily leave content out of mixed review
 
-Open a lesson and choose **Pause lesson**. Choose today, the next seven calendar
+Choose **Pause reviews** on Today and select a subject, optional chapter or lesson.
+Subjects have **Pause subject**, chapter action menus have **Pause chapter**, and
+lessons have **Pause lesson**. Choose today, the next seven calendar
 days (including today), or a custom date range. Both selected dates are included.
 Future date ranges are supported. **Resume / cancel pause** removes the range.
-Today also lists currently paused lessons so they are easy to resume.
+Today lists saved current/future pause rules so they are easy to resume or cancel.
+
+Subject/chapter rules cover their matching lessons, including lessons created or
+moved into that container later. Overlapping rules are independent: removing a
+lesson rule does not override an active parent rule. Cancel each applicable parent
+rule to fully resume its mixed reviews.
 
 A pause excludes the lesson from Today’s mixed-review counts, due/upcoming lists,
 the full mixed queue, small backlog batches, and reminder counts. It does not
@@ -42,13 +49,16 @@ completion is labeled **Practice complete**.
 
 ## Persistence and boundaries
 
-One optional pause interval per lesson is kept in DataStore. Saving another
-replaces the previous interval. Backup settings include these intervals; older
-backups without the field still load. Invalid intervals, duplicate lesson IDs,
-and references to missing lessons are rejected by backup validation. Deleting a
-lesson or subject removes its associated pause preferences.
+One optional interval per scope/target is kept in DataStore. Saving another
+replaces that target's previous interval. Preview 5 lesson-only preferences are
+read compatibly and migrated atomically on edit. Backups retain `lesson_pauses`
+for lesson rules and add optional `container_pauses` for subject/chapter rules.
+Older backups still load. Older app versions cannot restore parent rules, but
+can read the other backup content. Invalid intervals, duplicate targets and
+missing subject/chapter/lesson references are rejected. Deleting a container
+cleans up its corresponding pause rules; deleting a chapter keeps its lessons.
 
-There is no Room migration, FSRS equation change, or release/version change.
+No Room migration or FSRS equation change is required.
 Already-open review sessions are snapshots; changes to pauses affect subsequently
 loaded mixed queues. Process death retains saved pauses and committed normal
 reviews, but does not persist an unfinished practice session.

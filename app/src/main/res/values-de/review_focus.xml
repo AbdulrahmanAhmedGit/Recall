@@ -21,4 +21,12 @@
     <string name="lesson_pause_custom">Eigene Daten</string>
     <string name="lesson_pause_resume">Fortsetzen / Pause aufheben</string>
     <string name="lesson_pause_count">%1$s Lektionen für gemischte Wiederholungen pausiert</string>
+    <string name="pause_title">Wiederholungen pausieren</string>
+    <string name="pause_subject">Fach pausieren</string>
+    <string name="pause_chapter">Kapitel pausieren</string>
+    <string name="pause_rules">Wiederholungspausen</string>
+    <string name="pause_picker_hint">Wähle ein Fach oder grenze die Auswahl auf ein Kapitel oder eine Lektion ein.</string>
+    <string name="pause_choose_dates">Zeitraum wählen</string>
+    <string name="pause_scope_hint">Schließt diese Inhalte während des Zeitraums von gemischten Wiederholungen und Erinnerungen aus. Fach- und Kapitelpausen gelten auch für später hinzugefügte Lektionen. Termine bleiben unverändert; gezieltes Lernen bleibt möglich.</string>
+    <string name="pause_overlap_hint">Überlappende Pausen wirken gemeinsam. Das Entfernen einer Lektionspause hebt keine aktive Fach- oder Kapitelpause auf.</string>
 </resources>

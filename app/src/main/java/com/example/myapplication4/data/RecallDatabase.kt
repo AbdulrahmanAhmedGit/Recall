@@ -15,6 +15,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.example.myapplication4.domain.DailyReviewCount
+import com.example.myapplication4.domain.PauseLessonScope
 import com.example.myapplication4.domain.MemoryCounts
 import com.example.myapplication4.domain.RecallReviewEvent
 import com.example.myapplication4.domain.AttentionCardDetails
@@ -86,6 +87,9 @@ data class BackupData(val subjects: List<SubjectEntity>, val chapters: List<Chap
 
 @Dao
 interface RecallDao {
+    @Query("SELECT l.id, l.subjectId, l.chapterId FROM LessonEntity l JOIN SubjectEntity s ON s.id=l.subjectId WHERE l.archived=0 AND s.archived=0")
+    fun pauseLessonScopes(): Flow<List<PauseLessonScope>>
+    @Query("SELECT * FROM ChapterEntity ORDER BY position, name") fun observeChapters(): Flow<List<ChapterEntity>>
     @Query("SELECT COUNT(*) FROM CardEntity c JOIN ReviewStateEntity r ON r.cardId=c.id JOIN LessonEntity l ON l.id=c.lessonId JOIN SubjectEntity s ON s.id=l.subjectId WHERE c.suspended=0 AND l.archived=0 AND s.archived=0 AND r.dueAt<=:now AND l.id NOT IN (:excludedLessonIds)")
     suspend fun reminderDueCount(now: Long, excludedLessonIds: List<String> = emptyList()): Int
     @Query("SELECT * FROM card_pronunciation_targets WHERE cardId=:cardId ORDER BY side, occurrenceIndex") fun pronunciationTargets(cardId: String): Flow<List<PronunciationTargetEntity>>

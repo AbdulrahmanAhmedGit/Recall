@@ -9,11 +9,41 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 class ReviewFocusTest {
+    @Test fun parentPausesCoverNewLessonsAndOverlapsRemainIndependent() {
+        val subject = ReviewPause(ReviewPauseScope.SUBJECT, "s", 100, 200)
+        val chapter = ReviewPause(ReviewPauseScope.CHAPTER, "ch", 100, 300)
+        val lesson = ReviewPause(ReviewPauseScope.LESSON, "other", 100, 400)
+        val scopes = listOf(PauseLessonScope("direct", "s", null), PauseLessonScope("nested", "s", "ch"),
+            PauseLessonScope("other", "t", null), PauseLessonScope("unpaused", "t", "other-ch"))
+        val pauses = listOf(subject, chapter, lesson)
+        assertEquals(listOf("direct", "nested", "other"), pauses.excludedLessonIds(150, scopes))
+        assertEquals(listOf("nested", "other"), pauses.excludedLessonIds(200, scopes))
+        assertEquals(listOf("nested", "other"), listOf(chapter, lesson).excludedLessonIds(150, scopes))
+        assertTrue("new" in pauses.excludedLessonIds(150, scopes + PauseLessonScope("new", "s", null)))
+        assertTrue(pauses.excludedLessonIds(99, scopes).isEmpty())
+        assertTrue(pauses.excludedLessonIds(400, scopes).isEmpty())
+        assertEquals(pauses, ReviewPauseCodec.decode(ReviewPauseCodec.encode(pauses)))
+    }
+
+    @Test fun backupsPreserveAllScopesAndRejectMissingParentReferences() {
+        val subject = SubjectEntity(name = "Chemistry")
+        val chapter = ChapterEntity(subjectId = subject.id, name = "Iron")
+        val lesson = LessonEntity(subjectId = subject.id, chapterId = chapter.id, title = "Reduction")
+        val data = BackupData(listOf(subject), listOf(chapter), listOf(lesson), emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
+        val settings = UserSettings(reviewPauses = listOf(ReviewPause(ReviewPauseScope.SUBJECT, subject.id, 1, 100),
+            ReviewPause(ReviewPauseScope.CHAPTER, chapter.id, 1, 100), ReviewPause(ReviewPauseScope.LESSON, lesson.id, 1, 100)))
+        val encoded = RecallBackupCodec.encode(data, settings)
+        assertEquals(settings.reviewPauses.toSet(), (RecallBackupCodec.decode(encoded) as BackupResult.Success).settings.reviewPauses.toSet())
+        val malformed = JSONObject(encoded).apply { getJSONObject("settings").getJSONArray("container_pauses").getJSONObject(0).put("target_id", "missing") }
+        assertTrue(RecallBackupCodec.decode(malformed.toString()) is BackupResult.Failure)
+        val legacy = JSONObject(encoded).apply { getJSONObject("settings").remove("container_pauses") }
+        assertEquals(1, (RecallBackupCodec.decode(legacy.toString()) as BackupResult.Success).settings.reviewPauses.size)
+    }
     @Test fun backupPreservesPausesAndAcceptsLegacySettings() {
         val subject = SubjectEntity(name = "Chemistry")
         val lesson = LessonEntity(subjectId = subject.id, title = "Iron")
         val data = BackupData(listOf(subject), emptyList(), listOf(lesson), emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList())
-        val settings = UserSettings(lessonPauses = listOf(LessonReviewPause(lesson.id, 1, 100)))
+        val settings = UserSettings(reviewPauses = listOf(ReviewPause(ReviewPauseScope.LESSON, lesson.id, 1, 100)))
         val encoded = RecallBackupCodec.encode(data, settings)
         assertEquals(settings.lessonPauses, (RecallBackupCodec.decode(encoded) as BackupResult.Success).settings.lessonPauses)
         val legacy = JSONObject(encoded).apply { getJSONObject("settings").remove("lesson_pauses") }

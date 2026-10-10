@@ -21,4 +21,12 @@
     <string name="lesson_pause_custom">Dates personnalisées</string>
     <string name="lesson_pause_resume">Reprendre / annuler la pause</string>
     <string name="lesson_pause_count">%1$s leçons en pause dans les révisions mixtes</string>
+    <string name="pause_title">Suspendre les révisions</string>
+    <string name="pause_subject">Suspendre la matière</string>
+    <string name="pause_chapter">Suspendre le chapitre</string>
+    <string name="pause_rules">Pauses de révision</string>
+    <string name="pause_picker_hint">Choisissez une matière, ou précisez un chapitre ou une leçon.</string>
+    <string name="pause_choose_dates">Choisir les dates</string>
+    <string name="pause_scope_hint">Excluez ce contenu des révisions mixtes et des rappels pendant cette période. Les pauses de matière ou de chapitre incluent aussi les leçons ajoutées ensuite. Les échéances restent inchangées et l’étude ciblée reste disponible.</string>
+    <string name="pause_overlap_hint">Les pauses superposées se combinent. Retirer une pause de leçon ne remplace pas une pause active de matière ou de chapitre.</string>
 </resources>

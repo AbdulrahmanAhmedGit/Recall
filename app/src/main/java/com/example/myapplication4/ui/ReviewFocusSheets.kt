@@ -85,22 +85,35 @@ private fun FocusSelector(label: String, value: String, options: List<Pair<Strin
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LessonPauseSheet(lessonId: String, vm: RecallViewModel, dismiss: () -> Unit) {
+    ReviewPauseSheet(ReviewPauseScope.LESSON, lessonId, vm, dismiss)
+}
+
+@Composable
+internal fun pauseTitle(scope: ReviewPauseScope): String {
     val s = recallStrings()
-    val settings by vm.settings.collectAsStateWithLifecycle()
-    val pause = settings.lessonPauses.firstOrNull { it.lessonId == lessonId && it.endAt > System.currentTimeMillis() }
+    return s(when (scope) { ReviewPauseScope.SUBJECT -> R.string.pause_subject; ReviewPauseScope.CHAPTER -> R.string.pause_chapter; ReviewPauseScope.LESSON -> R.string.lesson_pause_title })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReviewPauseSheet(scope: ReviewPauseScope, targetId: String, vm: RecallViewModel, dismiss: () -> Unit) {
+    val s = recallStrings()
+    val rules by vm.reviewPauses.collectAsStateWithLifecycle()
+    val pause = rules.firstOrNull { it.key == (scope to targetId) }
     var custom by rememberSaveable { mutableStateOf(false) }
     val today = LocalDate.now()
-    fun save(first: LocalDate, last: LocalDate) { vm.setLessonPause(lessonId, lessonPauseDays(lessonId, first, last, ZoneId.systemDefault())); dismiss() }
+    fun save(first: LocalDate, last: LocalDate) { vm.setReviewPause(scope, targetId, reviewPauseDays(scope, targetId, first, last, ZoneId.systemDefault())); dismiss() }
     ModalBottomSheet(onDismissRequest = dismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = RecallSpacing.ml).padding(bottom = RecallSpacing.lg),
             verticalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) {
-            Text(s(R.string.lesson_pause_title), style = MaterialTheme.typography.titleLarge)
-            Text(s(R.string.lesson_pause_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted)
+            Text(pauseTitle(scope), style = MaterialTheme.typography.titleLarge)
+            Text(s(R.string.pause_scope_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted)
+            Text(s(R.string.pause_overlap_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.muted)
             pause?.let { Text(s(R.string.lesson_pause_dates, s.date(it.startAt), s.date(it.endAt - 1)), style = MaterialTheme.typography.bodySmall) }
             TextButton({ save(today, today) }, Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch)) { Text(s(R.string.lesson_pause_today)) }
             TextButton({ save(today, today.plusDays(6)) }, Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch)) { Text(s(R.string.lesson_pause_week)) }
             TextButton({ custom = true }, Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch)) { Text(s(R.string.lesson_pause_custom)) }
-            if (pause != null) TextButton({ vm.setLessonPause(lessonId, null); dismiss() }, Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch)) { Text(s(R.string.lesson_pause_resume)) }
+            if (pause != null) TextButton({ vm.setReviewPause(scope, targetId, null); dismiss() }, Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch)) { Text(s(R.string.lesson_pause_resume)) }
         }
     }
     if (custom) {
@@ -124,6 +137,35 @@ fun LessonPauseSheet(lessonId: String, vm: RecallViewModel, dismiss: () -> Unit)
                     }
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReviewPausePicker(vm: RecallViewModel, dismiss: () -> Unit) {
+    val s = recallStrings()
+    val subjects by vm.subjects.collectAsStateWithLifecycle()
+    val lessons by vm.lessons.collectAsStateWithLifecycle()
+    var subjectId by rememberSaveable { mutableStateOf<String?>(null) }
+    var chapterId by rememberSaveable { mutableStateOf<String?>(null) }
+    var lessonId by rememberSaveable { mutableStateOf<String?>(null) }
+    var choosingDates by rememberSaveable { mutableStateOf(false) }
+    val chapters by remember(subjectId) { vm.chapters(subjectId.orEmpty()) }.collectAsStateWithLifecycle(emptyList())
+    val available = remember(lessons, subjectId, chapterId) { lessons.filter { it.subjectId == subjectId && (chapterId == null || it.chapterId == chapterId) } }
+    if (choosingDates) {
+        val scope = when { lessonId != null -> ReviewPauseScope.LESSON; chapterId != null -> ReviewPauseScope.CHAPTER; else -> ReviewPauseScope.SUBJECT }
+        ReviewPauseSheet(scope, lessonId ?: chapterId ?: subjectId!!, vm, dismiss)
+    } else ModalBottomSheet(onDismissRequest = dismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = RecallSpacing.ml).padding(bottom = RecallSpacing.lg), verticalArrangement = Arrangement.spacedBy(RecallSpacing.sm)) {
+            Text(s(R.string.pause_title), style = MaterialTheme.typography.titleLarge)
+            Text(s(R.string.pause_picker_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.muted)
+            FocusSelector(s(R.string.ui_subject), subjects.firstOrNull { it.id == subjectId }?.name ?: s(R.string.focus_choose_subject), subjects.map { it.id to it.name }) { subjectId = it; chapterId = null; lessonId = null }
+            if (subjectId != null) {
+                FocusSelector(s(R.string.ui_chapter), chapters.firstOrNull { it.id == chapterId }?.name ?: s(R.string.focus_all_chapters), listOf(null to s(R.string.focus_all_chapters)) + chapters.map { it.id to it.name }) { chapterId = it; lessonId = null }
+                FocusSelector(s(R.string.ui_lesson), available.firstOrNull { it.id == lessonId }?.title ?: s(R.string.focus_all_lessons), listOf(null to s(R.string.focus_all_lessons)) + available.map { it.id to it.title }) { lessonId = it }
+            }
+            RecallPrimaryButton(s(R.string.pause_choose_dates), onClick = { choosingDates = true }, modifier = Modifier.fillMaxWidth(), enabled = subjects.any { it.id == subjectId } && (lessonId == null || available.any { it.id == lessonId }))
         }
     }
 }

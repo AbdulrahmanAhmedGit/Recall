@@ -11,8 +11,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import com.example.myapplication4.domain.LessonReviewPause
-import com.example.myapplication4.domain.LessonPauseCodec
+import com.example.myapplication4.domain.*
 
 val Context.recallPreferences by preferencesDataStore("recall_preferences")
 
@@ -27,10 +26,13 @@ data class UserSettings(
     val dynamicColor: Boolean = false,
     val speechRate: Float = 1f,
     val debugMode: Boolean = false,
-    val lessonPauses: List<LessonReviewPause> = emptyList(),
-)
+    val reviewPauses: List<ReviewPause> = emptyList(),
+) {
+    val lessonPauses get() = reviewPauses.filter { it.scope == ReviewPauseScope.LESSON }.map { LessonReviewPause(it.targetId, it.startAt, it.endAt) }
+}
 
 object PreferenceKeys {
+    val reviewPauses = stringPreferencesKey("review_scope_pauses")
     val lessonPauses = stringPreferencesKey("lesson_review_pauses")
     val introductionSeen = booleanPreferencesKey("introduction_seen")
     val debugMode = booleanPreferencesKey("debug_mode")
@@ -61,20 +63,32 @@ class UserPreferences(private val context: Context) {
             dynamicColor = values[PreferenceKeys.dynamicColor] ?: false,
             speechRate = values[PreferenceKeys.speechRate]?.takeIf { it in .75f..1.25f } ?: 1f,
             debugMode = values[PreferenceKeys.debugMode] ?: false,
-            lessonPauses = LessonPauseCodec.readPreference(values[PreferenceKeys.lessonPauses]),
+            reviewPauses = readPauses(values),
         )
     }
 
+    private fun readPauses(values: androidx.datastore.preferences.core.Preferences) =
+        (ReviewPauseCodec.readPreference(values[PreferenceKeys.reviewPauses]) + LessonPauseCodec.readPreference(values[PreferenceKeys.lessonPauses]).map { it.asReviewPause() }).distinctBy { it.key }
+
     suspend fun setLessonPause(lessonId: String, pause: LessonReviewPause?) {
         require(pause == null || pause.lessonId == lessonId)
+        setReviewPause(ReviewPauseScope.LESSON, lessonId, pause?.asReviewPause())
+    }
+    suspend fun setReviewPause(scope: ReviewPauseScope, targetId: String, pause: ReviewPause?) {
+        require(pause == null || pause.key == scope to targetId)
         context.recallPreferences.edit {
-            val remaining = LessonPauseCodec.readPreference(it[PreferenceKeys.lessonPauses]).filter { entry -> entry.lessonId != lessonId && entry.endAt > System.currentTimeMillis() }
-            it[PreferenceKeys.lessonPauses] = LessonPauseCodec.encode(remaining + listOfNotNull(pause))
+            val remaining = readPauses(it).filter { entry -> entry.key != scope to targetId && entry.endAt > System.currentTimeMillis() }
+            it[PreferenceKeys.reviewPauses] = ReviewPauseCodec.encode(remaining + listOfNotNull(pause))
+            it.remove(PreferenceKeys.lessonPauses)
         }
     }
     suspend fun removeLessonPauses(ids: Set<String>) {
+        removeReviewPauses(ids.map { ReviewPauseScope.LESSON to it }.toSet())
+    }
+    suspend fun removeReviewPauses(keys: Set<Pair<ReviewPauseScope, String>>) {
         context.recallPreferences.edit {
-            it[PreferenceKeys.lessonPauses] = LessonPauseCodec.encode(LessonPauseCodec.readPreference(it[PreferenceKeys.lessonPauses]).filter { pause -> pause.lessonId !in ids })
+            it[PreferenceKeys.reviewPauses] = ReviewPauseCodec.encode(readPauses(it).filter { pause -> pause.key !in keys })
+            it.remove(PreferenceKeys.lessonPauses)
         }
     }
     suspend fun setDebugMode(value: Boolean) = update(PreferenceKeys.debugMode, value)
@@ -99,7 +113,8 @@ class UserPreferences(private val context: Context) {
             it[PreferenceKeys.dynamicColor] = value.dynamicColor
             it[PreferenceKeys.speechRate] = value.speechRate
             it[PreferenceKeys.debugMode] = value.debugMode
-            it[PreferenceKeys.lessonPauses] = LessonPauseCodec.encode(value.lessonPauses)
+            it[PreferenceKeys.reviewPauses] = ReviewPauseCodec.encode(value.reviewPauses)
+            it.remove(PreferenceKeys.lessonPauses)
         }
     }
 

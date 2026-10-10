@@ -44,14 +44,14 @@ internal fun ReviewCardStack(
         key(card.id) {
             val displayed = card
             Surface(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().recallArrival(card.id),
                 shape = RecallRadii.extraLarge,
                 color = MaterialTheme.colorScheme.surfaceElevated,
                 contentColor = MaterialTheme.colorScheme.onSurface,
                 shadowElevation = 4.dp,
             ) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.fillMaxSize().recallArrival(card.id),
                     contentPadding = PaddingValues(RecallSpacing.lg),
                     verticalArrangement = Arrangement.Center,
                 ) {
@@ -69,7 +69,7 @@ internal fun ReviewCardStack(
                         }
                     }
                     item {
-                        AnimatedVisibility(revealed, enter = fadeIn(tween(RecallMotion.quick)), exit = fadeOut(tween(RecallMotion.quick))) {
+                        AnimatedVisibility(revealed, enter = fadeIn(tween(motionDuration(RecallMotion.standard))) + expandVertically(tween(motionDuration(RecallMotion.standard))), exit = fadeOut(tween(motionDuration(RecallMotion.quick)))) {
                             Column(Modifier.padding(top = RecallSpacing.lg)) {
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                                 Text(s(R.string.ui_answer), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.success, modifier = Modifier.padding(top = RecallSpacing.lg))

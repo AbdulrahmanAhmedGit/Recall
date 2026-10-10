@@ -21,4 +21,12 @@
     <string name="lesson_pause_custom">Fechas personalizadas</string>
     <string name="lesson_pause_resume">Reanudar / cancelar pausa</string>
     <string name="lesson_pause_count">%1$s lecciones pausadas en revisiones mixtas</string>
+    <string name="pause_title">Pausar repasos</string>
+    <string name="pause_subject">Pausar asignatura</string>
+    <string name="pause_chapter">Pausar capítulo</string>
+    <string name="pause_rules">Pausas de repaso</string>
+    <string name="pause_picker_hint">Elige una asignatura o limita la selección a un capítulo o una lección.</string>
+    <string name="pause_choose_dates">Elegir fechas</string>
+    <string name="pause_scope_hint">Excluye el contenido de los repasos mixtos y recordatorios durante este período. Las pausas de asignatura y capítulo incluyen nuevas lecciones añadidas después. Las fechas no cambian y el estudio enfocado sigue disponible.</string>
+    <string name="pause_overlap_hint">Las pausas superpuestas se combinan. Quitar una pausa de lección no anula una pausa activa de asignatura o capítulo.</string>
 </resources>

@@ -21,4 +21,12 @@
     <string name="lesson_pause_custom">تواريخ مخصصة</string>
     <string name="lesson_pause_resume">استئناف / إلغاء الإيقاف</string>
     <string name="lesson_pause_count">%1$s دروس مستبعدة مؤقتًا من المراجعات المختلطة</string>
+    <string name="pause_title">إيقاف المراجعات مؤقتًا</string>
+    <string name="pause_subject">إيقاف المادة مؤقتًا</string>
+    <string name="pause_chapter">إيقاف الفصل مؤقتًا</string>
+    <string name="pause_rules">فترات إيقاف المراجعات</string>
+    <string name="pause_picker_hint">اختر مادة، أو حدد فصلًا أو درسًا داخلها.</string>
+    <string name="pause_choose_dates">اختيار تواريخ الإيقاف</string>
+    <string name="pause_scope_hint">استبعد المحتوى المحدد من المراجعات المختلطة والتذكيرات خلال الفترة. يشمل إيقاف المادة أو الفصل الدروس التي تضيفها لاحقًا داخلهما. لا تتغير مواعيد البطاقات ويمكنك اختيار المحتوى للدراسة المركّزة.</string>
+    <string name="pause_overlap_hint">تُطبّق الفترات المتداخلة معًا. إلغاء إيقاف درس لا يلغي إيقاف مادته أو فصله.</string>
 </resources>

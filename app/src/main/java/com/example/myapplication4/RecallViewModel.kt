@@ -83,11 +83,16 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), System.currentTimeMillis())
     val lessons = clock.flatMapLatest { dao.lessonOverviews(it) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    val pausedLessonIds = combine(settings, clock) { prefs, now -> prefs.lessonPauses.pausedLessonIds(now) }
+    private val pauseContext = combine(settings, clock, dao.pauseLessonScopes()) { prefs, now, scopes -> now to prefs.reviewPauses.excludedLessonIds(now, scopes) }
+        .flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), System.currentTimeMillis() to emptyList<String>())
+    val reviewPauses = combine(settings, clock) { prefs, now -> prefs.reviewPauses.filter { it.endAt > now } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
-    val dueCount = combine(settings, clock) { prefs, now -> now to prefs.lessonPauses.pausedLessonIds(now) }
+    val allChapters = dao.observeChapters().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val pausedLessonIds = pauseContext.map { it.second }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    val dueCount = pauseContext
         .flatMapLatest { (now, excluded) -> dao.dueCount(now, excluded) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
-    fun remainingDueReviews(): Flow<Int> = combine(settings, clock) { prefs, now -> now to prefs.lessonPauses.pausedLessonIds(now) }
+    fun remainingDueReviews(): Flow<Int> = pauseContext
         .flatMapLatest { (now, excluded) -> dao.dueCount(now, excluded) }
     private val reviewInvalidations = database.invalidationTracker.createFlow("ReviewLogEntity")
     val todayReviews = combine(clock, reviewInvalidations) { _, _ ->
@@ -191,11 +196,11 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     }
     fun reviewDue(onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({
         val now = System.currentTimeMillis()
-        dao.dueCards(now, excludedLessonIds = preferences.settings.first().lessonPauses.pausedLessonIds(now))
+        dao.dueCards(now, excludedLessonIds = preferences.settings.first().reviewPauses.excludedLessonIds(now, dao.pauseLessonScopes().first()))
     }, onLoaded)
     fun reviewBatch(onLoaded: (List<CardWithLesson>) -> Unit) = loadReview({
         val now = System.currentTimeMillis()
-        val excluded = preferences.settings.first().lessonPauses.pausedLessonIds(now)
+        val excluded = preferences.settings.first().reviewPauses.excludedLessonIds(now, dao.pauseLessonScopes().first())
         dao.dueBatch(now, settings.value.newCardLimit, BacklogPolicy.batchSize, deferredBatchCards, excluded).ifEmpty {
             dao.dueBatch(now, settings.value.newCardLimit, BacklogPolicy.batchSize, excludedLessonIds = excluded)
         }
@@ -207,6 +212,11 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     }, onLoaded, practice)
     fun setLessonPause(lessonId: String, pause: LessonReviewPause?) = change {
         preferences.setLessonPause(lessonId, pause)
+        activityRefresh.value += 1
+        refreshReminders()
+    }
+    fun setReviewPause(scope: ReviewPauseScope, targetId: String, pause: ReviewPause?) = change {
+        preferences.setReviewPause(scope, targetId, pause)
         activityRefresh.value += 1
         refreshReminders()
     }
@@ -278,10 +288,11 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
     fun saveSchedule(name: String, type: String, start: Int, end: Int, days: Set<Int>) = viewModelScope.launch { if (name.isNotBlank() && days.isNotEmpty()) dao.saveSchedule(ScheduleBlockEntity(name = name.trim(), type = type, startMinute = start, endMinute = end, days = days.sorted().joinToString(","))); refreshReminders() }
     fun deleteSchedule(id: String) = viewModelScope.launch { dao.deleteSchedule(id); refreshReminders() }
     fun deleteSubject(id: String, onComplete: () -> Unit = {}) = change {
-        preferences.removeLessonPauses(dao.lessonIdsForSubject(id).toSet())
+        val keys = dao.lessonIdsForSubject(id).map { ReviewPauseScope.LESSON to it } + dao.chapters(id).first().map { ReviewPauseScope.CHAPTER to it.id } + (ReviewPauseScope.SUBJECT to id)
+        preferences.removeReviewPauses(keys.toSet())
         dao.deleteSubject(id); onComplete()
     }
-    fun deleteChapter(id: String) = viewModelScope.launch { dao.deleteChapter(id) }
+    fun deleteChapter(id: String) = change { preferences.removeReviewPauses(setOf(ReviewPauseScope.CHAPTER to id)); dao.deleteChapter(id) }
     fun deleteLesson(id: String, onComplete: () -> Unit = {}) = change {
         preferences.removeLessonPauses(setOf(id))
         dao.deleteLesson(id); onComplete()
