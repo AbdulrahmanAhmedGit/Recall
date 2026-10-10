@@ -145,6 +145,11 @@ counts and skipped cards separately.
 the card in this session without creating a response log, changing its memory state
 or moving its due date. It is not a rating, suspension or permanent dismissal.
 
+**Previous card** revisits earlier questions in read-only session history,
+including skipped cards. Swipe right to skip/next and left to go back; Arabic
+reverses those directions. A one-time localized hint explains the gestures, and
+buttons provide an accessible alternative. See [review navigation](review-navigation.md).
+
 Today and subject review actions load due cards. A lesson review includes its
 unsuspended cards, including “Review anyway” when nothing is due. **Rating a card
 in that flow still updates its normal schedule**; there is no separate

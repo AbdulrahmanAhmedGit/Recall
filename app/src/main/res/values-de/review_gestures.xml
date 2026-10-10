@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="review_previous">Vorherige Karte</string>
+    <string name="review_history_next">Nächste Karte</string>
+    <string name="review_history_readonly">Bereits angesehen · Nur lesen; Bewertungen und Termine bleiben unverändert.</string>
+    <string name="review_gestures_title">Durch deine Karten navigieren</string>
+    <string name="review_gestures_hint">Wische nach rechts, um die aktuelle Karte zu überspringen, und nach links für die vorherige Karte – bewertet oder übersprungen. Im Verlauf führt Rechtswischen zurück zur aktuellen Frage. Du kannst auch die Schaltflächen nutzen. Überspringen ändert keine Termine.</string>
+</resources>

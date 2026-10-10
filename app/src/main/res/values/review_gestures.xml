@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="review_previous">Previous card</string>
+    <string name="review_history_next">Next card</string>
+    <string name="review_history_readonly">Previously viewed · Read-only; ratings and schedules stay unchanged.</string>
+    <string name="review_gestures_title">Move through your cards</string>
+    <string name="review_gestures_hint">Swipe right to skip the current card. Swipe left to view the previous card, whether rated or skipped. In history, swipe right to return toward your current question. You can also use the buttons. Skipping never changes the schedule.</string>
+</resources>

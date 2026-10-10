@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="review_previous">Carte précédente</string>
+    <string name="review_history_next">Carte suivante</string>
+    <string name="review_history_readonly">Déjà consultée · Lecture seule ; évaluations et dates inchangées.</string>
+    <string name="review_gestures_title">Parcourir vos cartes</string>
+    <string name="review_gestures_hint">Glissez à droite pour passer la carte actuelle, et à gauche pour revoir la précédente, évaluée ou passée. Dans l’historique, glissez à droite pour revenir vers la question actuelle. Les boutons restent disponibles. Passer une carte ne change pas sa programmation.</string>
+</resources>

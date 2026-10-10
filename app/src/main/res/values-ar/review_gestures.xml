@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="review_previous">البطاقة السابقة</string>
+    <string name="review_history_next">البطاقة التالية</string>
+    <string name="review_history_readonly">بطاقة سابقة · للعرض فقط؛ لا تتغير التقييمات أو المواعيد.</string>
+    <string name="review_gestures_title">التنقل بين البطاقات</string>
+    <string name="review_gestures_hint">اسحب إلى اليسار لتخطي البطاقة الحالية، وإلى اليمين لعرض البطاقة السابقة سواء قيّمتها أو تخطيتها. في سجل العرض، اسحب إلى اليسار للعودة نحو السؤال الحالي. يمكنك أيضًا استخدام الأزرار. التخطي لا يغير موعد المراجعة.</string>
+</resources>

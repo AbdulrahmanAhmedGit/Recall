@@ -62,10 +62,18 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         }
     val reviewProgress = MutableStateFlow(ReviewSessionProgress())
     val reviewTimer = ReviewTimer()
+    val reviewGesturesSeen = preferences.reviewGesturesSeen.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    fun acknowledgeReviewGestures() = change { preferences.markReviewGesturesSeen() }
+    fun previousReviewCard() { reviewProgress.value = reviewProgress.value.previousCard() }
+    fun nextHistoryCard() { reviewProgress.value = reviewProgress.value.nextHistoryCard() }
     private var deferredBatchCards = emptyList<String>()
-    fun revealReviewAnswer() { reviewProgress.value = reviewProgress.value.copy(revealed = true) }
+    fun revealReviewAnswer() {
+        val old = reviewProgress.value
+        reviewProgress.value = if (old.historyIndex != null) old.copy(historyRevealed = true) else old.copy(revealed = true)
+    }
     fun skipReviewCard(presentedId: String) {
         val old = reviewProgress.value
+        if (old.historyIndex != null) { nextHistoryCard(); return }
         if (activeReviewCards?.getOrNull(old.index)?.id != presentedId) return
         if (!old.saving) {
             if (!reviewIsPractice) activeReviewCards?.getOrNull(old.index)?.let { card -> deferredBatchCards = (deferredBatchCards + card.id).distinct().takeLast(BacklogPolicy.batchSize) }
@@ -255,7 +263,7 @@ class RecallViewModel @JvmOverloads constructor(app: Application, private val da
         }
     }
     fun submitReview(card: CardWithLesson, shown: Map<Rating, ScheduleResult>, rating: Rating, refresh: (Map<Rating, ScheduleResult>) -> Unit) {
-        if (reviewProgress.value.saving) return
+        if (reviewProgress.value.saving || reviewProgress.value.historyIndex != null) return
         if (activeReviewCards?.getOrNull(reviewProgress.value.index)?.id != card.id) return
         if (reviewIsPractice) {
             val old = reviewProgress.value

@@ -32,7 +32,7 @@ class LocalizationUiTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val app = instrumentation.targetContext.applicationContext as android.app.Application
         val original = app.recallPreferences.data.first()
-        app.recallPreferences.edit { it[PreferenceKeys.language] = "en"; it[PreferenceKeys.introductionSeen] = true; it[PreferenceKeys.remindersEnabled] = false }
+        app.recallPreferences.edit { it[PreferenceKeys.language] = "en"; it[PreferenceKeys.introductionSeen] = true; it[PreferenceKeys.reviewGesturesSeen] = false; it[PreferenceKeys.remindersEnabled] = false }
         val db = Room.inMemoryDatabaseBuilder(app, RecallDatabase::class.java).build()
         val vm = RecallViewModel(app, db)
         val store = ViewModelStore().apply { put("localization", vm) }
@@ -69,6 +69,11 @@ class LocalizationUiTest {
                 capture("focus-$language")
                 pressSystemBack()
                 compose.onNodeWithText(s(R.string.ui_start_review)).performClick()
+                if (language == "ar") {
+                    compose.onNodeWithText(s(R.string.review_gestures_title)).assertIsDisplayed()
+                    compose.onNodeWithText(s(R.string.ui_done)).performClick()
+                    compose.waitUntil(5_000) { vm.reviewGesturesSeen.value == true }
+                } else compose.onNodeWithText(s(R.string.review_gestures_title)).assertDoesNotExist()
                 compose.onNodeWithText(s(R.string.ui_show_answer)).assertIsDisplayed().performClick()
                 compose.onNodeWithText(s.rating(Rating.GOOD)).assertIsDisplayed()
                 compose.onNodeWithText(isolateStudyText(card.back)).assertIsDisplayed()

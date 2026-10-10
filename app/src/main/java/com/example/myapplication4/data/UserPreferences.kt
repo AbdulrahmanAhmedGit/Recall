@@ -32,6 +32,7 @@ data class UserSettings(
 }
 
 object PreferenceKeys {
+    val reviewGesturesSeen = booleanPreferencesKey("review_gestures_seen")
     val reviewPauses = stringPreferencesKey("review_scope_pauses")
     val lessonPauses = stringPreferencesKey("lesson_review_pauses")
     val introductionSeen = booleanPreferencesKey("introduction_seen")
@@ -50,6 +51,8 @@ object PreferenceKeys {
 class UserPreferences(private val context: Context) {
     // Device-local onboarding state: restoring a study backup must not reset it.
     val introductionSeen: Flow<Boolean> = context.recallPreferences.data.map { it[PreferenceKeys.introductionSeen] ?: false }
+    val reviewGesturesSeen: Flow<Boolean> = context.recallPreferences.data.map { it[PreferenceKeys.reviewGesturesSeen] ?: false }
+    suspend fun markReviewGesturesSeen() = update(PreferenceKeys.reviewGesturesSeen, true)
     suspend fun markIntroductionSeen() = update(PreferenceKeys.introductionSeen, true)
     val settings: Flow<UserSettings> = context.recallPreferences.data.map { values ->
         UserSettings(

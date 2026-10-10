@@ -7,7 +7,19 @@ data class ReviewSessionProgress(
     val skipped: Int = 0,
     val counts: List<Int> = List(Rating.entries.size) { 0 },
     val saving: Boolean = false,
+    val historyIndex: Int? = null,
+    val historyRevealed: Boolean = false,
 )
+
+fun ReviewSessionProgress.previousCard(): ReviewSessionProgress =
+    if (saving || (historyIndex ?: index) <= 0) this
+    else copy(historyIndex = (historyIndex ?: index) - 1, historyRevealed = false)
+
+fun ReviewSessionProgress.nextHistoryCard(): ReviewSessionProgress {
+    val current = historyIndex ?: return this
+    if (saving) return this
+    return copy(historyIndex = (current + 1).takeIf { it < index }, historyRevealed = false)
+}
 
 /** Monotonic foreground duration, unaffected by wall-clock changes or time spent away. */
 class ReviewTimer {

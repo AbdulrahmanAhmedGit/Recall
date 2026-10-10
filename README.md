@@ -9,7 +9,7 @@ Offline-first native Android study companion built around subjects, optional
 chapters, and lessons. Flashcards help retain lessons over time rather than
 acting as the primary organization system.
 
-Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.5.1)
+Download the [latest public preview](https://github.com/AbdulrahmanAhmedGit/Recall/releases/tag/v1.0.0-preview.5.2)
 for Android 7.0 or newer. Preview APKs are debug-signed; export a full backup before
 updating and read the release's installation notes.
 

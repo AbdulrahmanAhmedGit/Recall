@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="review_previous">Tarjeta anterior</string>
+    <string name="review_history_next">Tarjeta siguiente</string>
+    <string name="review_history_readonly">Vista anteriormente · Solo lectura; las valoraciones y fechas no cambian.</string>
+    <string name="review_gestures_title">Navega por tus tarjetas</string>
+    <string name="review_gestures_hint">Desliza a la derecha para omitir la tarjeta actual y a la izquierda para ver la anterior, valorada u omitida. En el historial, desliza a la derecha para volver hacia la pregunta actual. También puedes usar los botones. Omitir no cambia la programación.</string>
+</resources>

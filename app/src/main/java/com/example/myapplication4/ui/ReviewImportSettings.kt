@@ -56,8 +56,9 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
     DisposableEffect(cards) { vm.activeReviewCards = cards; onDispose { } }
 
     val progress by vm.reviewProgress.collectAsStateWithLifecycle()
-    val index = progress.index
-    val revealed = progress.revealed
+    val history = progress.historyIndex != null
+    val index = progress.historyIndex ?: progress.index
+    val revealed = if (history) progress.historyRevealed else progress.revealed
     val skipped = progress.skipped
     val saving = progress.saving
     val counts = Rating.entries.associateWith { progress.counts[it.ordinal] }
@@ -69,6 +70,7 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
         lastCompleted = completed
     }
     val reviewSettings by vm.settings.collectAsStateWithLifecycle()
+    val gesturesSeen by vm.reviewGesturesSeen.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val resources = remember(context, configuration, reviewSettings.language) {
@@ -90,19 +92,19 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
     if (index >= cards.size) {
         val dueFlow: kotlinx.coroutines.flow.Flow<Int?> = remember(vm) { vm.remainingDueReviews() }
         val remaining by dueFlow.collectAsStateWithLifecycle(initialValue = null)
-        ReviewComplete(counts.values.sum(), skipped, counts, resources, done, if (vm.reviewIsPractice) null else remaining, vm.reviewIsPractice)
+        ReviewComplete(counts.values.sum(), skipped, counts, resources, done, if (vm.reviewIsPractice) null else remaining, vm.reviewIsPractice, vm::previousReviewCard)
         return
     }
     val card = cards[index]
     var previews by remember(card.id, reviewSettings.desiredRetention) { mutableStateOf(vm.preview(card, System.currentTimeMillis(), reviewSettings.desiredRetention)) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    DisposableEffect(card.id, lifecycleOwner, reviewSettings.desiredRetention) {
+    DisposableEffect(card.id, history, lifecycleOwner, reviewSettings.desiredRetention) {
         val timer = vm.reviewTimer
-        timer.begin(card.id, android.os.SystemClock.elapsedRealtime())
+        if (!history) timer.begin(card.id, android.os.SystemClock.elapsedRealtime())
         if (!lifecycleOwner.lifecycle.currentState.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED)) timer.pause(android.os.SystemClock.elapsedRealtime())
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                timer.resume(android.os.SystemClock.elapsedRealtime())
+                if (!history) timer.resume(android.os.SystemClock.elapsedRealtime())
                 previews = vm.preview(card, System.currentTimeMillis(), reviewSettings.desiredRetention)
             } else if (event == androidx.lifecycle.Lifecycle.Event.ON_PAUSE) timer.pause(android.os.SystemClock.elapsedRealtime())
         }
@@ -123,22 +125,36 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
         Column(Modifier.fillMaxSize().padding(horizontal = pagePadding).widthIn(max = RecallSizes.contentMaxWidth).align(Alignment.TopCenter)) {
             val animatedProgress = animatedRecallProgress((index + 1f) / cards.size)
             Row(Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch), verticalAlignment = Alignment.CenterVertically) { RecallIconButton(Icons.Outlined.Close, s(R.string.ui_end_review), done); Column(Modifier.weight(1f).padding(horizontal = RecallSpacing.xs)) { BidiAwareText(card.lessonTitle, style = MaterialTheme.typography.labelLarge, maxLines = 1); BidiAwareText(s(R.string.ui_review_progress, s.number(index + 1), s.number(cards.size)), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) }; CircularProgressIndicator(progress = { animatedProgress.value }, modifier = Modifier.size(30.dp), strokeWidth = 3.dp, trackColor = MaterialTheme.colorScheme.surfaceVariant) }
-            ReviewCardStack(card, targets, cards.size - index, revealed, Modifier.weight(1f).fillMaxWidth())
+            ReviewCardStack(card, targets, cards.size - index, revealed,
+                Modifier.weight(1f).fillMaxWidth().reviewGestures(card.id to history, !saving && gesturesSeen == true,
+                    next = { vm.skipReviewCard(card.id) }, previous = vm::previousReviewCard))
+            if (history) Text(s(R.string.review_history_readonly), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted)
             if (vm.reviewIsPractice) Text(s(R.string.focus_practice_hint), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            TextButton(onClick = vm::previousReviewCard, enabled = !saving && index > 0, modifier = Modifier.heightIn(min = RecallSizes.touch)) {
+                Text(s(R.string.review_previous))
+            }
             TextButton(onClick = {
                 // Skipping only advances this session: no review event or memory-state update.
                 vm.skipReviewCard(card.id)
-            }, enabled = !saving, modifier = Modifier.align(Alignment.CenterHorizontally).heightIn(min = RecallSizes.touch)) {
-                Text(resources.getString(R.string.review_skip))
+            }, enabled = !saving, modifier = Modifier.heightIn(min = RecallSizes.touch)) {
+                Text(s(if (history) R.string.review_history_next else R.string.review_skip))
+            }
             }
             if (!revealed) RecallPrimaryButton(s(R.string.ui_show_answer), Icons.Outlined.Visibility, { haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove); vm.revealReviewAnswer() }, Modifier.fillMaxWidth().navigationBarsPadding().padding(bottom = RecallSpacing.md))
-            else RatingBar(previews, enabled = !saving, practice = vm.reviewIsPractice) { result ->
+            else if (!history) RatingBar(previews, enabled = !saving, practice = vm.reviewIsPractice) { result ->
                 if (!saving) {
                     vm.submitReview(card, previews, result.rating) { previews = it }
                 }
             }
         }
     }
+    if (gesturesSeen == false) AlertDialog(
+        onDismissRequest = vm::acknowledgeReviewGestures,
+        title = { Text(s(R.string.review_gestures_title)) },
+        text = { Text(s(R.string.review_gestures_hint)) },
+        confirmButton = { TextButton(onClick = vm::acknowledgeReviewGestures) { Text(s(R.string.ui_done)) } },
+    )
 }
 
 @Composable private fun RatingBar(previews: Map<Rating, ScheduleResult>, enabled: Boolean, practice: Boolean = false, rate: (ScheduleResult) -> Unit) {
@@ -151,7 +167,7 @@ fun ReviewScreen(cards: List<CardWithLesson>, vm: RecallViewModel, done: () -> U
  val tint = when(rating) { Rating.AGAIN -> MaterialTheme.colorScheme.error; Rating.HARD -> MaterialTheme.colorScheme.warning; Rating.GOOD -> MaterialTheme.colorScheme.primary; Rating.EASY -> MaterialTheme.colorScheme.success }; Surface(onClick = click, enabled = enabled, modifier = modifier.heightIn(min = 68.dp).recallPress(interaction), interactionSource = interaction, color = MaterialTheme.colorScheme.surfaceInteractive, contentColor = MaterialTheme.colorScheme.onSurface, shape = RecallRadii.medium) { Column(Modifier.padding(vertical = RecallSpacing.sm, horizontal = RecallSpacing.xxs), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text(s.rating(rating), style = MaterialTheme.typography.labelLarge, color = tint); BidiAwareText(interval, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.muted) } } }
 
 @Composable
-private fun ReviewComplete(total: Int, skipped: Int, counts: Map<Rating, Int>, resources: android.content.res.Resources, done: () -> Unit, remaining: Int?, practice: Boolean = false) {
+private fun ReviewComplete(total: Int, skipped: Int, counts: Map<Rating, Int>, resources: android.content.res.Resources, done: () -> Unit, remaining: Int?, practice: Boolean = false, previous: () -> Unit) {
     val s = recallStrings()
 
     ScreenFrame {
@@ -171,6 +187,7 @@ private fun ReviewComplete(total: Int, skipped: Int, counts: Map<Rating, Int>, r
                 }
             }
             RecallPrimaryButton(s(R.string.ui_done), onClick = done, modifier = Modifier.fillMaxWidth().padding(top = RecallSpacing.xl))
+            TextButton(onClick = previous, modifier = Modifier.fillMaxWidth().heightIn(min = RecallSizes.touch)) { Text(s(R.string.review_previous)) }
         }
     }
 }

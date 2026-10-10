@@ -1,5 +1,16 @@
 # Latest source changes
 
+## v1.0.0-preview.5.2 — October 11, 2026
+
+- Previous card opens read-only session history, including skipped and rated
+  questions. Next card returns to the current question without extra ratings or
+  schedule changes. History is also reachable from session completion.
+- Swipe right to skip/next and left to go back; Arabic reverses these directions.
+  Buttons remain available, vertical card scrolling is preserved, and a localized
+  one-time hint explains the gestures.
+- Session history survives Activity recreation; it does not persist after ending
+  a session or process termination. See [review navigation](review-navigation.md).
+
 ## v1.0.0-preview.5.1 — October 11, 2026
 
 - Pause subjects and chapters as well as lessons. Parent rules dynamically cover
